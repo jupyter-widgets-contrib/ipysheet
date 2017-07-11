@@ -1,0 +1,45 @@
+{
+  "name": "ipysheet",
+  "version": "0.1.0",
+  "description": "Spreadsheet in the Jupyter notebook",
+  "author": "Maarten A. Breddels",
+  "main": "src/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/QuantStack/ipysheet.git"
+  },
+  "keywords": [
+    "jupyter",
+    "widgets",
+    "ipython",
+    "ipywidgets"
+  ],
+  "scripts": {
+    "prepublish": "webpack",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "@types/expect.js": "^0.3.29",
+    "@types/mocha": "^2.2.41",
+    "json-loader": "^0.5.4",
+    "webpack": "^1.12.14",
+    "css-loader": "^0.28.4",
+    "style-loader": "^0.18.2",
+    "karma": "^1.6.0",
+    "karma-chrome-launcher": "^2.0.0",
+    "karma-mocha": "^1.3.0",
+    "karma-chai": "^0.1.0",
+    "karma-webpack": "^2.0.3",
+    "karma-sourcemap-loader": "^0.3.7",
+    "mocha": "^3.3.0",
+    "chai": "^4.0.0",
+    "sinon": "^2.1.0",
+    "sinon-chai": "^2.11.0",
+    "typescript": "~2.3.1",
+    "ts-loader": "~2.2.2"
+  },
+  "dependencies": {
+    "jupyter-js-widgets": "^2.1.4",
+    "underscore": "^1.8.3"
+  }
+}
