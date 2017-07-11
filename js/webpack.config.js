@@ -47,24 +47,6 @@ module.exports = [
         },
         externals: ['jupyter-js-widgets']
     },
-    {// Bundle for the notebook containing the custom widget views and models
-     //
-     // This bundle contains the implementation for the custom widget views and
-     // custom widget.
-     // It must be an amd module
-     //
-        entry: './src/index.js',
-        resolve:resolve,
-        output: {
-            filename: 'index-test2.js',
-            path: './dist/',
-            libraryTarget: 'commonjs'
-        },
-        devtool: 'source-map',
-        module: {
-            loaders: loaders
-        },
-    },
     {// Embeddable ipysheet bundle
      //
      // This bundle is generally almost identical to the notebook bundle
