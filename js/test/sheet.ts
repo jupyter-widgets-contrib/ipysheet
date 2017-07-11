@@ -19,6 +19,7 @@ describe('sheet', function() {
         this.sheet.state_change = Promise.resolve(); // bug in ipywidgets?
         this.sheet.views = {}
     });
+
     it('sanity', function() {
         expect(this.sheet.get('rows')).to.equal(2);
         expect(this.sheet.get('columns')).to.equal(4);
@@ -64,10 +65,14 @@ describe('sheet', function() {
         await this.manager.display_view(undefined, view);
         return view;
     }
+    var data_cloner = function() {
+        var data = this.sheet.get('data')
+        return JSON.parse(JSON.stringify(data))
+    }
     var wait_validate = async function(view) {
         return new Promise(function(resolve, reject) {
             view.hot.validateCells(function(valid) {
-                console.log('waited for validate,', valid)
+                //console.log('waited for validate,', valid)
                 resolve(valid)
             })
         })
@@ -81,8 +86,9 @@ describe('sheet', function() {
     })
     it('view reflecting model', async function() {
         var view = await make_view.call(this)
-        var data = _.clone(this.sheet.get('data'))
-        var data_clone = JSON.parse(JSON.stringify(data))
+        var data = this.sheet.get('data')
+        console.log(data_clone)
+        var data_clone = data_cloner.call(this)
         data_clone[1][2].value = 123
         expect(data[1][2].value, 'cloned data check').to.not.equal(123);
         this.sheet.set('data', data_clone)
@@ -96,21 +102,48 @@ describe('sheet', function() {
         expect(view1.get_cell(1,2), 'model change should be reflected in view').to.equal(123);
         expect(view1.get_cell(1,2), 'cell changes in one view should be reflected in a related view'). to.equal(view2.get_cell(1,2));
     })
-    /*it('invalid sheet should not propagate to model', async function() {
+    it('invalid sheet should not propagate to model', async function() {
         var view = await make_view.call(this)
-        var data = _.clone(this.sheet.get('data'))
-        var data_clone = JSON.parse(JSON.stringify(data))
+        var data_clone = data_cloner.call(this)
         data_clone[1][2].value = 123
         data_clone[1][2].options = {type: 'numeric'}
-        expect(data[1][2].value, 'cloned data check').to.not.equal(123);
         expect(data_clone[1][2].value, 'cloned data check').to.equal(123);
         this.sheet.set('data', data_clone)
-
+/*
         view.set_cell(1,2, 'wrong')
         await wait_validate(view)
         expect(view.get_cell(1,2), 'sheet will reflect invalid data').to.equal('wrong');
         expect(this.sheet.get('data')[1][2].value, 'model should not have invalid data').to.not.equal('wrong');
-    })*/
+        */
+    })
+
+    var make_cell = async function(options) {
+        const modelId = 'u-u-i-d-cell';
+        var cell = await this.manager.new_widget({
+            model_module: 'ipysheet',
+            model_name: 'CellModel',
+            model_module_version : '0.1.0',
+            model_id: modelId,
+        }, {row: 1, column: 2, value:888, ...options} );
+        var cells = this.sheet.get('cells');
+        this.sheet.set('cells', [...cells, cell])
+        return cell
+    }
+    it('cell changes should be reflected in datamodel', async function() {
+        var cell = await make_cell.apply(this, [{value: 777}])
+        var data = this.sheet.get('data')
+        expect(data[1][2].value, 'for initial valie').to.equal(777);
+        cell.set('value', 999)
+        var data = this.sheet.get('data')
+        expect(data[1][2].value, 'when cell.value is change').to.equal(999);
+    })
+    it('model changes should be reflected in cell', async function() {
+        var cell = await make_cell.apply(this, [{value: 777}])
+        var data = data_cloner.call(this)
+        data[1][2].value = 999;
+        this.sheet.set('data', data)
+        expect(cell.get('value'), 'when the data in the sheet changes').to.equal(999);
+    })
     it('should fail', function() {
         expect(false).to.be.false;
     });
