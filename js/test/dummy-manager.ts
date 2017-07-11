@@ -54,7 +54,6 @@ class DummyManager extends widgets.ManagerBase<HTMLElement> {
         // TODO: return an html element
         return Promise.resolve(view).then(view => {
             this.el.appendChild(view.el);
-            console.log('child appended')
             view.on('remove', () => console.log('view removed', view));
             (<any>window).last_view = view
             //view.render()
