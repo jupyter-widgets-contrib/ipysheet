@@ -1,6 +1,20 @@
 import ipywidgets as widgets
-from traitlets import Unicode, CFloat, CInt, List, Instance, Union
+from traitlets import Unicode, CFloat, CInt, List, Instance, Union, Dict, Bool
 
+
+@widgets.register('ipysheet.Cell')
+class Cell(widgets.Widget):
+    #_view_name = Unicode('CellView').tag(sync=True)
+    _model_name = Unicode('CellModel').tag(sync=True)
+    #_view_module = Unicode('ipysheet').tag(sync=True)
+    _model_module = Unicode('ipysheet').tag(sync=True)
+    _view_module_version = Unicode('^0.1.0').tag(sync=True)
+    _model_module_version = Unicode('^0.1.0').tag(sync=True)
+    value = Union([CFloat(), Unicode()]).tag(sync=True)
+    row =  CInt(3).tag(sync=True)
+    column =  CInt(4).tag(sync=True)
+    type = Unicode('text').tag(sync=True)
+    style = Dict({}).tag(sync=True)
 
 @widgets.register('ipysheet.Sheet')
 class Sheet(widgets.DOMWidget):
@@ -15,3 +29,7 @@ class Sheet(widgets.DOMWidget):
     rows =  CInt(3).tag(sync=True)
     columns =  CInt(4).tag(sync=True)
     data = List(Instance(list), [[]]).tag(sync=True)
+    cells = List(Instance(Cell), [], allow_none=False).tag(sync=True, **widgets.widget_serialization)
+    row_headers = Bool(True).tag(sync=True)
+    column_headers = Bool(True).tag(sync=True)
+    stretch_headers = Unicode('all').tag(sync=True)
