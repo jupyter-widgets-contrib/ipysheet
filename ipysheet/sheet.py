@@ -8,7 +8,7 @@ class Cell(widgets.Widget):
     _model_module = Unicode('ipysheet').tag(sync=True)
     _view_module_version = Unicode('^0.1.0').tag(sync=True)
     _model_module_version = Unicode('^0.1.0').tag(sync=True)
-    value = Union([CFloat(), Unicode()]).tag(sync=True)
+    value = Union([CFloat(), Unicode()], allow_none=True, value=None).tag(sync=True)
     row =  CInt(3).tag(sync=True)
     column =  CInt(4).tag(sync=True)
     type = Unicode('text').tag(sync=True)
