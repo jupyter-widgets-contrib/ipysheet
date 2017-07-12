@@ -172,7 +172,7 @@ var SheetView = widgets.DOMWidgetView.extend({
         window.last_sheet_view = this;
         this.model.on('change:data', this.on_data_change, this)
         this.model.on('change:column_headers change:row_headers', this._update_hot_settings, this)
-        this.model.on('change:stretch_headers', this._update_hot_settings, this)
+        this.model.on('change:stretch_headers change:column_width', this._update_hot_settings, this)
     },
     _update_hot_settings: function() {
         console.log('update', this._hot_settings())
@@ -182,14 +182,12 @@ var SheetView = widgets.DOMWidgetView.extend({
         return {
             colHeaders: this.model.get('column_headers'),
             rowHeaders: this.model.get('row_headers'),
-            stretchH: this.model.get('stretch_headers')
+            stretchH: this.model.get('stretch_headers'),
+            colWidths: this.model.get('column_width') || undefined
         }
     },
     _cell: function(row, col, prop) {
         var cellProperties = {}
-        // if (row === 0 && col === 0) {
-        //       cellProperties.readOnly = true;
-        // }
         _.extend(cellProperties, this.model.get('data')[row][col].options)
         if('renderer' in cellProperties)
                cellProperties.original_renderer = cellProperties.renderer;

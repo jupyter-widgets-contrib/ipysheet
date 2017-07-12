@@ -3,9 +3,11 @@ import numbers
 from .sheet import *
 _last_sheet = None
 
-def sheet(rows=5, columns=5, **kwargs):
+def sheet(rows=5, columns=5, column_width=None, row_headers=True, column_headers=True,
+        stretch_headers='all', **kwargs):
     global _last_sheet
-    _last_sheet = Sheet(rows=rows, columns=columns, **kwargs)
+    _last_sheet = Sheet(rows=rows, columns=columns, column_width=column_width,
+    row_headers=row_headers, column_headers=column_headers, **kwargs)
     return _last_sheet
 
 def cell(row, column, value=0., type=None, color=None, backgroundColor=None, fontStyle=None, fontWeight=None, style=None):
