@@ -117,7 +117,7 @@ describe('sheet', function() {
         */
     })
 
-    var make_cell = async function(options) {
+    var make_cell = async function(options, skip_add) {
         const modelId = 'u-u-i-d-cell';
         var cell = await this.manager.new_widget({
             model_module: 'ipysheet',
@@ -126,16 +126,33 @@ describe('sheet', function() {
             model_id: modelId,
         }, {row: 1, column: 2, value:888, ...options} );
         var cells = this.sheet.get('cells');
-        this.sheet.set('cells', [...cells, cell])
+        console.log('skip', skip_add)
+        if(!skip_add)
+            this.sheet.set('cells', [...cells, cell])
         return cell
     }
     it('cell changes should be reflected in datamodel', async function() {
         var cell = await make_cell.apply(this, [{value: 777}])
         var data = this.sheet.get('data')
-        expect(data[1][2].value, 'for initial valie').to.equal(777);
+        expect(data[1][2].value, 'for initial value').to.equal(777);
         cell.set('value', 999)
         var data = this.sheet.get('data')
         expect(data[1][2].value, 'when cell.value is change').to.equal(999);
+    })
+    it('multiple cells added', async function() {
+        var cell1 = await make_cell.apply(this, [{value: 777}, true])
+        var cell2 = await make_cell.apply(this, [{row: 0, value: 555}, true])
+        var cells = this.sheet.get('cells');
+        this.sheet.set('cells', [...cells, cell1, cell2])
+        var data = this.sheet.get('data')
+        console.log(data[1][2], data[0][2])
+        expect(data[1][2].value, 'for initial value').to.equal(777);
+        expect(data[0][2].value, 'for initial value').to.equal(555);
+        cell1.set('value', 999)
+        cell2.set('value', 444)
+        var data = this.sheet.get('data')
+        expect(data[1][2].value, 'when cell.value is change').to.equal(999);
+        expect(data[0][2].value, 'when cell.value is change').to.equal(444);
     })
     it('model changes should be reflected in cell', async function() {
         var cell = await make_cell.apply(this, [{value: 777}])

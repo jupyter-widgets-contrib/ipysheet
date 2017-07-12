@@ -54,21 +54,28 @@ var SheetModel = widgets.DOMWidgetModel.extend({
         //widgets.DOMWidgetModel.prototype.constructor.apply(this, arguments);
         SheetModel.__super__.initialize.apply(this, arguments)
         this.update_data_grid()
+        this._updating_grid = false
         window.last_sheet_model = this;
         this.on('change:rows change:columns', this.update_data_grid, this)
         this.on('change:cells', this.on_change_cells, this)
         this.on('change:data', this.grid_to_cell, this)
     },
     on_change_cells: function() {
-        console.log('change cells', arguments)
-        var previous_cells = this.previous('cells');
-        var cells = this.get('cells')
-        for(var i = 0; i < cells.length; i++) {
-            var cell = cells[i];
-            if(!_.contains(previous_cells, cell)) {
-                console.log('adding cell', cell)
-                this.cell_bind(cell)
+        console.log('change cells')
+        this._updating_grid = true
+        try {
+            var previous_cells = this.previous('cells');
+            var cells = this.get('cells')
+            for(var i = 0; i < cells.length; i++) {
+                var cell = cells[i];
+                if(!_.contains(previous_cells, cell)) {
+                    console.log('adding cell', cell)
+                    this.cell_bind(cell)
+                }
             }
+            this.save_changes()
+        } finally {
+            this._updating_grid = false
         }
     },
     cell_bind: function(cell) {
@@ -77,7 +84,7 @@ var SheetModel = widgets.DOMWidgetModel.extend({
             this.cell_to_grid(cell, true)
         }, this)
     },
-    cell_to_grid: function(cell) {
+    cell_to_grid: function(cell, save) {
         console.log('cell to grid', cell)
         var data = clone_deep(this.get('data'))
         var cell_data = data[cell.get('row')][cell.get('column')]
@@ -89,7 +96,9 @@ var SheetModel = widgets.DOMWidgetModel.extend({
         cell_data.options['source'] = cell.get('choice')
         cell_data.options['format'] = cell.get('format')
         this.set('data', data)
-        this.save_changes()
+        if(save) {
+            this.save_changes()
+        }
     },
     grid_to_cell: function() {
         if(this._updating_grid) {
