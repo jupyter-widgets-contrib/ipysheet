@@ -1,6 +1,8 @@
 var widgets = require('jupyter-js-widgets');
 var _ = require('underscore');
 var Handsontable = require('../handsontable/handsontable.min.js')
+// bug in handsontable it seems, it needs to be in global namespace
+window.Handsontable = Handsontable;
 require('style!css!../handsontable/handsontable.min.css')
 require('style!css!./custom.css')
 
@@ -21,6 +23,10 @@ var CellModel = widgets.WidgetModel.extend({
     		column: 1,
             type: 'text',
             style: {},
+            renderer: null,
+            read_only: false,
+            choice: null,
+            format: '0.[000]'
         })
     },
 });
@@ -66,9 +72,9 @@ var SheetModel = widgets.DOMWidgetModel.extend({
         }
     },
     cell_bind: function(cell) {
-        this.cell_to_grid(cell)
-        cell.on('change:value change:style change:type', function() {
-            this.cell_to_grid(cell)
+        this.cell_to_grid(cell, false)
+        cell.on('change:value change:style change:type change:renderer change:read_only change:choice change:format', function() {
+            this.cell_to_grid(cell, true)
         }, this)
     },
     cell_to_grid: function(cell) {
@@ -78,19 +84,36 @@ var SheetModel = widgets.DOMWidgetModel.extend({
         cell_data.value = cell.get('value')
         cell_data.options['type'] = cell.get('type')
         cell_data.options['style'] = cell.get('style')
+        cell_data.options['renderer'] = cell.get('renderer')
+        cell_data.options['readOnly'] = cell.get('read_only')
+        cell_data.options['source'] = cell.get('choice')
+        cell_data.options['format'] = cell.get('format')
         this.set('data', data)
         this.save_changes()
     },
     grid_to_cell: function() {
-        console.log('grid to cell')
-        var data = this.get('data');
-        _.each(this.get('cells'), function(cell) {
-            var cell_data = data[cell.get('row')][cell.get('column')]
-            cell.set('value', cell_data.value)
-            cell.set('type', cell_data.options['type'])
-            cell.set('style', cell_data.options['style'])
-            cell.save_changes()
-        }, this)
+        if(this._updating_grid) {
+            console.log('grid to cell skipped')
+            return;
+        }
+        console.log('grid to cell', this._massive_update)
+        this._updating_grid = true
+        try {
+            var data = this.get('data');
+            _.each(this.get('cells'), function(cell) {
+                var cell_data = data[cell.get('row')][cell.get('column')]
+                cell.set('value', cell_data.value)
+                cell.set('type', cell_data.options['type'])
+                cell.set('style', cell_data.options['style'])
+                cell.set('renderer', cell_data.options['renderer'])
+                cell.set('read_only', cell_data.options['readOnly'])
+                cell.set('choice', cell_data.options['source'])
+                cell.set('format', cell_data.options['format'])
+                cell.save_changes()
+            }, this)
+        } finally {
+            this._updating_grid = false;
+        }
     },
     update_data_grid: function() {
         // create a row x column array of arrays filled with null

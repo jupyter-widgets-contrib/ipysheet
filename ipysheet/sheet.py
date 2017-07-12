@@ -14,6 +14,9 @@ class Cell(widgets.Widget):
     type = Unicode('text').tag(sync=True)
     style = Dict({}).tag(sync=True)
     renderer = Unicode(None, allow_none=True).tag(sync=True)
+    read_only = Bool(False).tag(sync=True)
+    choice = List(Unicode, allow_none=True, value=None).tag(sync=True)
+    format = Unicode('0.[000]', allow_none=True).tag(sync=True)
 
 @widgets.register('ipysheet.Range')
 class Range(widgets.Widget):

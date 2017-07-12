@@ -5,18 +5,20 @@ import numbers
 import ipywidgets as widgets
 from .sheet import *
 _last_sheet = None
-_hold_cells = False
-_cells = []
+_hold_cells = False # when try (using hold_cells() it does not add cells directly)
+_cells = [] # cells that aren't added directly
 
 def sheet(rows=5, columns=5, column_width=None, row_headers=True, column_headers=True,
         stretch_headers='all', **kwargs):
     global _last_sheet
     _last_sheet = Sheet(rows=rows, columns=columns, column_width=column_width,
-    row_headers=row_headers, column_headers=column_headers, **kwargs)
+    row_headers=row_headers, column_headers=column_headers,
+    stretch_headers=stretch_headers, **kwargs)
     return _last_sheet
 
 def cell(row, column, value=0., type=None, color=None, backgroundColor=None,
-    fontStyle=None, fontWeight=None, style=None, label=None, renderer=None):
+    fontStyle=None, fontWeight=None, style=None, label_left=None, choice=None,
+    read_only=False, format='0.[000]', renderer=None):
     if type is None:
         if isinstance(value, numbers.Number):
             type = 'numeric'
