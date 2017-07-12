@@ -47,7 +47,7 @@ def cell(row, column, value=0., type=None, color=None, backgroundColor=None,
 
 def row(row, value, column_start=0, column_end=None):
     if column_end is None:
-        column_end = len(value)
+        column_end = column_start+len(value)
     length = column_end - column_start
     assert length == len(value), "length or array doesn't match index"
     cellrange = Range(value=value)
