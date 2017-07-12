@@ -33,15 +33,16 @@ def cell(row, column, value=0., type=None, color=None, backgroundColor=None,
         style['fontStyle'] = fontStyle
     if fontWeight is not None:
         style['fontWeight'] = fontWeight
-    c = Cell(value=value, row=row, column=column, type=type, style=style, renderer=renderer)
+    c = Cell(value=value, row=row, column=column, type=type, style=style,
+        read_only=read_only, choice=choice, renderer=renderer, format=format)
     if _hold_cells:
         print("holding cells")
         _cells.append(c)
     else:
         _last_sheet.cells = _last_sheet.cells+[c]
-    if label:
+    if label_left:
         assert column-1 >= 0, "cannot put label to the left"
-        cell(row, column-1, value=label, fontWeight='bold')
+        cell(row, column-1, value=label_left, fontWeight='bold')
     return c
 
 def row(row, value, column_start=0, column_end=None):
