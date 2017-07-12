@@ -162,6 +162,8 @@ Handsontable.renderers.registerRenderer('styled', function customRenderer(hotIns
 
 var SheetView = widgets.DOMWidgetView.extend({
     render: function() {
+        this._refresh_requested = false;
+        this.throttle_on_data_change = _.throttle(_.bind(this._real_on_data_change, this), 300)
         //this.listenTo(this.model, 'change:data', this.on_data_change)
 		this.displayed.then(_.bind(function() {
 			this.hot = new Handsontable(this.el, _.extend({
@@ -199,6 +201,8 @@ var SheetView = widgets.DOMWidgetView.extend({
         return cellProperties;
     },
     _on_change: function(changes, source) {
+        if(source == 'loadData')
+            return; // ignore loadData
         this.hot.validateCells(_.bind(function(valid){
             if(valid) {
                 var data = clone_deep(this.model.get('data'))
@@ -210,6 +214,10 @@ var SheetView = widgets.DOMWidgetView.extend({
         }, this))
     },
     on_data_change: function() {
+        this.throttle_on_data_change()
+        //this._real_on_data_change()
+    },
+    _real_on_data_change: function() {
         var data_previous = this.model.previous('data')
         var data = extract2d(this.model.get('data'), 'value')
         var rows = data.length;
@@ -226,7 +234,6 @@ var SheetView = widgets.DOMWidgetView.extend({
             this.hot.alter('remove_col', cols-1, cols_previous-cols)
 
         this.hot.loadData(data)
-        this.hot.validateCell
     },
     set_cell: function(row, column, value) {
         this.hot.setDataAtCell(row, column, value)
