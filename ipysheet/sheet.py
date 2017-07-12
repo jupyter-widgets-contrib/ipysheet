@@ -13,6 +13,7 @@ class Cell(widgets.Widget):
     column =  CInt(4).tag(sync=True)
     type = Unicode('text').tag(sync=True)
     style = Dict({}).tag(sync=True)
+    renderer = Unicode(None, allow_none=True).tag(sync=True)
 
 @widgets.register('ipysheet.Sheet')
 class Sheet(widgets.DOMWidget):
