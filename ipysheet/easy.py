@@ -36,7 +36,6 @@ def cell(row, column, value=0., type=None, color=None, backgroundColor=None,
     c = Cell(value=value, row=row, column=column, type=type, style=style,
         read_only=read_only, choice=choice, renderer=renderer, format=format)
     if _hold_cells:
-        print("holding cells")
         _cells.append(c)
     else:
         _last_sheet.cells = _last_sheet.cells+[c]
@@ -57,12 +56,10 @@ def row(row, value, column_start=0, column_end=None):
         def set(*ignore, cell_offset=cell_offset, column=i):
             offset = column - column_start
             value = copy.deepcopy(cellrange.value)
-            print("setting array offset", offset, "with", value, cell_offset.value)
             value[offset] = cell_offset.value
             cellrange.value = value
         cell_offset.observe(set, 'value')
     def set(*ignore):
-        print("copying cells to array")
         value = cellrange.value
         for i, cell_offset in enumerate(cells):
             cell_offset.value = value[i]
@@ -101,7 +98,6 @@ def hold_cells():
             _hold_cells = True
             yield
         finally:
-            print("flushing cells")
             _hold_cells = False
             _last_sheet.cells = _last_sheet.cells+_cells
             _cells = []
