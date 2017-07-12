@@ -4,6 +4,9 @@ var Handsontable = require('../handsontable/handsontable.min.js')
 require('style!css!../handsontable/handsontable.min.css')
 require('style!css!./custom.css')
 
+require('style!css!../handsontable/pikaday/pikaday.css')
+//require('../handsontable/pikaday/pikaday.js')
+
 var CellModel = widgets.WidgetModel.extend({
     defaults: function() {
         return _.extend(SheetModel.__super__.defaults.call(this), {
