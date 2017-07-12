@@ -15,6 +15,10 @@ class Cell(widgets.Widget):
     style = Dict({}).tag(sync=True)
     renderer = Unicode(None, allow_none=True).tag(sync=True)
 
+@widgets.register('ipysheet.Range')
+class Range(widgets.Widget):
+    value = Union([List(), List(Instance(list))], value=[0, 1]).tag(sync=True)
+
 @widgets.register('ipysheet.Sheet')
 class Sheet(widgets.DOMWidget):
     """"""
