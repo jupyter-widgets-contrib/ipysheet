@@ -244,13 +244,22 @@ var SheetView = widgets.DOMWidgetView.extend({
         return this.hot.getDataAtCell(row, column)
     },
 	refresh_table: function() {
-		this.hot.render()
+        //this.hot.render()
+        if(!this._refresh_requested) {
+           this._refresh_requested = true
+            requestAnimationFrame(_.bind(this._real_refresh_table, this))
+        }
 	},
+    _real_refresh_table: function() {
+        this.hot.render()
+        this._refresh_requested = false;
+    }
 });
 
 
 module.exports = {
     SheetModel : SheetModel,
     SheetView : SheetView,
-    CellModel: CellModel
+    CellModel: CellModel,
+    Handsontable: Handsontable
 };
