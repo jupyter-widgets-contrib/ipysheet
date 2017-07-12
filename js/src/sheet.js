@@ -39,7 +39,9 @@ var SheetModel = widgets.DOMWidgetModel.extend({
             data: [[]],
             cells: [],
             row_headers: true,
-            column_headers: true
+            column_headers: true,
+            stretch_headers: 'all',
+            column_width: null,
         })
     },
     initialize : function () {
