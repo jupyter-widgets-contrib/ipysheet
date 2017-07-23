@@ -40,6 +40,7 @@
   },
   "dependencies": {
     "jupyter-js-widgets": "^2.1.4",
-    "underscore": "^1.8.3"
+    "underscore": "^1.8.3",
+    "handsontable": "^0.31.2"
   }
 }

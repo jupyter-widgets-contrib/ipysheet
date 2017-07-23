@@ -8,7 +8,8 @@ var loaders = [
 
 
 var resolve = {
-    extensions: ['.ts', '.js', '.tsx', '.jsx', '']
+    extensions: ['.ts', '.js', '.tsx', '.jsx', ''],
+    //alias: {'handsontable': 'handsontable_fix'}
 }
 
 module.exports = [
@@ -45,7 +46,7 @@ module.exports = [
         module: {
             loaders: loaders
         },
-        externals: ['jupyter-js-widgets']
+        externals: ['jupyter-js-widgets', 'handsontable']
     },
     {// Embeddable ipysheet bundle
      //
@@ -73,6 +74,14 @@ module.exports = [
         module: {
             loaders: loaders
         },
-        externals: ['jupyter-js-widgets']
-    }
+        externals: ['jupyter-js-widgets', 'handsontable']
+    },
+    {
+        entry: './src/handsontable_fix.js',
+        output: {
+            filename: 'handsontable.js',
+            path: '../ipysheet/static',
+            libraryTarget: 'amd'
+        }
+    },
 ];

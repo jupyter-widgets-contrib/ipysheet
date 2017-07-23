@@ -1,14 +1,30 @@
 var widgets = require('jupyter-js-widgets');
 var _ = require('underscore');
-var Handsontable = require('../handsontable/handsontable.min.js')
+var Handsontable = require('handsontable')
 // bug in handsontable it seems, it needs to be in global namespace
-window.Handsontable = Handsontable;
-require('style!css!../handsontable/handsontable.min.css')
-require('style!css!./custom.css')
+//window.Handsontable = Handsontable;
+//require('style!css!handsontable/dist/handsontable.min.css')
+//require('style!css!../handsontable/handsontable.min.css')
 
-require('style!css!../handsontable/pikaday/pikaday.css')
+
 //require('../handsontable/pikaday/pikaday.js')
 
+Lock = function() {
+    var locked = false;
+    this.with = function(f, context) {
+        locked = true
+        try {
+            f.apply(context, arguments)
+        } finally {
+            locked = false
+        }
+    }
+    this.without = function(f, context) {
+        if(!locked) {
+            f.apply(context, arguments)
+        }
+    }
+}
 var CellModel = widgets.WidgetModel.extend({
     defaults: function() {
         return _.extend(SheetModel.__super__.defaults.call(this), {
