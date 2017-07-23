@@ -22,7 +22,8 @@ module.exports = function(config) {
                 ]
           },
           resolve: {
-              extensions: ['.ts', '.js', '']
+              extensions: ['.ts', '.js', ''],
+              alias: {'handsontable$': '../src/handsontable_fix.js'}
           },
           devtool: 'inline-source-map',
     },
