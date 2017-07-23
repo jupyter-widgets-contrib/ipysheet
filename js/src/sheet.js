@@ -195,8 +195,9 @@ var extract2d = function(grid, attr) {
     })
 }
 var put_values2d = function(grid, values) {
-    for(var i = 0; i < grid.length; i++) {
-        for(var j = 0; j < grid[i].length; j++) {
+    // TODO: the Math.min should not be needed, happens with the custom-build
+    for(var i = 0; i < Math.min(grid.length, values.length); i++) {
+        for(var j = 0; j < Math.min(grid[i].length, values[i].length); j++) {
             grid[i][j].value = values[i][j]
         }
     }
@@ -215,21 +216,32 @@ Handsontable.renderers.registerRenderer('styled', function customRenderer(hotIns
 var SheetView = widgets.DOMWidgetView.extend({
     render: function() {
         this._refresh_requested = false;
-        this.throttle_on_data_change = _.throttle(_.bind(this._real_on_data_change, this), 300)
+        // TODO: sort this out, can we use throttling? difficult with unittesting
+        // but good for performance
+        //this.throttle_on_data_change = _.throttle(_.bind(this._real_on_data_change, this), 300)
+        this.throttle_on_data_change = _.bind(this._real_on_data_change, this)
         //this.listenTo(this.model, 'change:data', this.on_data_change)
 		this.displayed.then(_.bind(function() {
-			this.hot = new Handsontable(this.el, _.extend({
-                data: extract2d(this.model.get('data'), 'value'),
-                rowHeaders: true,
-                colHeaders: true,
-                cells: _.bind(this._cell, this)
-			}, this._hot_settings()));
-            Handsontable.hooks.add('afterChange', _.bind(this._on_change, this), this.hot);
+			this._build_table().then(_.bind(function(hot) {
+                this.hot = hot
+                Handsontable.hooks.add('afterChange', _.bind(this._on_change, this), this.hot);
+                Handsontable.hooks.add('afterRemoveCol', _.bind(this._on_change_grid, this), this.hot);
+                Handsontable.hooks.add('afterRemoveRow', _.bind(this._on_change_grid, this), this.hot);
+            }, this))
+
 		}, this));
         window.last_sheet_view = this;
         this.model.on('change:data', this.on_data_change, this)
         this.model.on('change:column_headers change:row_headers', this._update_hot_settings, this)
         this.model.on('change:stretch_headers change:column_width', this._update_hot_settings, this)
+    },
+    _build_table(options) {
+        return Promise.resolve(new Handsontable(this.el, _.extend({}, options, {
+            data: this._get_cell_data(),
+            rowHeaders: true,
+            colHeaders: true,
+            cells: _.bind(this._cell, this)
+        }, this._hot_settings())));
     },
     _update_hot_settings: function() {
         console.log('update', this._hot_settings())
@@ -243,49 +255,99 @@ var SheetView = widgets.DOMWidgetView.extend({
             colWidths: this.model.get('column_width') || undefined
         }
     },
+    _get_cell_data: function() {
+        return extract2d(this.model.get('data'), 'value')
+    },
     _cell: function(row, col, prop) {
         var cellProperties = {}
-        _.extend(cellProperties, this.model.get('data')[row][col].options)
+        var data = this.model.get('data')
+        if((row < data.length) && (col < data[row].length)) {
+            _.extend(cellProperties, data[row][col].options)
+        } else {
+            console.error('cell out of range')
+        }
+        if(cellProperties['type'] == null)
+            delete cellProperties['type']
+        if(cellProperties['style'] == null)
+            delete cellProperties['style']
+        if(cellProperties['source'] == null)
+            delete cellProperties['source']
         if('renderer' in cellProperties)
                cellProperties.original_renderer = cellProperties.renderer;
         cellProperties.renderer = 'styled'
         //console.log(row, col, prop, cellProperties)
         return cellProperties;
     },
+    _on_change_grid: function(changes, source) {
+        var data = this.hot.getSourceDataArray()
+        console.log('table altered, make sure this is reflected in the model', data.length, data[0].length)
+        this.model.set({'rows': data.length, 'columns': data[0].length})
+        this.model.save_changes()
+    },
     _on_change: function(changes, source) {
+        console.log('table altered...', changes, source)
+        //*
         if(source == 'loadData')
             return; // ignore loadData
-        this.hot.validateCells(_.bind(function(valid){
-            if(valid) {
+        if(source == 'alter') {
+            console.log('table altered, make sure this is reflected in the model')
+            var data = this.hot.getSourceDataArray()
+            this.model.set({'rows': data.length, 'columns': data[0].length})
+            this.model.save_changes()
+            return
+        }
+        //this.hot.validateCells()
+        //*
+        //this.hot.validateCells(_.bind(function(valid){
+        //    console.log('valid?', valid)
+        //    if(valid) {
                 var data = clone_deep(this.model.get('data'))
                 var value_data = this.hot.getSourceDataArray()
                 put_values2d(data, value_data)
                 this.model.set('data', clone_deep(data))
                 this.model.save_changes()
-            }
-        }, this))
+        //    }
+        //}, this))
+        /**/
     },
     on_data_change: function() {
         this.throttle_on_data_change()
         //this._real_on_data_change()
     },
     _real_on_data_change: function() {
-        var data_previous = this.model.previous('data')
         var data = extract2d(this.model.get('data'), 'value')
         var rows = data.length;
-        var rows_previous = data_previous.length;
         var cols = data[0].length;
-        var cols_previous = data_previous[0].length;
-        if(rows > rows_previous)
+        var changed = false;
+        var rows_previous = this.hot.countRows();
+        var cols_previous = this.hot.countCols()
+        //*
+        if(rows > rows_previous) {
             this.hot.alter('insert_row', rows-1, rows-rows_previous)
-        if(rows < rows_previous)
+            changed = true;
+        }
+        if(rows < this.hot.countRows()) {
             this.hot.alter('remove_row', rows-1, rows_previous-rows)
-        if(cols > cols_previous)
+            changed = true;
+        }
+        if(cols > cols_previous) {
             this.hot.alter('insert_col', cols-1, cols-cols_previous)
-        if(cols < cols_previous)
+            changed = true;
+        }
+        if(cols < cols_previous) {
             this.hot.alter('remove_col', cols-1, cols_previous-cols)
+            changed = true;
+        }/**/
 
         this.hot.loadData(data)
+        // if headers are not shows, loadData will make them show again, toggling
+        // will fix this (handsontable bug?)
+        this.hot.updateSettings({colHeaders: true, rowHeaders: true})
+        this.hot.updateSettings({
+            colHeaders: this.model.get('column_headers'),
+            rowHeaders: this.model.get('row_headers')
+        })
+        this.hot.render()
     },
     set_cell: function(row, column, value) {
         this.hot.setDataAtCell(row, column, value)
