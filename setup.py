@@ -67,7 +67,8 @@ class NPM(Command):
 
     targets = [
         os.path.join(here, 'ipysheet', 'static', 'extension.js'),
-        os.path.join(here, 'ipysheet', 'static', 'index.js')
+        os.path.join(here, 'ipysheet', 'static', 'index.js'),
+        os.path.join(here, 'ipysheet', 'static', 'handsontable.js')
     ]
 
     def initialize_options(self):
@@ -123,6 +124,7 @@ setup_args = {
     'include_package_data': True,
     'data_files': [
         ('share/jupyter/nbextensions/ipysheet', [
+            'ipysheet/static/handsontable.js',
             'ipysheet/static/extension.js',
             'ipysheet/static/index.js',
             'ipysheet/static/index.js.map',
