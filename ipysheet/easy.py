@@ -38,7 +38,7 @@ def cell(row, column, value=0., type=None, color=None, backgroundColor=None,
     if _hold_cells:
         _cells.append(c)
     else:
-        _last_sheet.cells = _last_sheet.cells+[c]
+        _last_sheet.cells = _last_sheet.cells+(c,)
     if label_left:
         assert column-1 >= 0, "cannot put label to the left"
         cell(row, column-1, value=label_left, fontWeight='bold')
@@ -100,4 +100,4 @@ def hold_cells():
         finally:
             _hold_cells = False
             _last_sheet.cells = _last_sheet.cells+_cells
-            _cells = []
+            _cells = ()

@@ -1,5 +1,5 @@
 import ipywidgets as widgets
-from traitlets import Unicode, CFloat, CInt, List, Instance, Union, Dict, Bool
+from traitlets import Unicode, CFloat, CInt, List, Tuple, Instance, Union, Dict, Bool
 
 
 @widgets.register('ipysheet.Cell')
@@ -35,7 +35,7 @@ class Sheet(widgets.DOMWidget):
     rows =  CInt(3).tag(sync=True)
     columns =  CInt(4).tag(sync=True)
     data = List(Instance(list), [[]]).tag(sync=True)
-    cells = List(value=[], allow_none=False).tag(sync=True, **widgets.widget_serialization)
+    cells = Tuple().tag(sync=True, **widgets.widget_serialization)
     named_cells = Dict(value={}, allow_none=False).tag(sync=True, **widgets.widget_serialization)
     row_headers = Union([Bool(), List(Unicode)], value=True).tag(sync=True)
     column_headers = Union([Bool(), List(Unicode)], value=True).tag(sync=True)
