@@ -6,7 +6,7 @@ import ipywidgets as widgets
 from .sheet import *
 _last_sheet = None
 _hold_cells = False # when try (using hold_cells() it does not add cells directly)
-_cells = [] # cells that aren't added directly
+_cells = () # cells that aren't added directly
 
 def sheet(rows=5, columns=5, column_width=None, row_headers=True, column_headers=True,
         stretch_headers='all', **kwargs):
@@ -19,6 +19,7 @@ def sheet(rows=5, columns=5, column_width=None, row_headers=True, column_headers
 def cell(row, column, value=0., type=None, color=None, backgroundColor=None,
     fontStyle=None, fontWeight=None, style=None, label_left=None, choice=None,
     read_only=False, format='0.[000]', renderer=None):
+    global _cells
     if type is None:
         if isinstance(value, numbers.Number):
             type = 'numeric'
@@ -36,7 +37,7 @@ def cell(row, column, value=0., type=None, color=None, backgroundColor=None,
     c = Cell(value=value, row=row, column=column, type=type, style=style,
         read_only=read_only, choice=choice, renderer=renderer, format=format)
     if _hold_cells:
-        _cells.append(c)
+        _cells += (c,)
     else:
         _last_sheet.cells = _last_sheet.cells+(c,)
     if label_left:
@@ -99,5 +100,6 @@ def hold_cells():
             yield
         finally:
             _hold_cells = False
-            _last_sheet.cells = _last_sheet.cells+_cells
+            #print(_cells, _last_sheet.cells)
+            _last_sheet.cells = tuple(_last_sheet.cells) + tuple(_cells)
             _cells = ()
