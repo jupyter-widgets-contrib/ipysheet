@@ -1,30 +1,8 @@
 var widgets = require('jupyter-js-widgets');
 var _ = require('underscore');
 var Handsontable = require('handsontable')
-// bug in handsontable it seems, it needs to be in global namespace
-//window.Handsontable = Handsontable;
-//require('style!css!handsontable/dist/handsontable.min.css')
-//require('style!css!../handsontable/handsontable.min.css')
+import {clone_deep} from 'utils'
 
-
-//require('../handsontable/pikaday/pikaday.js')
-
-Lock = function() {
-    var locked = false;
-    this.with = function(f, context) {
-        locked = true
-        try {
-            f.apply(context, arguments)
-        } finally {
-            locked = false
-        }
-    }
-    this.without = function(f, context) {
-        if(!locked) {
-            f.apply(context, arguments)
-        }
-    }
-}
 var CellModel = widgets.WidgetModel.extend({
     defaults: function() {
         return _.extend(SheetModel.__super__.defaults.call(this), {
@@ -69,7 +47,6 @@ var SheetModel = widgets.DOMWidgetModel.extend({
         })
     },
     initialize : function () {
-        //widgets.DOMWidgetModel.prototype.constructor.apply(this, arguments);
         SheetModel.__super__.initialize.apply(this, arguments)
         this.update_data_grid()
         this._updating_grid = false
@@ -183,10 +160,7 @@ var SheetModel = widgets.DOMWidgetModel.extend({
     }, widgets.DOMWidgetModel.serializers)
 });
 
-var clone_deep = function(obj) {
-    return JSON.parse(JSON.stringify(obj))
-}
-
+// go from 2d array with objects to a 2d grid containing just attribute `attr` from those objects
 var extract2d = function(grid, attr) {
     return _.map(grid, function(column) {
         return _.map(column, function(value) {
@@ -194,6 +168,7 @@ var extract2d = function(grid, attr) {
         })
     })
 }
+// inverse of above
 var put_values2d = function(grid, values) {
     // TODO: the Math.min should not be needed, happens with the custom-build
     for(var i = 0; i < Math.min(grid.length, values.length); i++) {
@@ -218,8 +193,10 @@ var SheetView = widgets.DOMWidgetView.extend({
         this._refresh_requested = false;
         // TODO: sort this out, can we use throttling? difficult with unittesting
         // but good for performance
-        //this.throttle_on_data_change = _.throttle(_.bind(this._real_on_data_change, this), 300)
-        this.throttle_on_data_change = _.bind(this._real_on_data_change, this)
+        /* We debounce rendering of the table, since rendering can take quite some time
+        */
+        this.throttle_on_data_change = _.debounce(_.bind(this._real_on_data_change, this), 100)
+        //this.throttle_on_data_change = _.bind(this._real_on_data_change, this)
         //this.listenTo(this.model, 'change:data', this.on_data_change)
 		this.displayed.then(_.bind(function() {
 			this._build_table().then(_.bind(function(hot) {
