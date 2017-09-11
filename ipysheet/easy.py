@@ -5,15 +5,27 @@ import numbers
 import ipywidgets as widgets
 from .sheet import *
 _last_sheet = None
+_sheets = {} # maps from key to Sheet instance
 _hold_cells = False # when try (using hold_cells() it does not add cells directly)
 _cells = () # cells that aren't added directly
 
-def sheet(rows=5, columns=5, column_width=None, row_headers=True, column_headers=True,
+def sheet(key=None, rows=5, columns=5, column_width=None, row_headers=True, column_headers=True,
         stretch_headers='all', **kwargs):
     global _last_sheet
-    _last_sheet = Sheet(rows=rows, columns=columns, column_width=column_width,
-    row_headers=row_headers, column_headers=column_headers,
-    stretch_headers=stretch_headers, **kwargs)
+    if isinstance(key, Sheet):
+        _last_sheet = key
+    elif key is None or key not in _sheets:
+        _last_sheet = Sheet(rows=rows, columns=columns, column_width=column_width,
+        row_headers=row_headers, column_headers=column_headers,
+        stretch_headers=stretch_headers, **kwargs)
+        if key is not None:
+            _sheets[key] = _last_sheet
+    else:
+        _last_sheet = _sheets[key]
+    return _last_sheet
+
+def current():
+    """Returns the current `Sheet` instance"""
     return _last_sheet
 
 def cell(row, column, value=0., type=None, color=None, backgroundColor=None,
