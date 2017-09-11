@@ -22,3 +22,7 @@ Lock = function() {
         }
     }
 }
+
+module.exports = {
+    clone_deep: clone_deep
+}
