@@ -1,7 +1,7 @@
 var widgets = require('jupyter-js-widgets');
 var _ = require('underscore');
 var Handsontable = require('handsontable')
-import {clone_deep} from 'utils'
+var utils = require('./utils');
 
 var CellModel = widgets.WidgetModel.extend({
     defaults: function() {
@@ -81,7 +81,7 @@ var SheetModel = widgets.DOMWidgetModel.extend({
     },
     cell_to_grid: function(cell, save) {
         console.log('cell to grid', cell)
-        var data = clone_deep(this.get('data'))
+        var data = utils.clone_deep(this.get('data'))
         var cell_data = data[cell.get('row')][cell.get('column')]
         cell_data.value = cell.get('value')
         cell_data.options['type'] = cell.get('type')
@@ -121,7 +121,7 @@ var SheetModel = widgets.DOMWidgetModel.extend({
     },
     update_data_grid: function() {
         // create a row x column array of arrays filled with null
-        var data = clone_deep(this.get('data')); // clone, otherwise backbone/underscore won't notice the change
+        var data = utils.clone_deep(this.get('data')); // clone, otherwise backbone/underscore won't notice the change
         var rows = this.get('rows');
         var columns = this.get('columns');
 
@@ -195,8 +195,10 @@ var SheetView = widgets.DOMWidgetView.extend({
         // but good for performance
         /* We debounce rendering of the table, since rendering can take quite some time
         */
-        this.throttle_on_data_change = _.debounce(_.bind(this._real_on_data_change, this), 100)
-        //this.throttle_on_data_change = _.bind(this._real_on_data_change, this)
+        this.throttled_on_data_change = _.debounce(_.bind(this._real_on_data_change, this), 100)
+        //this.throttled_on_data_change = _.bind(this._real_on_data_change, this)
+        this.throttled_render = _.debounce(_.bind(this._real_table_render, this), 100)
+        // 
         //this.listenTo(this.model, 'change:data', this.on_data_change)
 		this.displayed.then(_.bind(function() {
 			this._build_table().then(_.bind(function(hot) {
@@ -278,17 +280,17 @@ var SheetView = widgets.DOMWidgetView.extend({
         //this.hot.validateCells(_.bind(function(valid){
         //    console.log('valid?', valid)
         //    if(valid) {
-                var data = clone_deep(this.model.get('data'))
+                var data = utils.clone_deep(this.model.get('data'))
                 var value_data = this.hot.getSourceDataArray()
                 put_values2d(data, value_data)
-                this.model.set('data', clone_deep(data))
+                this.model.set('data', utils.clone_deep(data))
                 this.model.save_changes()
         //    }
         //}, this))
         /**/
     },
     on_data_change: function() {
-        this.throttle_on_data_change()
+        this.throttled_on_data_change()
         //this._real_on_data_change()
     },
     _real_on_data_change: function() {
@@ -324,7 +326,8 @@ var SheetView = widgets.DOMWidgetView.extend({
             colHeaders: this.model.get('column_headers'),
             rowHeaders: this.model.get('row_headers')
         })
-        this.hot.render()
+        this.throttled_render()
+        //this.hot.render()
     },
     set_cell: function(row, column, value) {
         this.hot.setDataAtCell(row, column, value)
@@ -339,7 +342,7 @@ var SheetView = widgets.DOMWidgetView.extend({
             requestAnimationFrame(_.bind(this._real_refresh_table, this))
         }
 	},
-    _real_refresh_table: function() {
+    _real_table_render: function() {
         this.hot.render()
         this._refresh_requested = false;
     }
