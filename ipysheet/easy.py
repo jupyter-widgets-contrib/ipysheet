@@ -1,4 +1,11 @@
-__all__ = ['sheet', 'cell', 'calculation', 'row', 'hold_cells']
+"""Easy context-based interface for generating a sheet and cells.
+
+Comparible to matplotlib pylab interface, this interface keeps track of the current
+sheet. Using the :ref:`cell` function, :ref:`Cell` widgets are added to the current sheet.
+
+
+"""
+__all__ = ['sheet', 'current', 'cell', 'calculation', 'row', 'hold_cells']
 import copy
 import numbers
 
@@ -11,6 +18,32 @@ _cells = () # cells that aren't added directly
 
 def sheet(key=None, rows=5, columns=5, column_width=None, row_headers=True, column_headers=True,
         stretch_headers='all', **kwargs):
+    """Creates a new Sheet instance or retrieves one registered with key, and sets this as the 'current'.
+
+    If the key argument is given, and no sheet is created before with this key, it will be registered under
+    this key. If this function is called again with the same key argument, that :ref:`Sheet` instance
+    will be returned.
+
+    Example:
+
+    >>> sheet1 = ipysheet.sheet('key1')
+    >>> sheet2 = ipysheet.sheet('key2')
+    >>> assert sheet2 is ipysheet.current()
+    >>> assert sheet1 is ipysheet.sheet('key1')
+    >>> assert sheet1 is ipysheet.current()
+ 
+    Parameters
+    ----------
+    key : any
+        If not used before, register the sheet under this key. If used before, return the previous `Sheet` instance 
+        registered with this key.
+
+    Returns
+    -------
+    Sheet
+        The new sheet, or if key is given, the previously created sheet registered with this key.
+
+    """
     global _last_sheet
     if isinstance(key, Sheet):
         _last_sheet = key
@@ -31,6 +64,7 @@ def current():
 def cell(row, column, value=0., type=None, color=None, backgroundColor=None,
     fontStyle=None, fontWeight=None, style=None, label_left=None, choice=None,
     read_only=False, format='0.[000]', renderer=None):
+    """Adds a new `Cell` widget to the current sheet"""
     global _cells
     if type is None:
         if isinstance(value, numbers.Number):
@@ -58,6 +92,7 @@ def cell(row, column, value=0., type=None, color=None, backgroundColor=None,
     return c
 
 def row(row, value, column_start=0, column_end=None):
+    """Experimental: creates a `Range` widget, will change, for demo purposes only"""
     if column_end is None:
         column_end = column_start+len(value)
     length = column_end - column_start
@@ -86,6 +121,7 @@ def _assign(object, value):
     else:
         object, trait = object
     setattr(object, trait, value)
+
 def calculation(inputs, output, initial_calulation=True):
     def decorator(f):
         def calculate(*ignore_args):
@@ -101,7 +137,20 @@ def calculation(inputs, output, initial_calulation=True):
 from contextlib import contextmanager
 @contextmanager
 def hold_cells():
-    """Hold adding any cell widgets until done"""
+    """Hold adding any cell widgets until leaving this context.
+
+    This may give a better performance when adding many cells.
+    
+    Example
+    -------
+
+    >>> ipsheet.sheet(rows=10,columns=10)
+    >>> with ipysheet.hold_cells()
+    >>>  for i in range(10):
+    >>>    for j in range(10):
+    >>>      ipysheet.cell(i,j, value=i*10+j)
+    >>> # at this line, the Cell widgets are added
+    """
     global _hold_cells
     global _cells
     if _hold_cells is True:
