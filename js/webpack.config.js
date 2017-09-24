@@ -46,7 +46,7 @@ module.exports = [
         module: {
             loaders: loaders
         },
-        externals: ['jupyter-js-widgets', 'handsontable']
+        externals: ['@jupyter-widgets/base', 'handsontable']
     },
     {// Embeddable ipysheet bundle
      //
