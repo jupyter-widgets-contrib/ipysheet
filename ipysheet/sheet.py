@@ -16,8 +16,13 @@ class Cell(widgets.Widget):
     style = Dict({}).tag(sync=True)
     renderer = Unicode(None, allow_none=True).tag(sync=True)
     read_only = Bool(False).tag(sync=True)
-    choice = List(Unicode, allow_none=True, value=None).tag(sync=True)
+    choice = List(Unicode, allow_none=True, default_value=None).tag(sync=True)
     format = Unicode('0.[000]', allow_none=True).tag(sync=True)
+
+# Bug in traitlets, it doesn't set it, which triggers the bug fixed here:
+# https://github.com/jupyter-widgets/ipywidgets/pull/1675
+# which is not released yet (7.0.2 should have it)
+Cell.choice.default_value = None
 
 @widgets.register('ipysheet.Range')
 class Range(widgets.Widget):
