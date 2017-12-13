@@ -2,6 +2,9 @@ var widgets = require('@jupyter-widgets/base');
 var _ = require('underscore');
 var Handsontable = require('handsontable')
 var utils = require('./utils');
+require('handsontable/dist/handsontable.min.css')
+require('./custom.css')
+require('../_/pikaday/pikaday.css')
 
 var CellModel = widgets.WidgetModel.extend({
     defaults: function() {

@@ -1,9 +1,9 @@
-var ipysheet = require('ipysheet');
-var jupyterlab_widgets = require('@jupyter-widgets/jupyterlab-manager');
+var ipysheet = require('./index');
+var base = require('@jupyter-widgets/base');
 
 module.exports = {
-  id: 'jupyter.extensions.jupyter-sheet',
-  requires: [jupyterlab_widgets.INBWidgetExtension],
+  id: 'jupyter-sheet',
+  requires: [base.IJupyterWidgetRegistry],
   activate: function(app, widgets) {
       widgets.registerWidget({
           name: 'ipysheet',
