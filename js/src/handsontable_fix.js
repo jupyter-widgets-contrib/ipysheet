@@ -5,3 +5,4 @@ require('style!css!./custom.css')
 require('style!css!../_/pikaday/pikaday.css')
 
 module.exports = Handsontable
+
