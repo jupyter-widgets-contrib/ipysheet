@@ -4,17 +4,13 @@ var Handsontable = require('handsontable')
 var utils = require('./utils');
 require('handsontable/dist/handsontable.min.css')
 require('./custom.css')
-require('../_/pikaday/pikaday.css')
 
 var CellModel = widgets.WidgetModel.extend({
     defaults: function() {
         return _.extend(SheetModel.__super__.defaults.call(this), {
             _model_name : 'CellModel',
-            //_view_name : 'CellView',
             _model_module : 'ipysheet',
-            //_view_module : 'ipysheet',
             _model_module_version : '0.1.0',
-            _view_module_version : '0.1.0',
             value : null,
     		row: 1,
     		column: 1,
