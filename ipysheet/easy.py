@@ -101,7 +101,7 @@ def row(row, value, column_start=0, column_end=None):
     column_indices = range(column_start, column_end)
     cells = [cell(row, i, value[i-column_start]) for i in column_indices]
     for i, cell_offset in zip(column_indices, cells):
-        def set(*ignore, cell_offset=cell_offset, column=i):
+        def set(change, cell_offset=cell_offset, column=i):
             offset = column - column_start
             value = copy.deepcopy(cellrange.value)
             value[offset] = cell_offset.value
