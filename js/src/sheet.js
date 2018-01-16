@@ -188,16 +188,27 @@ Handsontable.renderers.registerRenderer('styled', function customRenderer(hotIns
     })
 })
 
+var testing = false;
+var setTesting = function() {
+    testing = true;
+}
+
 var SheetView = widgets.DOMWidgetView.extend({
     render: function() {
         this._refresh_requested = false;
-        // TODO: sort this out, can we use throttling? difficult with unittesting
-        // but good for performance
-        /* We debounce rendering of the table, since rendering can take quite some time
+        /*
+        We debounce rendering of the table, since rendering can take quite some time, however that
+        makes unittesting difficult, since the results don't happend instanely. Maybe a better solution
+        is to use a deferred object.
         */
-        this.throttled_on_data_change = _.debounce(_.bind(this._real_on_data_change, this), 100)
-        //this.throttled_on_data_change = _.bind(this._real_on_data_change, this)
-        this.throttled_render = _.debounce(_.bind(this._real_table_render, this), 100)
+        if(testing) {
+            this.throttled_on_data_change = this._real_on_data_change;
+            this.throttled_render = this._real_table_render;
+
+        } else {
+            this.throttled_on_data_change = debounce(() => this._real_on_data_change(), 100)
+            this.throttled_render = debounce(() => this._real_table_render(), 100)
+        }
         // 
         //this.listenTo(this.model, 'change:data', this.on_data_change)
 		this.displayed.then(() => {
@@ -352,5 +363,6 @@ module.exports = {
     SheetModel : SheetModel,
     SheetView : SheetView,
     CellModel: CellModel,
-    Handsontable: Handsontable
+    Handsontable: Handsontable,
+    setTesting: setTesting
 };

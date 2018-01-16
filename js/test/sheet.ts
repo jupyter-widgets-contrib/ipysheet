@@ -4,6 +4,8 @@ import * as ipysheet from '../../js';
 import {DummyManager} from './dummy-manager';
 import { expect } from 'chai';
 
+ipysheet.setTesting()
+
 describe('sheet', function() {
     beforeEach(async function() {
         this.manager = new DummyManager({ipysheet: ipysheet});
@@ -112,12 +114,10 @@ describe('sheet', function() {
         data_clone[1][2].options = {type: 'numeric'}
         expect(data_clone[1][2].value, 'cloned data check').to.equal(123);
         this.sheet.set('data', data_clone)
-/*
         view.set_cell(1,2, 'wrong')
         await wait_validate(view)
         expect(view.get_cell(1,2), 'sheet will reflect invalid data').to.equal('wrong');
         expect(this.sheet.get('data')[1][2].value, 'model should not have invalid data').to.not.equal('wrong');
-        */
     })
 
     var make_cell = async function(options, skip_add) {
