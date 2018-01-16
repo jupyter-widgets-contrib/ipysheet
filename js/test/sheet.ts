@@ -1,4 +1,4 @@
-import * as widgets from 'jupyter-js-widgets';
+import * as widgets from '@jupyter-widgets/base';
 import * as _ from 'underscore';
 import * as ipysheet from '../../js';
 import {DummyManager} from './dummy-manager';
