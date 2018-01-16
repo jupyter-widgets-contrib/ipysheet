@@ -38,3 +38,27 @@ def test_cell_add():
     assert len(sheet1.cells) == 4
     assert len(sheet2.cells) == 1
 
+def test_row_and_column():
+    sheet = ipysheet.sheet(rows=3, columns=4)
+    ipysheet.row(0, [0, 1, 2, 3])
+    ipysheet.row(0, [0, 1, 2])
+    ipysheet.row(0, [0, 1, 2], column_end=3)
+    ipysheet.row(0, [0, 1, 2], column_start=1)
+    with pytest.raises(ValueError):
+        ipysheet.row(0, [0, 1, 2, 4, 5])
+    with pytest.raises(ValueError):
+        ipysheet.row(0, [0, 1], column_end=3)
+    with pytest.raises(ValueError):
+        ipysheet.row(0, [0, 1, 2, 4], column_start=1)
+
+
+    ipysheet.column(0, [0, 1, 2])
+    ipysheet.column(0, [0, 1])
+    ipysheet.column(0, [0, 1], row_end=2)
+    ipysheet.column(0, [0, 1], row_start=1)
+    with pytest.raises(ValueError):
+        ipysheet.column(0, [0, 1, 2, 3])
+    with pytest.raises(ValueError):
+        ipysheet.column(0, [0, 1], row_end=1)
+    with pytest.raises(ValueError):
+        ipysheet.column(0, [0, 1, 2, 4], row_start=1)

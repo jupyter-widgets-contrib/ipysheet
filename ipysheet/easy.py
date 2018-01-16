@@ -5,7 +5,7 @@ sheet. Using the :ref:`cell` function, :ref:`Cell` widgets are added to the curr
 
 
 """
-__all__ = ['sheet', 'current', 'cell', 'calculation', 'row', 'hold_cells']
+__all__ = ['sheet', 'current', 'cell', 'calculation', 'row', 'column', 'hold_cells']
 import copy
 import numbers
 
@@ -92,11 +92,33 @@ def cell(row, column, value=0., type=None, color=None, backgroundColor=None,
     return c
 
 def row(row, value, column_start=0, column_end=None):
-    """Experimental: creates a `Range` widget, will change, for demo purposes only"""
+    """Create a Range widget, representing multiple cells in a sheet, in a horizontal row
+
+    Parameters
+    ----------
+    row : int
+        Which rows, 0 based.
+    value : list
+        List of values for each cell.
+    column_start : int
+        Which column the row will start, default 0.
+    column_end : int
+        Which column the row will end, default is the last.
+
+    Returns
+    -------
+    Range
+        A range widget.
+
+    """
     if column_end is None:
         column_end = column_start+len(value)
     length = column_end - column_start
-    assert length == len(value), "length or array doesn't match index"
+    print(length, len(value))
+    if length != len(value):
+         raise ValueError("length or array doesn't match number of columns")
+    if column_start + length >_last_sheet.columns:
+         raise ValueError("array will go outside of sheet, too many columns")
     cellrange = Range(value=value)
     column_indices = range(column_start, column_end)
     cells = [cell(row, i, value[i-column_start]) for i in column_indices]
@@ -114,7 +136,50 @@ def row(row, value, column_start=0, column_end=None):
     cellrange.observe(set)
     return cellrange
 
+def column(column, value, row_start=0, row_end=None):
+    """Create a Range widget, representing multiple cells in a sheet, in a horizontal column
 
+    Parameters
+    ----------
+    column : int
+        Which rows, 0 based.
+    value : list
+        List of values for each cell.
+    row_start : int
+        Which row the column will start, default 0.
+    row_end : int
+        Which row the column will end, default is the last.
+
+    Returns
+    -------
+    Range
+        A range widget.
+
+    """
+    if row_end is None:
+        row_end = row_start+len(value)
+    length = row_end - row_start
+    print(length, len(value))
+    if length != len(value):
+         raise ValueError("length or array doesn't match number of rows")
+    if row_start + length >_last_sheet.rows:
+         raise ValueError("array will go outside of sheet, too many rows")
+    cellrange = Range(value=value)
+    row_indices = range(row_start, row_end)
+    cells = [cell(i, column, value[i-row_start]) for i in row_indices]
+    for i, cell_offset in zip(row_indices, cells):
+        def set(change, cell_offset=cell_offset, row=i):
+            offset = row - row_start
+            value = copy.deepcopy(cellrange.value)
+            value[offset] = cell_offset.value
+            cellrange.value = value
+        cell_offset.observe(set, 'value')
+    def set(*ignore):
+        value = cellrange.value
+        for i, cell_offset in enumerate(cells):
+            cell_offset.value = value[i]
+    cellrange.observe(set)
+    return cellrange
 def _assign(object, value):
     if isinstance(object, widgets.Widget):
         object, trait = object, 'value'
