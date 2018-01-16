@@ -16,9 +16,10 @@ module.exports = function(config) {
     },
     webpack: {
           module: {
-              loaders: [
-                  { test: /\.json$/, loader: 'json-loader' },
-                  { test: /\.tsx?$/, exclude: /node_modules/, loader: 'ts-loader'}
+              rules: [
+                  { test: /\.json$/, user: 'json-loader' },
+                  { test: /\.css$/, use: ['style-loader', 'css-loader']},
+                  { test: /\.tsx?$/, exclude: /node_modules/, use: 'ts-loader'}
                 ]
           },
           resolve: {
