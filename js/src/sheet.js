@@ -1,13 +1,13 @@
-var widgets = require('@jupyter-widgets/base');
-var _ = require('underscore');
-var Handsontable = require('handsontable')
-var utils = require('./utils');
+import widgets from '@jupyter-widgets/base';
+import {cloneDeep, extend, includes as contains, each, debounce, times, map} from 'lodash'
+import Handsontable from "handsontable";
+import utils from "./utils";
 require('handsontable/dist/handsontable.min.css')
 require('./custom.css')
 
 var CellModel = widgets.WidgetModel.extend({
     defaults: function() {
-        return _.extend(SheetModel.__super__.defaults.call(this), {
+        return extend(SheetModel.__super__.defaults.call(this), {
             _model_name : 'CellModel',
             _model_module : 'ipysheet',
             _model_module_version : '0.1.0',
@@ -25,9 +25,10 @@ var CellModel = widgets.WidgetModel.extend({
     },
 });
 
+
 var SheetModel = widgets.DOMWidgetModel.extend({
     defaults: function() {
-        return _.extend(SheetModel.__super__.defaults.call(this), {
+        return extend(SheetModel.__super__.defaults.call(this), {
             _model_name : 'SheetModel',
             _view_name : 'SheetView',
             _model_module : 'ipysheet',
@@ -62,7 +63,7 @@ var SheetModel = widgets.DOMWidgetModel.extend({
             var cells = this.get('cells')
             for(var i = 0; i < cells.length; i++) {
                 var cell = cells[i];
-                if(!_.contains(previous_cells, cell)) {
+                if(!contains(previous_cells, cell)) {
                     console.log('adding cell', cell)
                     this.cell_bind(cell)
                 }
@@ -80,7 +81,7 @@ var SheetModel = widgets.DOMWidgetModel.extend({
     },
     cell_to_grid: function(cell, save) {
         console.log('cell to grid', cell)
-        var data = utils.clone_deep(this.get('data'))
+        var data = cloneDeep(this.get('data'))
         var cell_data = data[cell.get('row')][cell.get('column')]
         cell_data.value = cell.get('value')
         cell_data.options['type'] = cell.get('type')
@@ -103,7 +104,7 @@ var SheetModel = widgets.DOMWidgetModel.extend({
         this._updating_grid = true
         try {
             var data = this.get('data');
-            _.each(this.get('cells'), function(cell) {
+            each(this.get('cells'), function(cell) {
                 var cell_data = data[cell.get('row')][cell.get('column')]
                 cell.set('value', cell_data.value)
                 cell.set('type', cell_data.options['type'])
@@ -120,16 +121,16 @@ var SheetModel = widgets.DOMWidgetModel.extend({
     },
     update_data_grid: function() {
         // create a row x column array of arrays filled with null
-        var data = utils.clone_deep(this.get('data')); // clone, otherwise backbone/underscore won't notice the change
+        var data = cloneDeep(this.get('data')); // clone, otherwise backbone/underscore won't notice the change
         var rows = this.get('rows');
         var columns = this.get('columns');
 
-        empty_cell = function() {
+        var empty_cell = () => {
             return {value: null, options:{}};
         };
-        empty_row = _.bind(function() {
-            return _.times(this.get('columns'), empty_cell)
-        }, this)
+        var empty_row = () => {
+            return times(this.get('columns'), empty_cell)
+        }
         //console.log('data<', data)
         if(rows < data.length) {
             data = data.slice(0, rows);
@@ -154,15 +155,15 @@ var SheetModel = widgets.DOMWidgetModel.extend({
         this.save_changes()
     }
 }, {
-    serializers: _.extend({
+    serializers: extend({
         cells: { deserialize: widgets.unpack_models }
     }, widgets.DOMWidgetModel.serializers)
 });
 
 // go from 2d array with objects to a 2d grid containing just attribute `attr` from those objects
 var extract2d = function(grid, attr) {
-    return _.map(grid, function(column) {
-        return _.map(column, function(value) {
+    return map(grid, function(column) {
+        return map(column, function(value) {
             return value[attr]
         })
     })
@@ -182,7 +183,7 @@ Handsontable.renderers.registerRenderer('styled', function customRenderer(hotIns
     var name = cellProperties.original_renderer || cellProperties.type || 'text'
     var original_renderer = Handsontable.renderers.getRenderer(name)
     original_renderer.apply(this, arguments);
-    _.each(cellProperties.style, function(value, key) {
+    each(cellProperties.style, function(value, key) {
         td.style[key] = value;
     })
 })
@@ -199,26 +200,25 @@ var SheetView = widgets.DOMWidgetView.extend({
         this.throttled_render = _.debounce(_.bind(this._real_table_render, this), 100)
         // 
         //this.listenTo(this.model, 'change:data', this.on_data_change)
-		this.displayed.then(_.bind(function() {
-			this._build_table().then(_.bind(function(hot) {
+		this.displayed.then(() => {
+			this._build_table().then(hot => {
                 this.hot = hot
-                Handsontable.hooks.add('afterChange', _.bind(this._on_change, this), this.hot);
-                Handsontable.hooks.add('afterRemoveCol', _.bind(this._on_change_grid, this), this.hot);
-                Handsontable.hooks.add('afterRemoveRow', _.bind(this._on_change_grid, this), this.hot);
-            }, this))
-
-		}, this));
+                Handsontable.hooks.add('afterChange',    () => this._on_change(),      this.hot);
+                Handsontable.hooks.add('afterRemoveCol', () => this._on_change_grid(), this.hot);
+                Handsontable.hooks.add('afterRemoveRow', () => this._on_change_grid(), this.hot);
+            })
+		})    
         window.last_sheet_view = this;
         this.model.on('change:data', this.on_data_change, this)
         this.model.on('change:column_headers change:row_headers', this._update_hot_settings, this)
         this.model.on('change:stretch_headers change:column_width', this._update_hot_settings, this)
     },
     _build_table(options) {
-        return Promise.resolve(new Handsontable(this.el, _.extend({}, options, {
+        return Promise.resolve(new Handsontable(this.el, extend({}, options, {
             data: this._get_cell_data(),
             rowHeaders: true,
             colHeaders: true,
-            cells: _.bind(this._cell, this)
+            cells: () => this._cell
         }, this._hot_settings())));
     },
     _update_hot_settings: function() {
@@ -240,7 +240,7 @@ var SheetView = widgets.DOMWidgetView.extend({
         var cellProperties = {}
         var data = this.model.get('data')
         if((row < data.length) && (col < data[row].length)) {
-            _.extend(cellProperties, data[row][col].options)
+            extend(cellProperties, data[row][col].options)
         } else {
             console.error('cell out of range')
         }
@@ -279,10 +279,10 @@ var SheetView = widgets.DOMWidgetView.extend({
         //this.hot.validateCells(_.bind(function(valid){
         //    console.log('valid?', valid)
         //    if(valid) {
-                var data = utils.clone_deep(this.model.get('data'))
+                var data = cloneDeep(this.model.get('data'))
                 var value_data = this.hot.getSourceDataArray()
                 put_values2d(data, value_data)
-                this.model.set('data', utils.clone_deep(data))
+                this.model.set('data', cloneDeep(data))
                 this.model.save_changes()
         //    }
         //}, this))
@@ -338,7 +338,7 @@ var SheetView = widgets.DOMWidgetView.extend({
         //this.hot.render()
         if(!this._refresh_requested) {
            this._refresh_requested = true
-            requestAnimationFrame(_.bind(this._real_refresh_table, this))
+            requestAnimationFrame(() => this._real_refresh_table(), this)
         }
 	},
     _real_table_render: function() {
