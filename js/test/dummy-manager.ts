@@ -5,7 +5,7 @@
 //import * as widgets from '../../lib';
 import * as services from '@jupyterlab/services';
 import * as Backbone from 'backbone';
-import * as widgets from 'jupyter-js-widgets';
+import * as widgets from '@jupyter-widgets/base';
 import * as sinon from 'sinon';
 
 let numComms = 0;
@@ -15,6 +15,9 @@ class MockComm {
     constructor() {
         this.comm_id = `mock-comm-id-${numComms}`;
         numComms += 1;
+    }
+    on_open(fn) {
+        this._on_open = fn;
     }
     on_close(fn) {
         this._on_close = fn;
@@ -29,14 +32,25 @@ class MockComm {
             return Promise.resolve();
         }
     }
+    open() {
+        if (this._on_open) {
+            this._on_open();
+        }
+        return '';
+    }
     close() {
         if (this._on_close) {
             this._on_close();
         }
+        return '';
     }
-    send() {}
+    send() {
+        return '';
+    }
     comm_id: string;
+    target_name: string;
     _on_msg: Function = null;
+    _on_open: Function = null;
     _on_close: Function = null;
 }
 
