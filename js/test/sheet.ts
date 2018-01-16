@@ -12,6 +12,9 @@ describe('sheet', function() {
             model_module: 'ipysheet',
             model_name: 'SheetModel',
             model_module_version : '0.1.0',
+            view_module: 'jupyter-widgets',
+            view_name: 'DOMWidgetView',
+            view_module_version: '*',
             //model_module: 'test-widgets',
             //model_name: 'TestWidget',
             model_id: modelId,
@@ -122,6 +125,9 @@ describe('sheet', function() {
         var cell = await this.manager.new_widget({
             model_module: 'ipysheet',
             model_name: 'CellModel',
+            view_module: 'jupyter-widgets',
+            view_name: 'DOMWidgetView',
+            view_module_version: '*',
             model_module_version : '0.1.0',
             model_id: modelId,
         }, {row: 1, column: 2, value:888, ...options} );
