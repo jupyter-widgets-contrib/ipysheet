@@ -1,9 +1,8 @@
 import widgets from '@jupyter-widgets/base';
-import {cloneDeep, extend, includes as contains, each, debounce, times, map} from 'lodash'
-import Handsontable from "handsontable";
-import utils from "./utils";
-require('handsontable/dist/handsontable.min.css')
-require('./custom.css')
+import {cloneDeep, extend, includes as contains, each, debounce, times, map} from 'lodash';
+import Handsontable from 'handsontable';
+import 'handsontable/dist/handsontable.min.css';
+import './custom.css';
 
 var CellModel = widgets.WidgetModel.extend({
     defaults: function() {
@@ -12,8 +11,8 @@ var CellModel = widgets.WidgetModel.extend({
             _model_module : 'ipysheet',
             _model_module_version : '0.1.0',
             value : null,
-    		row: 1,
-    		column: 1,
+            row: 1,
+            column: 1,
             type: null, //'text',
             name: null,
             style: {},
@@ -21,7 +20,7 @@ var CellModel = widgets.WidgetModel.extend({
             read_only: false,
             choice: null,
             format: '0.[000]'
-        })
+        });
     },
 });
 
@@ -44,77 +43,77 @@ var SheetModel = widgets.DOMWidgetModel.extend({
             column_headers: true,
             stretch_headers: 'all',
             column_width: null,
-        })
+        });
     },
     initialize : function () {
-        SheetModel.__super__.initialize.apply(this, arguments)
-        this.update_data_grid()
-        this._updating_grid = false
+        SheetModel.__super__.initialize.apply(this, arguments);
+        this.update_data_grid();
+        this._updating_grid = false;
         window.last_sheet_model = this;
-        this.on('change:rows change:columns', this.update_data_grid, this)
-        this.on('change:cells', this.on_change_cells, this)
-        this.on('change:data', this.grid_to_cell, this)
+        this.on('change:rows change:columns', this.update_data_grid, this);
+        this.on('change:cells', this.on_change_cells, this);
+        this.on('change:data', this.grid_to_cell, this);
     },
     on_change_cells: function() {
-        console.log('change cells')
-        this._updating_grid = true
+        console.log('change cells');
+        this._updating_grid = true;
         try {
             var previous_cells = this.previous('cells');
-            var cells = this.get('cells')
+            var cells = this.get('cells');
             for(var i = 0; i < cells.length; i++) {
                 var cell = cells[i];
                 if(!contains(previous_cells, cell)) {
-                    console.log('adding cell', cell)
-                    this.cell_bind(cell)
+                    console.log('adding cell', cell);
+                    this.cell_bind(cell);
                 }
             }
-            this.save_changes()
+            this.save_changes();
         } finally {
-            this._updating_grid = false
+            this._updating_grid = false;
         }
     },
     cell_bind: function(cell) {
-        this.cell_to_grid(cell, false)
+        this.cell_to_grid(cell, false);
         cell.on('change:value change:style change:type change:renderer change:read_only change:choice change:format', function() {
-            this.cell_to_grid(cell, true)
-        }, this)
+            this.cell_to_grid(cell, true);
+        }, this);
     },
     cell_to_grid: function(cell, save) {
-        console.log('cell to grid', cell)
-        var data = cloneDeep(this.get('data'))
-        var cell_data = data[cell.get('row')][cell.get('column')]
-        cell_data.value = cell.get('value')
-        cell_data.options['type'] = cell.get('type')
-        cell_data.options['style'] = cell.get('style')
-        cell_data.options['renderer'] = cell.get('renderer')
-        cell_data.options['readOnly'] = cell.get('read_only')
-        cell_data.options['source'] = cell.get('choice')
-        cell_data.options['format'] = cell.get('format')
-        this.set('data', data)
+        console.log('cell to grid', cell);
+        var data = cloneDeep(this.get('data'));
+        var cell_data = data[cell.get('row')][cell.get('column')];
+        cell_data.value = cell.get('value');
+        cell_data.options['type'] = cell.get('type');
+        cell_data.options['style'] = cell.get('style');
+        cell_data.options['renderer'] = cell.get('renderer');
+        cell_data.options['readOnly'] = cell.get('read_only');
+        cell_data.options['source'] = cell.get('choice');
+        cell_data.options['format'] = cell.get('format');
+        this.set('data', data);
         if(save) {
-            this.save_changes()
+            this.save_changes();
         }
     },
     grid_to_cell: function() {
         if(this._updating_grid) {
-            console.log('grid to cell skipped')
+            console.log('grid to cell skipped');
             return;
         }
-        console.log('grid to cell', this._massive_update)
-        this._updating_grid = true
+        console.log('grid to cell', this._massive_update);
+        this._updating_grid = true;
         try {
             var data = this.get('data');
             each(this.get('cells'), function(cell) {
-                var cell_data = data[cell.get('row')][cell.get('column')]
-                cell.set('value', cell_data.value)
-                cell.set('type', cell_data.options['type'])
-                cell.set('style', cell_data.options['style'])
-                cell.set('renderer', cell_data.options['renderer'])
-                cell.set('read_only', cell_data.options['readOnly'])
-                cell.set('choice', cell_data.options['source'])
-                cell.set('format', cell_data.options['format'])
-                cell.save_changes()
-            }, this)
+                var cell_data = data[cell.get('row')][cell.get('column')];
+                cell.set('value', cell_data.value);
+                cell.set('type', cell_data.options['type']);
+                cell.set('style', cell_data.options['style']);
+                cell.set('renderer', cell_data.options['renderer']);
+                cell.set('read_only', cell_data.options['readOnly']);
+                cell.set('choice', cell_data.options['source']);
+                cell.set('format', cell_data.options['format']);
+                cell.save_changes();
+            }, this);
         } finally {
             this._updating_grid = false;
         }
@@ -129,30 +128,30 @@ var SheetModel = widgets.DOMWidgetModel.extend({
             return {value: null, options:{}};
         };
         var empty_row = () => {
-            return times(this.get('columns'), empty_cell)
-        }
+            return times(this.get('columns'), empty_cell);
+        };
         //console.log('data<', data)
         if(rows < data.length) {
             data = data.slice(0, rows);
         } else if(rows > data.length) {
             for(var i = data.length; i < rows; i++) {
-                data.push(empty_row())
+                data.push(empty_row());
             }
         }
         for(var i = 0; i < rows; i++) {
-            var row = data[i]
+            var row = data[i];
             if(columns < row.length) {
-                row = row.slice(0, columns)
+                row = row.slice(0, columns);
             } else if(columns > row.length) {
                 for(var j = row.length; j < columns; j++) {
-                    row.push(empty_cell())
+                    row.push(empty_cell());
                 }
             }
             data[i] = row;
         }
         //console.log('data>', data)
-        this.set('data', data)
-        this.save_changes()
+        this.set('data', data);
+        this.save_changes();
     }
 }, {
     serializers: extend({
@@ -164,34 +163,34 @@ var SheetModel = widgets.DOMWidgetModel.extend({
 var extract2d = function(grid, attr) {
     return map(grid, function(column) {
         return map(column, function(value) {
-            return value[attr]
-        })
-    })
-}
+            return value[attr];
+        });
+    });
+};
 // inverse of above
 var put_values2d = function(grid, values) {
     // TODO: the Math.min should not be needed, happens with the custom-build
     for(var i = 0; i < Math.min(grid.length, values.length); i++) {
         for(var j = 0; j < Math.min(grid[i].length, values[i].length); j++) {
-            grid[i][j].value = values[i][j]
+            grid[i][j].value = values[i][j];
         }
     }
-}
+};
 
 // calls the original renderer and then applies custom styling
 Handsontable.renderers.registerRenderer('styled', function customRenderer(hotInstance, td, row, column, prop, value, cellProperties) {
-    var name = cellProperties.original_renderer || cellProperties.type || 'text'
-    var original_renderer = Handsontable.renderers.getRenderer(name)
+    var name = cellProperties.original_renderer || cellProperties.type || 'text';
+    var original_renderer = Handsontable.renderers.getRenderer(name);
     original_renderer.apply(this, arguments);
     each(cellProperties.style, function(value, key) {
         td.style[key] = value;
-    })
-})
+    });
+});
 
 var testing = false;
 var setTesting = function() {
     testing = true;
-}
+};
 
 var SheetView = widgets.DOMWidgetView.extend({
     render: function() {
@@ -206,23 +205,23 @@ var SheetView = widgets.DOMWidgetView.extend({
             this.throttled_render = this._real_table_render;
 
         } else {
-            this.throttled_on_data_change = debounce(() => this._real_on_data_change(), 100)
-            this.throttled_render = debounce(() => this._real_table_render(), 100)
+            this.throttled_on_data_change = debounce(() => this._real_on_data_change(), 100);
+            this.throttled_render = debounce(() => this._real_table_render(), 100);
         }
         // 
         //this.listenTo(this.model, 'change:data', this.on_data_change)
-		this.displayed.then(() => {
-			this._build_table().then(hot => {
-                this.hot = hot
+        this.displayed.then(() => {
+            this._build_table().then(hot => {
+                this.hot = hot;
                 Handsontable.hooks.add('afterChange',    () => this._on_change(),      this.hot);
                 Handsontable.hooks.add('afterRemoveCol', () => this._on_change_grid(), this.hot);
                 Handsontable.hooks.add('afterRemoveRow', () => this._on_change_grid(), this.hot);
-            })
-		})    
+            });
+        });
         window.last_sheet_view = this;
-        this.model.on('change:data', this.on_data_change, this)
-        this.model.on('change:column_headers change:row_headers', this._update_hot_settings, this)
-        this.model.on('change:stretch_headers change:column_width', this._update_hot_settings, this)
+        this.model.on('change:data', this.on_data_change, this);
+        this.model.on('change:column_headers change:row_headers', this._update_hot_settings, this);
+        this.model.on('change:stretch_headers change:column_width', this._update_hot_settings, this);
     },
     _build_table(options) {
         return Promise.resolve(new Handsontable(this.el, extend({}, options, {
@@ -233,8 +232,8 @@ var SheetView = widgets.DOMWidgetView.extend({
         }, this._hot_settings())));
     },
     _update_hot_settings: function() {
-        console.log('update', this._hot_settings())
-        this.hot.updateSettings(this._hot_settings())
+        console.log('update', this._hot_settings());
+        this.hot.updateSettings(this._hot_settings());
     },
     _hot_settings: function() {
         return {
@@ -242,118 +241,118 @@ var SheetView = widgets.DOMWidgetView.extend({
             rowHeaders: this.model.get('row_headers'),
             stretchH: this.model.get('stretch_headers'),
             colWidths: this.model.get('column_width') || undefined
-        }
+        };
     },
     _get_cell_data: function() {
-        return extract2d(this.model.get('data'), 'value')
+        return extract2d(this.model.get('data'), 'value');
     },
-    _cell: function(row, col, prop) {
-        var cellProperties = {}
-        var data = this.model.get('data')
+    _cell: function(row, col) {
+        var cellProperties = {};
+        var data = this.model.get('data');
         if((row < data.length) && (col < data[row].length)) {
-            extend(cellProperties, data[row][col].options)
+            extend(cellProperties, data[row][col].options);
         } else {
-            console.error('cell out of range')
+            console.error('cell out of range');
         }
         if(cellProperties['type'] == null)
-            delete cellProperties['type']
+            delete cellProperties['type'];
         if(cellProperties['style'] == null)
-            delete cellProperties['style']
+            delete cellProperties['style'];
         if(cellProperties['source'] == null)
-            delete cellProperties['source']
+            delete cellProperties['source'];
         if('renderer' in cellProperties)
-               cellProperties.original_renderer = cellProperties.renderer;
-        cellProperties.renderer = 'styled'
+            cellProperties.original_renderer = cellProperties.renderer;
+        cellProperties.renderer = 'styled';
         //console.log(row, col, prop, cellProperties)
         return cellProperties;
     },
     _on_change_grid: function(changes, source) {
-        var data = this.hot.getSourceDataArray()
-        console.log('table altered, make sure this is reflected in the model', data.length, data[0].length)
-        this.model.set({'rows': data.length, 'columns': data[0].length})
-        this.model.save_changes()
+        var data = this.hot.getSourceDataArray();
+        console.log('table altered, make sure this is reflected in the model', data.length, data[0].length);
+        this.model.set({'rows': data.length, 'columns': data[0].length});
+        this.model.save_changes();
     },
     _on_change: function(changes, source) {
-        console.log('table altered...', changes, source)
+        console.log('table altered...', changes, source);
         //*
         if(source == 'loadData')
             return; // ignore loadData
         if(source == 'alter') {
-            console.log('table altered, make sure this is reflected in the model')
-            var data = this.hot.getSourceDataArray()
-            this.model.set({'rows': data.length, 'columns': data[0].length})
-            this.model.save_changes()
-            return
+            console.log('table altered, make sure this is reflected in the model');
+            var data = this.hot.getSourceDataArray();
+            this.model.set({'rows': data.length, 'columns': data[0].length});
+            this.model.save_changes();
+            return;
         }
         //this.hot.validateCells()
         //*
         //this.hot.validateCells(_.bind(function(valid){
         //    console.log('valid?', valid)
         //    if(valid) {
-                var data = cloneDeep(this.model.get('data'))
-                var value_data = this.hot.getSourceDataArray()
-                put_values2d(data, value_data)
-                this.model.set('data', cloneDeep(data))
-                this.model.save_changes()
+        var data = cloneDeep(this.model.get('data'));
+        var value_data = this.hot.getSourceDataArray();
+        put_values2d(data, value_data);
+        this.model.set('data', cloneDeep(data));
+        this.model.save_changes();
         //    }
         //}, this))
         /**/
     },
     on_data_change: function() {
-        this.throttled_on_data_change()
+        this.throttled_on_data_change();
         //this._real_on_data_change()
     },
     _real_on_data_change: function() {
-        var data = extract2d(this.model.get('data'), 'value')
+        var data = extract2d(this.model.get('data'), 'value');
         var rows = data.length;
         var cols = data[0].length;
         var changed = false;
         var rows_previous = this.hot.countRows();
-        var cols_previous = this.hot.countCols()
+        var cols_previous = this.hot.countCols();
         //*
         if(rows > rows_previous) {
-            this.hot.alter('insert_row', rows-1, rows-rows_previous)
+            this.hot.alter('insert_row', rows-1, rows-rows_previous);
             changed = true;
         }
         if(rows < this.hot.countRows()) {
-            this.hot.alter('remove_row', rows-1, rows_previous-rows)
+            this.hot.alter('remove_row', rows-1, rows_previous-rows);
             changed = true;
         }
         if(cols > cols_previous) {
-            this.hot.alter('insert_col', cols-1, cols-cols_previous)
+            this.hot.alter('insert_col', cols-1, cols-cols_previous);
             changed = true;
         }
         if(cols < cols_previous) {
-            this.hot.alter('remove_col', cols-1, cols_previous-cols)
+            this.hot.alter('remove_col', cols-1, cols_previous-cols);
             changed = true;
         }/**/
 
-        this.hot.loadData(data)
+        this.hot.loadData(data);
         // if headers are not shows, loadData will make them show again, toggling
         // will fix this (handsontable bug?)
-        this.hot.updateSettings({colHeaders: true, rowHeaders: true})
+        this.hot.updateSettings({colHeaders: true, rowHeaders: true});
         this.hot.updateSettings({
             colHeaders: this.model.get('column_headers'),
             rowHeaders: this.model.get('row_headers')
-        })
-        this.throttled_render()
+        });
+        this.throttled_render();
         //this.hot.render()
     },
     set_cell: function(row, column, value) {
-        this.hot.setDataAtCell(row, column, value)
+        this.hot.setDataAtCell(row, column, value);
     },
     get_cell: function(row, column) {
-        return this.hot.getDataAtCell(row, column)
+        return this.hot.getDataAtCell(row, column);
     },
-	refresh_table: function() {
+    refresh_table: function() {
         //this.hot.render()
         if(!this._refresh_requested) {
-           this._refresh_requested = true
-            requestAnimationFrame(() => this._real_refresh_table(), this)
+            this._refresh_requested = true;
+            requestAnimationFrame(() => this._real_refresh_table(), this);
         }
-	},
+    },
     _real_table_render: function() {
-        this.hot.render()
+        this.hot.render();
         this._refresh_requested = false;
     }
 });

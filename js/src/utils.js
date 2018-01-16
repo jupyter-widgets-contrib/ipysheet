@@ -6,7 +6,7 @@ var clone_deep = function(obj) {
 /*
     Object to avoid infinte loops when two objects van update eachother
 */
-Lock = function() {
+var Lock = function() {
     var locked = false;
     this.with = function(f, context) {
         locked = true
