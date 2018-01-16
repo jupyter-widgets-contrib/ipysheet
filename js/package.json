@@ -49,9 +49,10 @@
   "dependencies": {
     "@jupyter-widgets/base": "^1.0.1",
     "@jupyter-widgets/jupyterlab-manager": "^0.28.0",
-    "underscore": "^1.8.3",
-    "handsontable": "^0.34.1",
     "css-loader": "^0.28.4",
-    "style-loader": "^0.18.2"
+    "handsontable": "^0.34.1",
+    "lodash": "^4.17.4",
+    "style-loader": "^0.18.2",
+    "underscore": "^1.8.3"
   }
 }
