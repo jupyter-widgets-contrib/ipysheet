@@ -8,11 +8,21 @@ module.exports = function(config) {
     basePath: '',
     frameworks: ['mocha', 'chai', 'karma-typescript'],
     files: [
-        'test/sheet.ts',
+        {pattern: 'test/*.ts'},
     ],
     exclude: ['**/embed.js'],
     preprocessors: {
-        'test/**/*.ts': [ 'webpack', 'sourcemap']
+        'test/**/*.ts': [ 'karma-typescript']
+    },
+    karmaTypescriptConfig: {
+      compilerOptions: {
+          target: "es5",
+          sourceMap: true
+      },
+      coverageOptions: {
+          exclude: [/\.(d|test)\.ts$/i, /.*node_modules.*/]
+      },
+      tsconfig: "./test/tsconfig.json"
     },
     webpack: {
           module: {
