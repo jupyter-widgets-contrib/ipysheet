@@ -129,6 +129,7 @@ setup_args = {
             'ipysheet/static/index.js',
             'ipysheet/static/index.js.map',
         ]),
+        ('etc/jupyter/nbconfig/notebook.d/' , ['ipysheet.json'])
     ],
     'install_requires': [
         'ipywidgets>=7.0.0',
