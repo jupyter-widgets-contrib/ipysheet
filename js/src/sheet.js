@@ -223,6 +223,15 @@ var SheetView = widgets.DOMWidgetView.extend({
         this.model.on('change:column_headers change:row_headers', this._update_hot_settings, this);
         this.model.on('change:stretch_headers change:column_width', this._update_hot_settings, this);
     },
+    processPhosphorMessage: function(msg) {
+        SheetView.__super__.processPhosphorMessage.apply(this, arguments);
+        switch (msg.type) {
+        case 'resize':
+        case 'after-show':
+            this.throttled_render();
+            break;
+        }
+    },
     _build_table(options) {
         return Promise.resolve(new Handsontable(this.el, extend({}, options, {
             data: this._get_cell_data(),
