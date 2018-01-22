@@ -237,7 +237,7 @@ var SheetView = widgets.DOMWidgetView.extend({
             data: this._get_cell_data(),
             rowHeaders: true,
             colHeaders: true,
-            cells: () => this._cell
+            cells: (...args) => this._cell(...args)
         }, this._hot_settings())));
     },
     _update_hot_settings: function() {
