@@ -46,3 +46,20 @@ class Sheet(widgets.DOMWidget):
     column_headers = Union([Bool(), List(Unicode)], value=True).tag(sync=True)
     stretch_headers = Unicode('all').tag(sync=True)
     column_width = Union([CInt(), List(CInt)], value=None, allow_none=True).tag(sync=True)
+
+    def __getitem__(self, item):
+        '''Gets a previously created cell at row and column
+
+        Example:
+
+        >>> sheet = ipysheet.sheet(rows=10, columns=5)
+        >>> cell = ipysheet.cell(2,0, value='hello')
+        >>> assert sheet[2,0] is cell
+        >>> sheet[2,0].value = 'bonjour'
+
+        '''
+        row, column = item
+        for cell in self.cells:
+            if cell.row == row and cell.column == column:
+                return cell
+        raise IndexError('no cell was previously created for (row, index) = (%s, %s)'.format(row, column))

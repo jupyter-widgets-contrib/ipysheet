@@ -38,6 +38,20 @@ def test_cell_add():
     assert len(sheet1.cells) == 4
     assert len(sheet2.cells) == 1
 
+def test_getitem():
+    sheet = ipysheet.sheet()
+    cell00 = ipysheet.cell(0, 0, value='0_0')
+    cell10 = ipysheet.cell(1, 0, value='1_0')
+    cell21 = ipysheet.cell(2, 1, value='2_1')
+    assert sheet[0,0] is cell00
+    assert sheet[1,0] is cell10
+    assert sheet[2,1] is cell21
+    with pytest.raises(IndexError):
+        sheet[1,1]
+    # TODO: what do we do with copies.. ? now we return the first values
+    cell00_copy = ipysheet.cell(0, 0, value='0_0')
+    assert sheet[0,0] is cell00
+
 def test_row_and_column():
     sheet = ipysheet.sheet(rows=3, columns=4)
     ipysheet.row(0, [0, 1, 2, 3])
