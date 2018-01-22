@@ -62,3 +62,12 @@ def test_row_and_column():
         ipysheet.column(0, [0, 1], row_end=1)
     with pytest.raises(ValueError):
         ipysheet.column(0, [0, 1, 2, 4], row_start=1)
+
+def test_cell_values():
+    cell = ipysheet.Cell(value=True)
+    assert cell.value is True
+    cell = ipysheet.Cell(value=1.2)
+    assert cell.value == 1.2
+    cell = ipysheet.Cell(value='1.2')
+    assert cell.value == '1.2'
+
