@@ -1,8 +1,8 @@
 import ipywidgets as widgets
 from traitlets import Unicode, CFloat, CInt, List, Tuple, Instance, Union, Dict, Bool, Float, Int
 
-import ipyvolume._version
-semver_range_frontend = "~" + ipyvolume._version.__version_js__
+import ipysheet._version
+semver_range_frontend = "~" + ipysheet._version.__version_js__
 
 @widgets.register('ipysheet.Cell')
 class Cell(widgets.Widget):
