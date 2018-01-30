@@ -76,7 +76,7 @@ module.exports = [
         module: {
             loaders: loaders
         },
-        externals: ['jupyter-js-widgets', 'handsontable']
+        externals: ['jupyter-js-widgets']
     },
     {
         entry: './src/handsontable_fix.js',
