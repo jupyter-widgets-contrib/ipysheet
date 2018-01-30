@@ -1,3 +1,4 @@
 # requirements file for read the docs
 nbsphinx
 jupyter-sphinx
+ipysheet
