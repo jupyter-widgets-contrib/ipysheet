@@ -1,6 +1,6 @@
 {
   "name": "ipysheet",
-  "version": "0.1.0-rc.1",
+  "version": "0.1.0-rc.2",
   "description": "Spreadsheet in the Jupyter notebook",
   "author": "Maarten A. Breddels",
   "main": "src/index.js",
