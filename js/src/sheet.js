@@ -1,4 +1,4 @@
-import widgets from '@jupyter-widgets/base';
+import * as widgets  from '@jupyter-widgets/base';
 import {cloneDeep, extend, includes as contains, each, debounce, times, map} from 'lodash';
 import Handsontable from 'handsontable';
 import 'handsontable/dist/handsontable.min.css';
