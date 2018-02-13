@@ -9,6 +9,7 @@ module.exports = function(config) {
     frameworks: ['mocha', 'chai', 'karma-typescript'],
     files: [
         {pattern: 'test/*.ts'},
+        {pattern: 'src/*.js', included: false, served: false},
     ],
     exclude: ['**/embed.js'],
     preprocessors: {
