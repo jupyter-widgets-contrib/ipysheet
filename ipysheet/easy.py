@@ -5,7 +5,7 @@ sheet. Using the :ref:`cell` function, :ref:`Cell` widgets are added to the curr
 
 
 """
-__all__ = ['sheet', 'current', 'cell', 'calculation', 'row', 'column', 'hold_cells']
+__all__ = ['sheet', 'current', 'cell', 'calculation', 'row', 'column', 'cell_range', 'hold_cells']
 import copy
 import numbers
 
@@ -64,13 +64,36 @@ def current():
 def cell(row, column, value=0., type=None, color=None, backgroundColor=None,
     fontStyle=None, fontWeight=None, style=None, label_left=None, choice=None,
     read_only=False, format='0.[000]', renderer=None):
-    """Adds a new `Cell` widget to the current sheet"""
+    """Adds a new `Cell` widget to the current sheet
+
+    Parameters
+    ----------
+    row : int
+        Zero based row index
+    column : int
+        Zero based column index
+    type : string
+        Type of cell, options are: text, numeric, checkbox, dropdown, numeric, date.
+        If type is None, the type is inferred from the type of the value being passed,
+        numeric (float or int type), boolean (bool type), or else text. When choise is given
+        the type will be assumed to be dropdown.
+        The types refer (currently) to the handsontable types:
+          https://docs.handsontable.com/0.35.1/demo-custom-renderers.html
+
+
+
+    """
     global _cells
     if type is None:
-        if isinstance(value, numbers.Number):
+        if isinstance(value, bool):
+            type = 'checkbox'
+        elif isinstance(value, numbers.Number):
             type = 'numeric'
         else:
             type = 'text'
+        if choice is not None:
+            type = 'dropdown'
+
     style = style or {}
     if color is not None:
         style['color'] = color
@@ -180,6 +203,86 @@ def column(column, value, row_start=0, row_end=None):
             cell_offset.value = value[i]
     cellrange.observe(set)
     return cellrange
+
+def _transpose(list_of_lists):
+    return [list(k) for k in zip(*list_of_lists)]
+
+def cell_range(value, row_start=0, column_start=0, row_end=None, column_end=None, transpose=False, return_cells=False):
+    """Create a Range widget, representing multiple cells in a sheet, in a horizontal column
+
+    Parameters
+    ----------
+    value : list of lists
+        List of lists values for each cell.
+    row_start : int
+        Which rows to start, 0 based.
+    column_start : int
+        Which rows to start, 0 based.
+    row_end : int
+        Which row the column will end, default is the last.
+    column_end : int
+        Which row the column will end, default is the last.
+
+    Returns
+    -------
+    Range
+        A range widget.
+
+    """
+    # instead of if statements, we just use T to transpose or not when needed
+    T = (lambda x: x) if not transpose else _transpose
+    # we work with the optionally transposed values for simplicity
+    value = T(value)
+    print(value)
+    if row_end is None:
+        row_end = row_start+len(value)
+    row_length = row_end - row_start
+    if row_length != len(value):
+         raise ValueError("length or array doesn't match number of rows")
+    if row_length == 0:
+         raise ValueError("0 rows not supported")
+    if column_end is None:
+        column_end = column_start+len(value[0])
+    column_length = column_end - column_start
+    if column_length == 0:
+         raise ValueError("0 columns not supported")
+    for row in value:
+        if column_length != len(row):
+            raise ValueError("not a regular matrix, columns lengths differ")
+    if row_start + row_length >_last_sheet.rows:
+         raise ValueError("array will go outside of sheet, too many rows")
+    if column_start + column_length >_last_sheet.columns:
+         raise ValueError("array will go outside of sheet, too many columns")
+    cellrange = Range(value=T(value))
+    row_indices = range(row_start, row_end)
+    column_indices = range(column_start, column_end)
+    cells = [[cell(i, j, value[i-row_start][j-column_start]) for j in column_indices] for i in row_indices]
+    #for i, cell_offset in zip(row_indices, cells):
+    for i in row_indices:
+        for j in column_indices:
+            cell_ = cells[i - row_start][j - column_start]
+            def set(change, cell_=cell_, row=i, column=j):
+                row_offset = row - row_start
+                column_offset = column - column_start
+                value = copy.deepcopy(T(cellrange.value))
+                value[row_offset][column_offset] = cell_.value
+                print('change', cellrange.value, 'to', value)
+                cellrange.value = T(value)
+            cell_.observe(set, 'value')
+    def set(*ignore):
+        value = T(cellrange.value)
+        print('update', *ignore)
+        for i in row_indices:
+            for j in column_indices:
+                cells[i][j].value = value[i][j]
+    cellrange.observe(set)
+    if return_cells:
+        return cellrange, cells
+    else:
+        return cellrange
+
+
+
 def _assign(object, value):
     if isinstance(object, widgets.Widget):
         object, trait = object, 'value'

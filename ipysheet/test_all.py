@@ -1,5 +1,11 @@
 import ipysheet
 import pytest
+from ipysheet.easy import _transpose
+
+def test_transpose():
+    assert _transpose([[1, 2]]) == [[1], [2]]
+    assert _transpose([[1, 2], [3, 4]]) == [[1,3], [2, 4]]
+    assert _transpose([[1], [2]]) == [[1, 2]]
 
 def test_current_sheet():
     sheet1 = ipysheet.sheet()
@@ -77,11 +83,71 @@ def test_row_and_column():
     with pytest.raises(ValueError):
         ipysheet.column(0, [0, 1, 2, 4], row_start=1)
 
+
+def test_cell_range():
+    sheet = ipysheet.sheet(rows=3, columns=4)
+    # [row][column]
+    ipysheet.cell_range([[0, 1]]) # 1 row, 2 columns
+    ipysheet.cell_range([[0], [2]]) # 2 rows, 1 columns
+    ipysheet.cell_range([[0, 1], [2, 3]]) # 2 rows, 2 columns
+    ipysheet.cell_range([[0, 1], [2, 3], [4, 5]]) # 3 rows, 2 columns
+    ipysheet.cell_range([[0, 1, 9], [2, 3, 9], [4, 5, 9]]) # 3 rows, 3 columns
+    ipysheet.cell_range([[0, 1, 9]], column_end=3) # 3 rows, 3 columns
+    ipysheet.cell_range([[0, 1, 9]], column_start=1) # 1 rows, 3 columns
+    with pytest.raises(ValueError):
+        ipysheet.cell_range([[0, 1], [2, 3], [4, 5], [6, 7]]) # 4 rows, 2 columns
+    with pytest.raises(ValueError):
+        ipysheet.cell_range([[0, 1, 2, 3, 4], [2, 3, 4, 5, 6], [3, 4, 5, 6, 7]]) # 3 rows, 5 columns
+    with pytest.raises(ValueError):
+        ipysheet.cell_range([[0, 1, 2, 3, 4], [2], [3, 4, 5, 6, 7]]) # not well shaped
+    with pytest.raises(ValueError):
+        ipysheet.cell_range([]) # empty rows
+    with pytest.raises(ValueError):
+        ipysheet.cell_range([[], []]) # empty columns
+
+
+    sheet = ipysheet.sheet(rows=3, columns=4)
+    range1, cells = ipysheet.cell_range([[0, 1], [2, 3]], return_cells=True)
+    assert range1.value == [[0, 1], [2, 3]]
+
+    sheet = ipysheet.sheet(rows=3, columns=4)
+    range1, cells = ipysheet.cell_range([[0, 1], [2, 3]], return_cells=True)
+    cells[1][0].value = 99
+    assert range1.value == [[0, 1], [99, 3]]
+    print('now we reset it')
+    range1.value = [[0, 1], [2, 8]]
+    print('now we reset it...')
+    assert cells[1][0].value == 2
+
+    sheet = ipysheet.sheet(rows=3, columns=4)
+    range2, cells = ipysheet.cell_range([[0, 1], [2, 3]], return_cells=True, transpose=True)
+    cells[1][0].value = 99
+    assert range2.value == [[0, 99], [1, 3]]
+    range2.value = [[0, 1], [2, 3]]
+    assert cells[1][0].value == 2
+
+    sheet = ipysheet.sheet(rows=2, columns=1)
+    range2 = ipysheet.cell_range([[0, 1]], transpose=True)
+    #range2.
+
+    sheet = ipysheet.sheet(rows=1, columns=2)
+    range2 = ipysheet.cell_range([[0], [2]], transpose=True)
+
+
+
 def test_cell_values():
-    cell = ipysheet.Cell(value=True)
+    cell = ipysheet.cell(0, 0, value=True)
     assert cell.value is True
-    cell = ipysheet.Cell(value=1.2)
+    assert cell.type == 'checkbox'
+
+    cell = ipysheet.cell(0, 0, value=1.2)
     assert cell.value == 1.2
+    assert cell.type == 'numeric'
+    cell = ipysheet.cell(0, 0, value=1)
+    assert cell.value == 1
+    assert cell.type == 'numeric'
+
     cell = ipysheet.Cell(value='1.2')
     assert cell.value == '1.2'
+    assert cell.type == 'text'
 
