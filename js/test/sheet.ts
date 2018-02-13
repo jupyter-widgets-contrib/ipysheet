@@ -125,15 +125,30 @@ describe('sheet', function() {
         const modelId = 'u-u-i-d-cell';
         var cell = await this.manager.new_widget({
             model_module: 'ipysheet',
-            model_name: 'CellModel',
+            model_name: 'CellRangeModel',
             view_module: 'jupyter-widgets',
             view_name: 'DOMWidgetView',
             view_module_version: '*',
             model_module_version : '0.1.0',
             model_id: modelId,
-        }, {row: 1, column: 2, value:888, ...options} );
+        }, {row_start: 1, column_start: 2, row_end: 1, column_end: 2, value:888, ...options} );
         var cells = this.sheet.get('cells');
-        console.log('skip', skip_add)
+        if(!skip_add)
+            this.sheet.set('cells', [...cells, cell])
+        return cell
+    }
+    var make_range = async function(options, skip_add) {
+        const modelId = 'u-u-i-d-cell';
+        var cell = await this.manager.new_widget({
+            model_module: 'ipysheet',
+            model_name: 'CellRangeModel',
+            view_module: 'jupyter-widgets',
+            view_name: 'DOMWidgetView',
+            view_module_version: '*',
+            model_module_version : '0.1.0',
+            model_id: modelId,
+        }, {squeeze_row: false, squeeze_column: false, ...options} );
+        var cells = this.sheet.get('cells');
         if(!skip_add)
             this.sheet.set('cells', [...cells, cell])
         return cell
@@ -148,7 +163,7 @@ describe('sheet', function() {
     })
     it('multiple cells added', async function() {
         var cell1 = await make_cell.apply(this, [{value: 777}, true])
-        var cell2 = await make_cell.apply(this, [{row: 0, value: 555}, true])
+        var cell2 = await make_cell.apply(this, [{row_start: 0, row_end:0, value: 555}, true])
         var cells = this.sheet.get('cells');
         this.sheet.set('cells', [...cells, cell1, cell2])
         var data = this.sheet.get('data')
@@ -162,11 +177,71 @@ describe('sheet', function() {
         expect(data[0][2].value, 'when cell.value is change').to.equal(444);
     })
     it('model changes should be reflected in cell', async function() {
-        var cell = await make_cell.apply(this, [{value: 777}])
+        var cell = await make_cell.apply(this, [{value: [[777]]}])
         var data = data_cloner.call(this)
         data[1][2].value = 999;
         this.sheet.set('data', data)
         expect(cell.get('value'), 'when the data in the sheet changes').to.equal(999);
+    })
+    it('range should be reflected in all cells', async function() {
+        var range = await make_range.apply(this, [{row_start: 0, row_end: 1, column_start: 1, column_end:2, value: [[0, 1], [2, 3]]}])
+        var data = data_cloner.call(this)
+        console.log(data[1][1])
+        expect(data[0][1].value, 'and in the underlying data grid').to.equal(0);
+        expect(data[0][2].value, 'and in the underlying data grid').to.equal(1);
+        expect(data[1][1].value, 'and in the underlying data grid').to.equal(2);
+        expect(data[1][2].value, 'and in the underlying data grid').to.equal(3);
+
+        var cell = await make_cell.apply(this, [{row_start:0, row_end: 0, value: 777}])
+        data = data_cloner.call(this)
+        expect(data[0][2].value, 'sanity check').to.equal(777);
+        expect(range.get('value')[0][1], 'and in the underlying data grid, synced back').to.equal(777);
+
+        var cell2 = await make_cell.apply(this, [{row_start:1, row_end: 1, value: null}])
+        data = data_cloner.call(this)
+        expect(data[1][2].value, 'should not be using a null value for an overlapping value').to.equal(3);
+        expect(range.get('value')[1][1], 'and the original data should not be modified').to.equal(3);
+        expect(cell2.get('value'), 'but the cell value should be updated').to.equal(3);
+
+        //data[1][2].value = 999;
+        //this.sheet.set('data', data)
+        //expect(range.get('value'), 'when the data in the sheet changes').to.equal(999);
+    })
+    it('range tranposed should be reflected in all cells', async function() {
+        var range = await make_range.apply(this, [{row_start: 0, row_end: 1, column_start: 1, column_end:2, transpose: true, value: [[0, 1], [2, 3]]}])
+        var data = data_cloner.call(this)
+        console.log(data[1][1])
+        expect(data[0][1].value, 'and in the underlying data grid').to.equal(0);
+        expect(data[0][2].value, 'and in the underlying data grid').to.equal(2);
+        expect(data[1][1].value, 'and in the underlying data grid').to.equal(1);
+        expect(data[1][2].value, 'and in the underlying data grid').to.equal(3);
+
+        var cell = await make_cell.apply(this, [{row_start:0, row_end: 0, value: 777}])
+        data = data_cloner.call(this)
+        expect(data[0][2].value, 'sanity check').to.equal(777);
+        expect(range.get('value')[1][0], 'and in the underlying data grid, synced back').to.equal(777);
+        //data[1][2].value = 999;
+        //this.sheet.set('data', data)
+        //expect(range.get('value'), 'when the data in the sheet changes').to.equal(999);
+    })
+    it('should use the last style but not overwrite', async function() {
+        var range = await make_range.apply(this, [{row_start: 0, row_end: 1, column_start: 1, column_end:2, transpose: true, value: [[0, 1], [2, 3]],
+                                        style: {color: 'red', backgrouncColor: 'orange'}}])
+        var data = data_cloner.call(this)
+        expect(data[0][1].options.style.color, 'and in the underlying data grid').to.equal('red');
+        expect(data[0][2].options.style.color, 'and in the underlying data grid').to.equal('red');
+        expect(data[1][1].options.style.color, 'and in the underlying data grid').to.equal('red');
+        expect(data[1][2].options.style.color, 'and in the underlying data grid').to.equal('red');
+        expect(data[0][1].options.style.backgrouncColor, 'and in the underlying data grid').to.equal('orange');
+        expect(data[0][2].options.style.backgrouncColor, 'and in the underlying data grid').to.equal('orange');
+        expect(data[1][1].options.style.backgrouncColor, 'and in the underlying data grid').to.equal('orange');
+        expect(data[1][2].options.style.backgrouncColor, 'and in the underlying data grid').to.equal('orange');
+        console.log('add cell')
+        var cell = await make_cell.apply(this, [{row_start:0, row_end: 0, value: 777, style: {color: 'blue'}}])
+        data = data_cloner.call(this)
+        expect(data[0][2].options.style.color, 'effective color should be blue').to.equal('blue');
+        expect(data[0][2].options.style.backgrouncColor, 'effective backgrouncColor should be blue').to.equal('orange');
+        expect(range.get('style').color, 'but the original should not be changed').to.equal('red');
     })
     it('should fail', function() {
         expect(false).to.be.false;

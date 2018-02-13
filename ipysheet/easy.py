@@ -8,6 +8,7 @@ sheet. Using the :ref:`cell` function, :ref:`Cell` widgets are added to the curr
 __all__ = ['sheet', 'current', 'cell', 'calculation', 'row', 'column', 'cell_range', 'hold_cells']
 import copy
 import numbers
+import six
 
 import ipywidgets as widgets
 from .sheet import *
@@ -103,7 +104,8 @@ def cell(row, column, value=0., type=None, color=None, backgroundColor=None,
         style['fontStyle'] = fontStyle
     if fontWeight is not None:
         style['fontWeight'] = fontWeight
-    c = Cell(value=value, row=row, column=column, type=type, style=style,
+    c = Cell(value=value, row_start=row, column_start=column, row_end=row, column_end=column,
+        squeeze_row=True, squeeze_column=True, type=type, style=style,
         read_only=read_only, choice=choice, renderer=renderer, format=format)
     if _hold_cells:
         _cells += (c,)
@@ -114,53 +116,9 @@ def cell(row, column, value=0., type=None, color=None, backgroundColor=None,
         cell(row, column-1, value=label_left, fontWeight='bold')
     return c
 
-def row(row, value, column_start=0, column_end=None):
-    """Create a Range widget, representing multiple cells in a sheet, in a horizontal row
-
-    Parameters
-    ----------
-    row : int
-        Which rows, 0 based.
-    value : list
-        List of values for each cell.
-    column_start : int
-        Which column the row will start, default 0.
-    column_end : int
-        Which column the row will end, default is the last.
-
-    Returns
-    -------
-    Range
-        A range widget.
-
-    """
-    if column_end is None:
-        column_end = column_start+len(value)
-    length = column_end - column_start
-    print(length, len(value))
-    if length != len(value):
-         raise ValueError("length or array doesn't match number of columns")
-    if column_start + length >_last_sheet.columns:
-         raise ValueError("array will go outside of sheet, too many columns")
-    cellrange = Range(value=value)
-    column_indices = range(column_start, column_end)
-    cells = [cell(row, i, value[i-column_start]) for i in column_indices]
-    for i, cell_offset in zip(column_indices, cells):
-        def set(change, cell_offset=cell_offset, column=i):
-            offset = column - column_start
-            value = copy.deepcopy(cellrange.value)
-            value[offset] = cell_offset.value
-            cellrange.value = value
-        cell_offset.observe(set, 'value')
-    def set(*ignore):
-        value = cellrange.value
-        for i, cell_offset in enumerate(cells):
-            cell_offset.value = value[i]
-    cellrange.observe(set)
-    return cellrange
-
-def column(column, value, row_start=0, row_end=None):
-    """Create a Range widget, representing multiple cells in a sheet, in a horizontal column
+def row(row, value, column_start=0, column_end=None, choice=None,
+        read_only=False, format='0.[000]', renderer=None):
+    """Create a CellRange widget, representing multiple cells in a sheet, in a horizontal column
 
     Parameters
     ----------
@@ -175,40 +133,46 @@ def column(column, value, row_start=0, row_end=None):
 
     Returns
     -------
-    Range
-        A range widget.
+        A CellRange widget.
 
     """
-    if row_end is None:
-        row_end = row_start+len(value)
-    length = row_end - row_start
-    print(length, len(value))
-    if length != len(value):
-         raise ValueError("length or array doesn't match number of rows")
-    if row_start + length >_last_sheet.rows:
-         raise ValueError("array will go outside of sheet, too many rows")
-    cellrange = Range(value=value)
-    row_indices = range(row_start, row_end)
-    cells = [cell(i, column, value[i-row_start]) for i in row_indices]
-    for i, cell_offset in zip(row_indices, cells):
-        def set(change, cell_offset=cell_offset, row=i):
-            offset = row - row_start
-            value = copy.deepcopy(cellrange.value)
-            value[offset] = cell_offset.value
-            cellrange.value = value
-        cell_offset.observe(set, 'value')
-    def set(*ignore):
-        value = cellrange.value
-        for i, cell_offset in enumerate(cells):
-            cell_offset.value = value[i]
-    cellrange.observe(set)
-    return cellrange
+    return cell_range(value, column_start=column_start, column_end=column_end, row_start=row, row_end=row,
+                      squeeze_row=True, squeeze_column=False)
+
+
+def column(column, value, row_start=0, row_end=None,  choice=None,
+           read_only=False, format='0.[000]', renderer=None):
+    """Create a CellRange widget, representing multiple cells in a sheet, in a vertical column
+
+    Parameters
+    ----------
+    column : int
+        Which rows, 0 based.
+    value : list
+        List of values for each cell.
+    row_start : int
+        Which row the column will start, default 0.
+    row_end : int
+        Which row the column will end, default is the last.
+
+    Returns
+    -------
+        A CellRange widget.
+
+    """
+    return cell_range(value, column_start=column, column_end=column, row_start=row_start, row_end=row_end,
+                      squeeze_row=False, squeeze_column=True,
+                      read_only=read_only, format=format, renderer=renderer)
+
 
 def _transpose(list_of_lists):
     return [list(k) for k in zip(*list_of_lists)]
 
-def cell_range(value, row_start=0, column_start=0, row_end=None, column_end=None, transpose=False, return_cells=False):
-    """Create a Range widget, representing multiple cells in a sheet, in a horizontal column
+
+def cell_range(value, row_start=0, column_start=0, row_end=None, column_end=None, transpose=False,
+               squeeze_row=False, squeeze_column=False, type=None, choice=None,
+               read_only=False, format='0.[000]', renderer=None):
+    """Create a CellRange widget, representing multiple cells in a sheet, in a horizontal column
 
     Parameters
     ----------
@@ -222,64 +186,72 @@ def cell_range(value, row_start=0, column_start=0, row_end=None, column_end=None
         Which row the column will end, default is the last.
     column_end : int
         Which row the column will end, default is the last.
+    transpose : bool
+        Interpret the value array as value[column_index][row_index]
+    squeeze_row : bool
+        Take out the row dimensions, meaning only value[column_index] is used
+    squeeze_column : bool
+        Take out the column dimensions, meaning only value[row_index] is used
 
     Returns
     -------
     Range
-        A range widget.
+        A CellRange widget.
 
     """
-    # instead of if statements, we just use T to transpose or not when needed
+    # instead of an if statements, we just use T to transpose or not when needed
+    value_original = value
     T = (lambda x: x) if not transpose else _transpose
     # we work with the optionally transposed values for simplicity
     value = T(value)
-    print(value)
+    if squeeze_row:
+        value = [value]
+    if squeeze_column:
+        value = [[k] for k in value]
     if row_end is None:
-        row_end = row_start+len(value)
-    row_length = row_end - row_start
+        row_end = row_start + len(value) - 1
+    row_length = row_end - row_start + 1
     if row_length != len(value):
-         raise ValueError("length or array doesn't match number of rows")
+        raise ValueError("length or array doesn't match number of rows")
     if row_length == 0:
-         raise ValueError("0 rows not supported")
+        raise ValueError("0 rows not supported")
     if column_end is None:
-        column_end = column_start+len(value[0])
-    column_length = column_end - column_start
+        column_end = column_start + len(value[0]) - 1
+    column_length = column_end - column_start + 1
     if column_length == 0:
-         raise ValueError("0 columns not supported")
+        raise ValueError("0 columns not supported")
     for row in value:
         if column_length != len(row):
             raise ValueError("not a regular matrix, columns lengths differ")
-    if row_start + row_length >_last_sheet.rows:
-         raise ValueError("array will go outside of sheet, too many rows")
-    if column_start + column_length >_last_sheet.columns:
-         raise ValueError("array will go outside of sheet, too many columns")
-    cellrange = Range(value=T(value))
-    row_indices = range(row_start, row_end)
-    column_indices = range(column_start, column_end)
-    cells = [[cell(i, j, value[i-row_start][j-column_start]) for j in column_indices] for i in row_indices]
-    #for i, cell_offset in zip(row_indices, cells):
-    for i in row_indices:
-        for j in column_indices:
-            cell_ = cells[i - row_start][j - column_start]
-            def set(change, cell_=cell_, row=i, column=j):
-                row_offset = row - row_start
-                column_offset = column - column_start
-                value = copy.deepcopy(T(cellrange.value))
-                value[row_offset][column_offset] = cell_.value
-                print('change', cellrange.value, 'to', value)
-                cellrange.value = T(value)
-            cell_.observe(set, 'value')
-    def set(*ignore):
-        value = T(cellrange.value)
-        print('update', *ignore)
-        for i in row_indices:
-            for j in column_indices:
-                cells[i][j].value = value[i][j]
-    cellrange.observe(set)
-    if return_cells:
-        return cellrange, cells
+    if row_start + row_length > _last_sheet.rows:
+        raise ValueError("array will go outside of sheet, too many rows")
+    if column_start + column_length > _last_sheet.columns:
+        raise ValueError("array will go outside of sheet, too many columns")
+
+    # see if we an infer a type from the data, otherwise leave it None
+    if type is None:
+        type_check_map = [('checkbox', lambda x: isinstance(x, bool)),
+                          ('numeric', lambda x: isinstance(x, numbers.Number)),
+                          ('text', lambda x: isinstance(x, six.string_types)),
+                          ]
+        for type_check, check in type_check_map:
+            checks = True  # ok until proven wrong
+            for i in range(row_length):
+                for j in range(column_length):
+                    if not check(value[i][j]):
+                        checks = False
+            if checks:  # we found a matching type
+                type = type_check
+                break
+
+    c = Cell(value=value_original, row_start=row_start, column_start=column_start, row_end=row_end, column_end=column_end,
+             squeeze_row=squeeze_row, squeeze_column=squeeze_column, transpose=transpose, type=type,
+             read_only=read_only, choice=choice, renderer=renderer, format=format)
+    if _hold_cells:
+        _cells += (c,)
     else:
-        return cellrange
+        _last_sheet.cells = _last_sheet.cells+(c,)
+    return c
 
 
 

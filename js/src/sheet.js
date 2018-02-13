@@ -1,25 +1,30 @@
 import * as widgets  from '@jupyter-widgets/base';
-import {cloneDeep, extend, includes as contains, each, debounce, times, map} from 'lodash';
+import {cloneDeep, extend, includes as contains, each, debounce, times, map, unzip as transpose} from 'lodash';
 import Handsontable from 'handsontable';
 import 'handsontable/dist/handsontable.min.css';
 import 'pikaday/css/pikaday.css';
 import './custom.css';
 
-var CellModel = widgets.WidgetModel.extend({
+var CellRangeModel = widgets.WidgetModel.extend({
     defaults: function() {
-        return extend(SheetModel.__super__.defaults.call(this), {
-            _model_name : 'CellModel',
+        return extend(CellRangeModel.__super__.defaults.call(this), {
+            _model_name : 'CellRangeModel',
             _model_module : 'ipysheet',
             _model_module_version : '0.1.0',
             value : null,
-            row: 1,
-            column: 1,
+            row_start: 1,
+            column_start: 1,
+            row_end: 1,
+            column_end: 1,
             type: null, //'text',
             name: null,
             style: {},
             renderer: null,
             read_only: false,
             choice: null,
+            squeeze_row: true,
+            squeeze_column: true, 
+            transpose: false,
             format: '0.[000]'
         });
     },
@@ -68,28 +73,57 @@ var SheetModel = widgets.DOMWidgetModel.extend({
                     this.cell_bind(cell);
                 }
             }
-            this.save_changes();
+            this.cells_to_grid()
+            //this.save_changes();
         } finally {
             this._updating_grid = false;
         }
+        this.grid_to_cell()
     },
     cell_bind: function(cell) {
-        this.cell_to_grid(cell, false);
+        //this.cell_to_grid(cell, false);
         cell.on('change:value change:style change:type change:renderer change:read_only change:choice change:format', function() {
-            this.cell_to_grid(cell, true);
+            //this.cell_to_grid(cell, true);
+            this.cells_to_grid()
         }, this);
+    },
+    cells_to_grid: function() {
+        each(this.get('cells'), (cell) => this.cell_to_grid(cell, false))
+        this.save_changes()
     },
     cell_to_grid: function(cell, save) {
         console.log('cell to grid', cell);
         var data = cloneDeep(this.get('data'));
-        var cell_data = data[cell.get('row')][cell.get('column')];
-        cell_data.value = cell.get('value');
-        cell_data.options['type'] = cell.get('type');
-        cell_data.options['style'] = cell.get('style');
-        cell_data.options['renderer'] = cell.get('renderer');
-        cell_data.options['readOnly'] = cell.get('read_only');
-        cell_data.options['source'] = cell.get('choice');
-        cell_data.options['format'] = cell.get('format');
+        for(var i = cell.get('row_start'); i <= cell.get('row_end'); i++) {
+            for(var j = cell.get('column_start'); j <= cell.get('column_end'); j++) {
+                var cell_row = i - cell.get('row_start');
+                var cell_col = j - cell.get('column_start');
+                var value = cell.get('value');
+                //console.log(cell.get('value'), i, j, cell_row, cell_col, ',', data.length, data[0].length, data, value)
+                //console.log(value[cell_row][cell_col])
+                var cell_data = data[i][j];
+                if(cell.get('transpose')) {
+                    if(!cell.get('squeeze_column'))
+                        value = value[cell_col]
+                    if(!cell.get('squeeze_row'))
+                        value = value[cell_row]
+                } else {
+                    if(!cell.get('squeeze_row'))
+                        value = value[cell_row]
+                    if(!cell.get('squeeze_column'))
+                        value = value[cell_col]
+                }
+                if(value != null)
+                    cell_data.value = value;
+                //console.log(i, j, cell.get('style'), value)
+                cell_data.options['type'] = cell.get('type') || cell_data.options['type'];
+                cell_data.options['style'] = extend({}, cell_data.options['style'], cell.get('style'));
+                cell_data.options['renderer'] = cell.get('renderer') || cell_data.options['renderer'];
+                cell_data.options['readOnly'] = cell.get('read_only') || cell_data.options['readOnly'];
+                cell_data.options['source'] = cell.get('choice') || cell_data.options['source'];
+                cell_data.options['format'] = cell.get('format') || cell_data.options['format'];
+            }
+        }
         this.set('data', data);
         if(save) {
             this.save_changes();
@@ -105,14 +139,35 @@ var SheetModel = widgets.DOMWidgetModel.extend({
         try {
             var data = this.get('data');
             each(this.get('cells'), function(cell) {
-                var cell_data = data[cell.get('row')][cell.get('column')];
-                cell.set('value', cell_data.value);
-                cell.set('type', cell_data.options['type']);
-                cell.set('style', cell_data.options['style']);
-                cell.set('renderer', cell_data.options['renderer']);
-                cell.set('read_only', cell_data.options['readOnly']);
-                cell.set('choice', cell_data.options['source']);
-                cell.set('format', cell_data.options['format']);
+                var rows = [];
+                for(var i = cell.get('row_start'); i <= cell.get('row_end'); i++) {
+                    var row = [];
+                    for(var j = cell.get('column_start'); j <= cell.get('column_end'); j++) {
+                        //var cell_row = i - cell.get('row_start');
+                        //var cell_col = j - cell.get('column_start');
+                        var cell_data = data[i][j];
+                        row.push(cell_data.value)
+                        /*cell.set('value', cell_data.value);
+                        cell.set('type', cell_data.options['type']);
+                        cell.set('style', cell_data.options['style']);
+                        cell.set('renderer', cell_data.options['renderer']);
+                        cell.set('read_only', cell_data.options['readOnly']);
+                        cell.set('choice', cell_data.options['source']);
+                        cell.set('format', cell_data.options['format']);*/
+                    }
+                    if(cell.get('squeeze_column')) {
+                        row = row[0];
+                    }
+                    rows.push(row);
+                }
+                if(cell.get('squeeze_row')) {
+                    rows = rows[0];
+                }
+                if(cell.get('transpose')) {
+                    cell.set('value', transpose(rows))
+                } else {
+                    cell.set('value', rows)
+                }
                 cell.save_changes();
             }, this);
         } finally {
@@ -371,7 +426,7 @@ var SheetView = widgets.DOMWidgetView.extend({
 module.exports = {
     SheetModel : SheetModel,
     SheetView : SheetView,
-    CellModel: CellModel,
+    CellRangeModel: CellRangeModel,
     Handsontable: Handsontable,
     setTesting: setTesting
 };
