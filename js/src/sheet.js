@@ -59,6 +59,9 @@ var SheetModel = widgets.DOMWidgetModel.extend({
         this.on('change:rows change:columns', this.update_data_grid, this);
         this.on('change:cells', this.on_change_cells, this);
         this.on('change:data', this.grid_to_cell, this);
+        each(this.get('cells'), (cell) => this.cell_bind(cell))
+        this.cells_to_grid()
+
     },
     on_change_cells: function() {
         console.log('change cells');
