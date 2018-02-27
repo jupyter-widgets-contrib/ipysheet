@@ -62,8 +62,8 @@ def current():
     """Returns the current `Sheet` instance"""
     return _last_sheet
 
-def cell(row, column, value=0., type=None, color=None, backgroundColor=None,
-    fontStyle=None, fontWeight=None, style=None, label_left=None, choice=None,
+def cell(row, column, value=0., type=None, color=None, background_color=None,
+    font_style=None, font_weight=None, style=None, label_left=None, choice=None,
     read_only=False, format='0.[000]', renderer=None):
     """Adds a new `Cell` widget to the current sheet
 
@@ -98,12 +98,12 @@ def cell(row, column, value=0., type=None, color=None, backgroundColor=None,
     style = style or {}
     if color is not None:
         style['color'] = color
-    if backgroundColor is not None:
-        style['backgroundColor'] = backgroundColor
-    if fontStyle is not None:
-        style['fontStyle'] = fontStyle
-    if fontWeight is not None:
-        style['fontWeight'] = fontWeight
+    if background_color is not None:
+        style['backgroundColor'] = background_color
+    if font_style is not None:
+        style['fontStyle'] = font_style
+    if font_weight is not None:
+        style['fontWeight'] = font_weight
     c = Cell(value=value, row_start=row, column_start=column, row_end=row, column_end=column,
         squeeze_row=True, squeeze_column=True, type=type, style=style,
         read_only=read_only, choice=choice, renderer=renderer, format=format)
@@ -113,11 +113,12 @@ def cell(row, column, value=0., type=None, color=None, backgroundColor=None,
         _last_sheet.cells = _last_sheet.cells+(c,)
     if label_left:
         assert column-1 >= 0, "cannot put label to the left"
-        cell(row, column-1, value=label_left, fontWeight='bold')
+        cell(row, column-1, value=label_left, font_weight='bold')
     return c
 
 def row(row, value, column_start=0, column_end=None, choice=None,
-        read_only=False, format='0.[000]', renderer=None):
+        read_only=False, format='0.[000]', renderer=None,
+        color=None, background_color=None, font_style=None, font_weight=None):
     """Create a CellRange widget, representing multiple cells in a sheet, in a horizontal column
 
     Parameters
@@ -137,11 +138,14 @@ def row(row, value, column_start=0, column_end=None, choice=None,
 
     """
     return cell_range(value, column_start=column_start, column_end=column_end, row_start=row, row_end=row,
-                      squeeze_row=True, squeeze_column=False)
+                      squeeze_row=True, squeeze_column=False,
+                      color=color, background_color=background_color,
+                      font_style=font_style, font_weight=font_weight)
 
 
 def column(column, value, row_start=0, row_end=None,  choice=None,
-           read_only=False, format='0.[000]', renderer=None):
+           read_only=False, format='0.[000]', renderer=None,
+           color=None, background_color=None, font_style=None, font_weight=None):
     """Create a CellRange widget, representing multiple cells in a sheet, in a vertical column
 
     Parameters
@@ -162,7 +166,9 @@ def column(column, value, row_start=0, row_end=None,  choice=None,
     """
     return cell_range(value, column_start=column, column_end=column, row_start=row_start, row_end=row_end,
                       squeeze_row=False, squeeze_column=True,
-                      read_only=read_only, format=format, renderer=renderer)
+                      read_only=read_only, format=format, renderer=renderer,
+                      color=color, background_color=background_color,
+                      font_style=font_style, font_weight=font_weight)
 
 
 def _transpose(list_of_lists):
@@ -171,7 +177,8 @@ def _transpose(list_of_lists):
 
 def cell_range(value, row_start=0, column_start=0, row_end=None, column_end=None, transpose=False,
                squeeze_row=False, squeeze_column=False, type=None, choice=None,
-               read_only=False, format='0.[000]', renderer=None):
+               read_only=False, format='0.[000]', renderer=None, style=None,
+               color=None, background_color=None, font_style=None, font_weight=None):
     """Create a CellRange widget, representing multiple cells in a sheet, in a horizontal column
 
     Parameters
