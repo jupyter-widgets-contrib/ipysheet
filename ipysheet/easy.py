@@ -18,7 +18,7 @@ _hold_cells = False # when try (using hold_cells() it does not add cells directl
 _cells = () # cells that aren't added directly
 
 def sheet(key=None, rows=5, columns=5, column_width=None, row_headers=True, column_headers=True,
-        stretch_headers='all', **kwargs):
+        stretch_headers='all', cls=Sheet, **kwargs):
     """Creates a new Sheet instance or retrieves one registered with key, and sets this as the 'current'.
 
     If the key argument is given, and no sheet is created before with this key, it will be registered under
@@ -49,7 +49,7 @@ def sheet(key=None, rows=5, columns=5, column_width=None, row_headers=True, colu
     if isinstance(key, Sheet):
         _last_sheet = key
     elif key is None or key not in _sheets:
-        _last_sheet = Sheet(rows=rows, columns=columns, column_width=column_width,
+        _last_sheet = cls(rows=rows, columns=columns, column_width=column_width,
         row_headers=row_headers, column_headers=column_headers,
         stretch_headers=stretch_headers, **kwargs)
         if key is not None:
