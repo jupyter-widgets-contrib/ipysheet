@@ -450,11 +450,11 @@ var RendererModel = widgets.WidgetModel.extend({
 
 
 
-module.exports = {
-    SheetModel : SheetModel,
-    SheetView : SheetView,
-    CellRangeModel: CellRangeModel,
-    RendererModel: RendererModel,
-    Handsontable: Handsontable,
-    setTesting: setTesting
+export {
+    SheetModel,
+    SheetView,
+    CellRangeModel,
+    RendererModel,
+    Handsontable,
+    setTesting
 };
