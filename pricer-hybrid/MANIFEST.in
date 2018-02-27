@@ -1,0 +1,2 @@
+recursive-include pricer_hybrid/static *.*
+include jupyter-widget-pricer-hybrid.json'
