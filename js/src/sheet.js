@@ -240,10 +240,14 @@ var put_values2d = function(grid, values) {
 Handsontable.renderers.registerRenderer('styled', function customRenderer(hotInstance, td, row, column, prop, value, cellProperties) {
     var name = cellProperties.original_renderer || cellProperties.type || 'text';
     var original_renderer = Handsontable.renderers.getRenderer(name);
-    original_renderer.apply(this, arguments);
-    each(cellProperties.style, function(value, key) {
-        td.style[key] = value;
-    });
+    if(!original_renderer) {
+        console.error('could not find renderer: ' + original_renderer)
+    } else {
+        original_renderer.apply(this, arguments);
+        each(cellProperties.style, function(value, key) {
+            td.style[key] = value;
+        });
+    }
 });
 
 var testing = false;
@@ -426,10 +430,31 @@ var SheetView = widgets.DOMWidgetView.extend({
 });
 
 
+var RendererModel = widgets.WidgetModel.extend({
+    defaults: function() {
+        return extend(RendererModel.__super__.defaults.call(this), {
+            _model_name : 'RendererModel',
+            _model_module : 'ipysheet',
+            _model_module_version : '0.1.0',
+            code: ''
+        });
+    },
+    initialize: function() {
+        RendererModel.__super__.initialize.apply(this, arguments);
+        // we add Handsontable manually as extra argument to put it in the scope
+        this.fn = new Function('Handsontable', 'return (' + this.get('code') + ')')
+        Handsontable.renderers.registerRenderer(this.get('name'), this.fn(Handsontable))
+        window.last_renderer = this;
+    }
+});
+
+
+
 module.exports = {
     SheetModel : SheetModel,
     SheetView : SheetView,
     CellRangeModel: CellRangeModel,
+    RendererModel: RendererModel,
     Handsontable: Handsontable,
     setTesting: setTesting
 };

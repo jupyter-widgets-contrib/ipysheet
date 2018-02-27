@@ -229,3 +229,14 @@ def test_cell_values():
     cell = ipysheet.row(0, [True, 'bla'])
     assert cell.type == None
 
+def test_renderer():
+    ipysheet.sheet()
+    renderer = ipysheet.renderer('code', 'name')
+    assert renderer.code == 'code'
+    assert renderer.name == 'name'
+    def f(x):
+        somefunction(x)
+    renderer = ipysheet.renderer(f, 'name2')
+    assert "somefunction" in renderer.code
+    assert renderer.name == 'name2'
+

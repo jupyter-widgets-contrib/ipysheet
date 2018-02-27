@@ -103,5 +103,15 @@ class Sheet(widgets.DOMWidget):
                 return cell
         raise IndexError('no cell was previously created for (row, index) = (%s, %s)'.format(row, column))
 
+
+class Renderer(widgets.Widget):
+    _model_name = Unicode('RendererModel').tag(sync=True)
+    _view_module = Unicode('ipysheet').tag(sync=True)
+    _model_module = Unicode('ipysheet').tag(sync=True)
+    _view_module_version = Unicode(semver_range_frontend).tag(sync=True)
+    _model_module_version = Unicode(semver_range_frontend).tag(sync=True)
+    name =  Unicode('custom').tag(sync=True)
+    code =  Unicode('').tag(sync=True)
+
 # UGLY, should transpose go into a utils module?
 from ipysheet.easy import _transpose

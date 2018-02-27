@@ -5,7 +5,7 @@ sheet. Using the :ref:`cell` function, :ref:`Cell` widgets are added to the curr
 
 
 """
-__all__ = ['sheet', 'current', 'cell', 'calculation', 'row', 'column', 'cell_range', 'hold_cells']
+__all__ = ['sheet', 'current', 'cell', 'calculation', 'row', 'column', 'cell_range', 'hold_cells', 'renderer']
 import copy
 import numbers
 import six
@@ -251,14 +251,48 @@ def cell_range(value, row_start=0, column_start=0, row_end=None, column_end=None
                 type = type_check
                 break
 
+    style = style or {}
+    if color is not None:
+        style['color'] = color
+    if background_color is not None:
+        style['backgroundColor'] = background_color
+    if font_style is not None:
+        style['fontStyle'] = font_style
+    if font_weight is not None:
+        style['fontWeight'] = font_weight
+
     c = Cell(value=value_original, row_start=row_start, column_start=column_start, row_end=row_end, column_end=column_end,
              squeeze_row=squeeze_row, squeeze_column=squeeze_column, transpose=transpose, type=type,
-             read_only=read_only, choice=choice, renderer=renderer, format=format)
+             read_only=read_only, choice=choice, renderer=renderer, format=format,
+             style=style)
     if _hold_cells:
         _cells += (c,)
     else:
         _last_sheet.cells = _last_sheet.cells+(c,)
     return c
+
+def renderer(code, name):
+    """Adds a cell renderer (to the front end)
+
+    Parameters
+    ----------
+    code : str or code or function objject
+        If a string object, it is assumed to be a JavaScript snippet, else it is assumed
+        to be a function or code object and will be transpiled to javascript using flexx.pyscript.
+    name : name of the renderer
+    """
+    if not isinstance(code, six.string_types):
+        import flexx.pyscript
+        code_transpiled = flexx.pyscript.py2js(code, new_name='the_renderer', indent=4)        
+        code = '''
+function() {
+  %s
+  return the_renderer
+
+}()
+''' % code_transpiled
+    renderer = Renderer(code=code, name=name)
+    return renderer
 
 
 
