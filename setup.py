@@ -164,6 +164,9 @@ setup_args = {
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
     ],
+    'extras_require': {
+        'all':  ['flexx']
+    }
 }
 
 setup(**setup_args)
