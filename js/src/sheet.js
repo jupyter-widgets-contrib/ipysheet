@@ -94,19 +94,35 @@ var SheetModel = widgets.DOMWidgetModel.extend({
         }, this);
     },
     cells_to_grid: function() {
-        each(this.get('cells'), (cell) => this.cell_to_grid(cell, false))
+        var data = cloneDeep(this.get('data'));
+        each(this.get('cells'), (cell) => {
+            this._cell_data_to_grid(cell, data)
+        })
+        this.set('data', data);
         this.save_changes()
     },
     cell_to_grid: function(cell, save) {
         console.log('cell to grid', cell);
         var data = cloneDeep(this.get('data'));
+        this._cell_data_to_grid(cell, data)
+        this.set('data', data);
+        if(save) {
+            this.save_changes();
+        }
+    },
+    _cell_data_to_grid: function(cell, data) {
+        var value = cell.get('value');
+        if(!value)
+            return
         for(var i = cell.get('row_start'); i <= cell.get('row_end'); i++) {
             for(var j = cell.get('column_start'); j <= cell.get('column_end'); j++) {
+                var value = cell.get('value');
                 var cell_row = i - cell.get('row_start');
                 var cell_col = j - cell.get('column_start');
-                var value = cell.get('value');
                 //console.log(cell.get('value'), i, j, cell_row, cell_col, ',', data.length, data[0].length, data, value)
                 //console.log(value[cell_row][cell_col])
+                if((i >= data.length) || (j >= data[i].length))
+                    continue; // skip cells that are out of the sheet
                 var cell_data = data[i][j];
                 if(cell.get('transpose')) {
                     if(!cell.get('squeeze_column'))
@@ -130,10 +146,6 @@ var SheetModel = widgets.DOMWidgetModel.extend({
                 cell_data.options['format'] = cell.get('format') || cell_data.options['format'];
             }
         }
-        this.set('data', data);
-        if(save) {
-            this.save_changes();
-        }
     },
     grid_to_cell: function() {
         if(this._updating_grid) {
@@ -151,6 +163,8 @@ var SheetModel = widgets.DOMWidgetModel.extend({
                     for(var j = cell.get('column_start'); j <= cell.get('column_end'); j++) {
                         //var cell_row = i - cell.get('row_start');
                         //var cell_col = j - cell.get('column_start');
+                        if((i >= data.length) || (j >= data[i].length))
+                            continue; // skip cells that are out of the sheet
                         var cell_data = data[i][j];
                         row.push(cell_data.value)
                         /*cell.set('value', cell_data.value);
