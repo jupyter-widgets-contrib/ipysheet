@@ -1,15 +1,31 @@
-var ipysheet = require('./index');
+var sheet = require('./sheet');
+var renderer = require('./renderer');
 var base = require('@jupyter-widgets/base');
+var version = require('../package.json').version;
 
-module.exports = {
-  id: 'jupyter-sheet',
-  requires: [base.IJupyterWidgetRegistry],
-  activate: function(app, widgets) {
-      widgets.registerWidget({
-          name: 'ipysheet',
-          version: ipysheet.version,
-          exports: ipysheet
-      });
+module.exports = [
+  {
+    id: 'ipysheet',
+    requires: [base.IJupyterWidgetRegistry],
+    activate: function(app, widgets) {
+        widgets.registerWidget({
+            name: 'ipysheet',
+            version: version,
+            exports: sheet
+        });
+    },
+    autoStart: true
   },
-  autoStart: true
-};
+  {
+    id: 'ipysheet:renderer',
+    requires: [base.IJupyterWidgetRegistry],
+    activate: function(app, widgets) {
+        widgets.registerWidget({
+            name: 'ipysheet/renderer',
+            version: version,
+            exports: renderer
+        });
+    },
+    autoStart: true
+  }
+];

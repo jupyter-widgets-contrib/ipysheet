@@ -31,6 +31,15 @@ module.exports = [
             libraryTarget: 'amd'
         }
     },
+    {// same for renderer
+        entry: './src/extension-renderer.js',
+        resolve:resolve,
+        output: {
+            filename: 'extension-renderer.js',
+            path: '../ipysheet/static',
+            libraryTarget: 'amd'
+        }
+    },
     {// Bundle for the notebook containing the custom widget views and models
      //
      // This bundle contains the implementation for the custom widget views and
@@ -41,6 +50,20 @@ module.exports = [
         resolve:resolve,
         output: {
             filename: 'index.js',
+            path: '../ipysheet/static',
+            libraryTarget: 'amd'
+        },
+        devtool: 'source-map',
+        module: {
+            loaders: loaders
+        },
+        externals: ['@jupyter-widgets/base', 'handsontable']
+    },
+    {// same for render
+        entry: './src/renderer.js',
+        resolve:resolve,
+        output: {
+            filename: 'renderer.js',
             path: '../ipysheet/static',
             libraryTarget: 'amd'
         },
@@ -76,7 +99,22 @@ module.exports = [
         module: {
             loaders: loaders
         },
-        externals: ['jupyter-js-widgets']
+        externals: ['@jupyter-widgets/base']
+    },
+    {// same for renderer
+        entry: './src/renderer.js',
+        resolve:resolve,
+        output: {
+            filename: 'renderer.js',
+            path: './dist/',
+            libraryTarget: 'amd',
+            publicPath: 'https://unpkg.com/ipysheet@' + version + '/dist/renderer'
+        },
+        devtool: 'source-map',
+        module: {
+            loaders: loaders
+        },
+        externals: ['@jupyter-widgets/base', 'handsontable']
     },
     {
         entry: './src/handsontable_fix.js',

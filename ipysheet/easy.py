@@ -5,7 +5,7 @@ sheet. Using the :ref:`cell` function, :ref:`Cell` widgets are added to the curr
 
 
 """
-__all__ = ['sheet', 'current', 'cell', 'calculation', 'row', 'column', 'cell_range', 'hold_cells', 'renderer']
+__all__ = ['sheet', 'current', 'cell', 'calculation', 'row', 'column', 'cell_range', 'hold_cells', 'renderer_create']
 import copy
 import numbers
 import six
@@ -271,7 +271,7 @@ def cell_range(value, row_start=0, column_start=0, row_end=None, column_end=None
         _last_sheet.cells = _last_sheet.cells+(c,)
     return c
 
-def renderer(code, name):
+def renderer_create(code, name):
     """Adds a cell renderer (to the front end)
 
     Parameters

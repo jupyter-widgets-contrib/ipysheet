@@ -106,8 +106,8 @@ class Sheet(widgets.DOMWidget):
 
 class Renderer(widgets.Widget):
     _model_name = Unicode('RendererModel').tag(sync=True)
-    _view_module = Unicode('ipysheet').tag(sync=True)
-    _model_module = Unicode('ipysheet').tag(sync=True)
+    _view_module = Unicode('ipysheet/renderer').tag(sync=True)
+    _model_module = Unicode('ipysheet/renderer').tag(sync=True)
     _view_module_version = Unicode(semver_range_frontend).tag(sync=True)
     _model_module_version = Unicode(semver_range_frontend).tag(sync=True)
     name =  Unicode('custom').tag(sync=True)
