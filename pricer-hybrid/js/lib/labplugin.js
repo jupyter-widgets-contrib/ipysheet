@@ -1,5 +1,6 @@
 var example = require('./example');
 var version = require('../package.json').version;
+var base = require('@jupyter-widgets/base');
 
 module.exports = [
   {
