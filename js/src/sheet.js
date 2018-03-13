@@ -5,12 +5,15 @@ import 'handsontable/dist/handsontable.min.css';
 import 'pikaday/css/pikaday.css';
 import './custom.css';
 
+var semver_range = '~' + require('../package.json').version;
+
+
 var CellRangeModel = widgets.WidgetModel.extend({
     defaults: function() {
         return extend(CellRangeModel.__super__.defaults.call(this), {
             _model_name : 'CellRangeModel',
             _model_module : 'ipysheet',
-            _model_module_version : '0.1.0',
+            _model_module_version : semver_range,
             value : null,
             row_start: 1,
             column_start: 1,
@@ -38,8 +41,8 @@ var SheetModel = widgets.DOMWidgetModel.extend({
             _view_name : 'SheetView',
             _model_module : 'ipysheet',
             _view_module : 'ipysheet',
-            _model_module_version : '0.1.0',
-            _view_module_version : '0.1.0',
+            _model_module_version : semver_range,
+            _view_module_version : semver_range,
             rows: 3,
             columns: 4,
             data: [[]],
@@ -435,7 +438,7 @@ var RendererModel = widgets.WidgetModel.extend({
         return extend(RendererModel.__super__.defaults.call(this), {
             _model_name : 'RendererModel',
             _model_module : 'ipysheet',
-            _model_module_version : '0.1.0',
+            _model_module_version : semver_range,
             code: ''
         });
     },
