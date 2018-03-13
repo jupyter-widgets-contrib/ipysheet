@@ -30,5 +30,8 @@
   "dependencies": {
     "@jupyter-widgets/base": "^1.0.0",
     "lodash": "^4.17.4"
+  },
+  "jupyterlab": {
+    "extension": "lib/labplugin"
   }
 }
