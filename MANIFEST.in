@@ -1,2 +1,2 @@
 recursive-include ipysheet/static *.*
-ipysheet.json
+include ipysheet.json
