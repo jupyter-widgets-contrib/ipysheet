@@ -40,7 +40,7 @@ module.exports = [
         module: {
             rules: rules
         },
-        externals: ['handsontable', '@jupyter-widgets/base']
+        externals: ['handsontable', '@jupyter-widgets/base', 'ipysheet']
     },
     {// Embeddable jupyter-widget-pricer-hybrid bundle
      //
@@ -67,6 +67,6 @@ module.exports = [
         module: {
             rules: rules
         },
-        externals: ['handsontable', '@jupyter-widgets/base']
+        externals: ['handsontable', '@jupyter-widgets/base', 'ipysheet']
     }
 ];
