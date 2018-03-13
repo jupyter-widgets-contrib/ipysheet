@@ -49,7 +49,7 @@ var PricerHybridSheetModel = ipysheet.SheetModel.extend({
                 view_module_version: ipysheet.version,
                 widget_class: 'ipysheet.sheet.CellRange',
             }, options);
-            cellPromises.then((cell) => {
+            cellPromise.then((cell) => {
                 if(block.name)
                     named_cells[block.name] = cell;
             })
