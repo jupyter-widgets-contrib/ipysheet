@@ -1,9 +1,9 @@
 
 'use strict';
 
-import frontend from '../HandsonTable/Sheet/frontend';
+import frontend from './frontend';
 import { lookup } from './config';
-import { isValid } from '../../js/util';
+import { isValid } from './util';
 
 
 var displayCorrelStocks = function (changes, source) {

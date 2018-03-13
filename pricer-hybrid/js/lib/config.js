@@ -1,3 +1,6 @@
+import { dateString } from './util';
+import tools  from './tools';
+
 var tableConfig = {
 	startRows: 6 + 7 + 11 + 1 + 45,
 	maxRows: 6 + 7 + 11 + 1 + 6 + 45,
@@ -39,13 +42,13 @@ var blockConfig = [
 	},
 	{
 		pos: [1, 1],
-		renderer: 'common.DateRenderer',
+		renderer: 'common.MyDateRenderer',
 		init: new dateString('today').string, //today
 		name: 'StrikeDate'
 	},
 	{
 		pos: [2, 1],
-		renderer: 'common.DateRenderer',
+		renderer: 'common.MyDateRenderer',
 		init: new dateString('today').addYear(1), //today + 1y
 		name: 'MaturityDate'
 	},
@@ -250,7 +253,7 @@ var blockConfig = [
 		posHi: [9 + 4, 4],
 		renderer: 'common.InputTextRenderer',
 		// init: [['SX5E'], ['SPX'], [], [], [], []],
-		init: ['SX5E', 'SPXX', '', '', ''],
+		init: [['SX5E', 'SPXX', '', '', '']],
 		transpose: true,
 		trimRow: true,
 		name: 'tickers1'
@@ -562,3 +565,14 @@ var blockConfig = [
 		name: 'pricingResult'
 	},
 ];
+
+var config = {
+	table: tableConfig,
+	block: blockConfig
+};
+
+export const lookup = tools.buildLookup(blockConfig);
+// window.lookup = lookup;
+export {tableConfig as table}
+export {blockConfig as block}
+//export { config as default };

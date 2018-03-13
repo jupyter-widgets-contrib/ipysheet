@@ -1,3 +1,9 @@
+import style from './style';
+import tools from './tools';
+var _ = require('underscore');
+
+import { lookup } from './config';
+var Handsontable = require('handsontable')
 
 var commonRenderers = {
 	HeaderRenderer: function (instance, td, row, col, prop, value, cellProperties) {
@@ -18,8 +24,8 @@ var commonRenderers = {
 		td.style.fontSize = style.label.standard.fontWeight;
 	},
 
-	DateRenderer: function (instance, td, row, col, prop, value, cellProperties) {
-		Handsontable.DateCell.renderer.apply(this, arguments);
+	MyDateRenderer: function (instance, td, row, col, prop, value, cellProperties) {
+		Handsontable.renderers.DateRenderer.apply(this, arguments);
 		cellProperties.type = 'date';
 		cellProperties.dateFormat = 'YYYY-MM-DD';
 		//cellProperties.correctFormat = true;
@@ -158,7 +164,7 @@ var commonRenderers = {
 
 Handsontable.renderers.registerRenderer('Header', commonRenderers.HeaderRenderer);
 Handsontable.renderers.registerRenderer('Label', commonRenderers.LabelRenderer);
-Handsontable.renderers.registerRenderer('Date', commonRenderers.DateRenderer);
+Handsontable.renderers.registerRenderer('Date', commonRenderers.MyDateRenderer);
 Handsontable.renderers.registerRenderer('Dropdown', commonRenderers.DropdownRenderer);
 Handsontable.renderers.registerRenderer('InputText', commonRenderers.InputTextRenderer);
 Handsontable.renderers.registerRenderer('InputNumeric', commonRenderers.InputNumericRenderer);
@@ -166,6 +172,28 @@ Handsontable.renderers.registerRenderer('InputBoolean', commonRenderers.InputBoo
 Handsontable.renderers.registerRenderer('OutputText', commonRenderers.OutputTextRenderer);
 Handsontable.renderers.registerRenderer('OutputNumeric', commonRenderers.OutputNumericRenderer);
 Handsontable.renderers.registerRenderer('OutputSignedNumeric', commonRenderers.OutputSignedNumericRenderer);
+
+Handsontable.renderers.registerRenderer('common.Header', commonRenderers.HeaderRenderer);
+Handsontable.renderers.registerRenderer('common.Label', commonRenderers.LabelRenderer);
+Handsontable.renderers.registerRenderer('common.Date', commonRenderers.MyDateRenderer);
+Handsontable.renderers.registerRenderer('common.Dropdown', commonRenderers.DropdownRenderer);
+Handsontable.renderers.registerRenderer('common.InputText', commonRenderers.InputTextRenderer);
+Handsontable.renderers.registerRenderer('common.InputNumeric', commonRenderers.InputNumericRenderer);
+Handsontable.renderers.registerRenderer('common.InputBoolean', commonRenderers.InputBooleanRenderer);
+Handsontable.renderers.registerRenderer('common.OutputText', commonRenderers.OutputTextRenderer);
+Handsontable.renderers.registerRenderer('common.OutputNumeric', commonRenderers.OutputNumericRenderer);
+Handsontable.renderers.registerRenderer('common.OutputSignedNumeric', commonRenderers.OutputSignedNumericRenderer);
+
+_.each(commonRenderers, (value, key) => {
+	let name = key.substr(0, key.length-8);
+	console.log('adding renderer', name, key);
+	Handsontable.renderers.registerRenderer(name, value);
+	Handsontable.renderers.registerRenderer(key, value);
+	Handsontable.renderers[name] = value
+	Handsontable.renderers[key] = value
+	Handsontable.renderers.registerRenderer('common.' + name, value);
+	Handsontable.renderers.registerRenderer('common.' + key, value);
+})
 
 
 
@@ -219,7 +247,7 @@ var renderers = {
 	// },
 
 	FutExpisRenderer: function (instance, td, row, col, prop, value, cellProperties) {
-		Handsontable.renderers.DateRenderer.apply(this, arguments);
+		Handsontable.renderers.MyDateRenderer.apply(this, arguments);
 		var stock = instance.getDataAtCell(row, col - 1);
 		if (!tools.isValid(stock)) {
 			cellProperties.readOnly = true;
@@ -227,7 +255,7 @@ var renderers = {
 			td.style.backgroundColor = style.label.standard.bgColor;
 		} else {
 			cellProperties.readOnly = false;
-			Handsontable.renderers.DateRenderer.apply(this, arguments);
+			Handsontable.renderers.MyDateRenderer.apply(this, arguments);
 		}
 	},
 
@@ -261,7 +289,7 @@ var renderers = {
 
 	/////// based on option typ cell *spread or not
 	LabelSecondStrikeRenderer: function (instance, td, row, col, prop, value, cellProperties) {
-		Handsontable.renderers.LabelRenderer.apply(this, arguments);
+		Handsontable.renderers.TextRenderer.apply(this, arguments);
 		var option = instance.getDataAtCell(row - 3, col);
 
 		if (option.indexOf('Spread') != -1) {
@@ -290,7 +318,7 @@ var renderers = {
 
 	/////// based on calendat type: multiple or not
 	LabelBasketDatesRenderer: function (instance, td, row, col, prop, value, cellProperties) {
-		Handsontable.renderers.LabelRenderer.apply(this, arguments);
+		Handsontable.renderers.TextRenderer.apply(this, arguments);
 		if (instance.getDataAtCell(...posCalendarMode) == 'Multiple') {
 			Handsontable.renderers.LabelRenderer.apply(this, arguments);
 		} else {
@@ -300,10 +328,10 @@ var renderers = {
 
 
 	BasketDatesRenderer: function (instance, td, row, col, prop, value, cellProperties) {
-		Handsontable.renderers.DateRenderer.apply(this, arguments);
+		Handsontable.renderers.MyDateRenderer.apply(this, arguments);
 		if (instance.getDataAtCell(...posCalendarMode) == 'Multiple') {
 			cellProperties.readOnly = false;
-			Handsontable.renderers.DateRenderer.apply(this, arguments);
+			Handsontable.renderers.MyDateRenderer.apply(this, arguments);
 		} else {
 			cellProperties.readOnly = true;
 			td.style.color = style.label.standard.bgColor;
@@ -340,11 +368,11 @@ var renderers = {
 	},
 }
 
-var _ = require('underscore');
-renderers.each((value, key) => {
+_.each(renderers, (value, key) => {
 	let name = key.substr(0, key.length-8);
 	console.log('adding renderer', name, key);
 	Handsontable.renderers.registerRenderer(name, value);
+	Handsontable.renderers.registerRenderer('specific.'+key, value);
 })
 
 
