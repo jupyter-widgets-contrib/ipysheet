@@ -2,6 +2,10 @@ var widgets = require('@jupyter-widgets/base');
 var _ = require('lodash');
 var ipysheet = require('ipysheet')
 var Handsontable = require('handsontable')
+require('./renderers');
+var config = require('./config');
+
+console.log(config.blockConfig)
 
 var PricerHybridSheetModel = ipysheet.SheetModel.extend({
     initialize : function () {
