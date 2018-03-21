@@ -68,6 +68,8 @@ class NPM(Command):
     targets = [
         os.path.join(here, 'ipysheet', 'static', 'extension.js'),
         os.path.join(here, 'ipysheet', 'static', 'index.js'),
+        os.path.join(here, 'ipysheet', 'static', 'extension-renderer.js'),
+        os.path.join(here, 'ipysheet', 'static', 'renderer.js'),
         os.path.join(here, 'ipysheet', 'static', 'handsontable.js')
     ]
 
@@ -128,6 +130,9 @@ setup_args = {
             'ipysheet/static/extension.js',
             'ipysheet/static/index.js',
             'ipysheet/static/index.js.map',
+            'ipysheet/static/extension-renderer.js',
+            'ipysheet/static/renderer.js',
+            'ipysheet/static/renderer.js.map',
         ]),
         ('etc/jupyter/nbconfig/notebook.d' , ['ipysheet.json'])
     ],
