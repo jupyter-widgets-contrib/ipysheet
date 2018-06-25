@@ -112,8 +112,8 @@ var SheetModel = widgets.DOMWidgetModel.extend({
     },
     _cell_data_to_grid: function(cell, data) {
         var value = cell.get('value');
-        if(!value)
-            return
+        // if(!value)
+        //     return
         for(var i = cell.get('row_start'); i <= cell.get('row_end'); i++) {
             for(var j = cell.get('column_start'); j <= cell.get('column_end'); j++) {
                 var value = cell.get('value');
@@ -143,7 +143,8 @@ var SheetModel = widgets.DOMWidgetModel.extend({
                 cell_data.options['renderer'] = cell.get('renderer') || cell_data.options['renderer'];
                 cell_data.options['readOnly'] = cell.get('read_only') || cell_data.options['readOnly'];
                 cell_data.options['source'] = cell.get('choice') || cell_data.options['source'];
-                cell_data.options['format'] = cell.get('format') || cell_data.options['format'];
+                // cell_data.options['format'] = cell.get('format') || cell_data.options['format'];
+                cell_data.options['numericFormat'] = { pattern: cell.get('format') || cell_data.options['format'] };
             }
         }
     },
@@ -317,6 +318,8 @@ var SheetView = widgets.DOMWidgetView.extend({
             data: this._get_cell_data(),
             rowHeaders: true,
             colHeaders: true,
+            renderAllRows: true,
+            viewportColumnRenderingOffset: 100,
             cells: (...args) => this._cell(...args)
         }, this._hot_settings())));
     },

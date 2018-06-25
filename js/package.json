@@ -16,6 +16,7 @@
   ],
   "scripts": {
     "prepublish": "webpack",
+    "watch": "watch 'npm run prepublish' src/",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "jupyterlab": {
@@ -26,7 +27,7 @@
     "@types/mocha": "^2.2.41",
     "babel-core": "^6.26.0",
     "babel-loader": "^6.0.0",
-    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-env": "^1.7.0",
     "chai": "^4.0.0",
     "css-loader": "^0.28.4",
     "eslint": "^4.15.0",
@@ -45,15 +46,14 @@
     "style-loader": "^0.18.2",
     "ts-loader": "~2.2.2",
     "typescript": "~2.3.1",
+    "watch": "^1.0.2",
     "webpack": "^1.12.14"
   },
   "dependencies": {
     "@jupyter-widgets/base": "^1.0.1",
     "@jupyter-widgets/jupyterlab-manager": "^0.28.0",
-    "css-loader": "^0.28.4",
-    "handsontable": "^0.34.1",
+    "handsontable": "^0.38.1",
     "lodash": "^4.17.4",
-    "style-loader": "^0.18.2",
     "underscore": "^1.8.3"
   }
 }
