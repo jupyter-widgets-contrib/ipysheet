@@ -11,4 +11,4 @@ ipysheet/static/
 # OS X
 .DS_Store
 
-notebooks/
+notebooks/test*
