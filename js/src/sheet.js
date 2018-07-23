@@ -114,6 +114,8 @@ var SheetModel = widgets.DOMWidgetModel.extend({
         var value = cell.get('value');
         // if(!value)
         //     return
+        if((value === null) || (value === undefined))
+            return;
         for(var i = cell.get('row_start'); i <= cell.get('row_end'); i++) {
             for(var j = cell.get('column_start'); j <= cell.get('column_end'); j++) {
                 var value = cell.get('value');
