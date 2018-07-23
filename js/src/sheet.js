@@ -320,8 +320,10 @@ var SheetView = widgets.DOMWidgetView.extend({
             data: this._get_cell_data(),
             rowHeaders: true,
             colHeaders: true,
-            renderAllRows: true,
-            viewportColumnRenderingOffset: 100,
+            // the following 2 options are necessary to avoid partial rendering of large ipysheet in tab (except default one)
+            // probably due to ipywidget bug which fails to trigger handsontable virtual rendering when necessary
+            renderAllRows: true,   // virtual rendering is disabled - so all rows are rendered whether displayed or not
+            viewportColumnRenderingOffset: 100, // closest thing to renderAllColumns (which does not exist) for up to 100 columns
             cells: (...args) => this._cell(...args)
         }, this._hot_settings())));
     },
