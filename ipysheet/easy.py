@@ -32,11 +32,11 @@ def sheet(key=None, rows=5, columns=5, column_width=None, row_headers=True, colu
     >>> assert sheet2 is ipysheet.current()
     >>> assert sheet1 is ipysheet.sheet('key1')
     >>> assert sheet1 is ipysheet.current()
- 
+
     Parameters
     ----------
     key : any
-        If not used before, register the sheet under this key. If used before, return the previous `Sheet` instance 
+        If not used before, register the sheet under this key. If used before, return the previous `Sheet` instance
         registered with this key.
 
     Returns
@@ -278,12 +278,12 @@ def renderer(code, name):
     ----------
     code : str or code or function objject
         If a string object, it is assumed to be a JavaScript snippet, else it is assumed
-        to be a function or code object and will be transpiled to javascript using flexx.pyscript.
+        to be a function or code object and will be transpiled to javascript using flexxui/pscript.
     name : name of the renderer
     """
     if not isinstance(code, six.string_types):
-        import flexx.pyscript
-        code_transpiled = flexx.pyscript.py2js(code, new_name='the_renderer', indent=4)        
+        from pscript import py2js
+        code_transpiled = py2js(code, new_name='the_renderer', indent=4)
         code = '''
 function() {
   %s
@@ -321,7 +321,7 @@ def hold_cells():
     """Hold adding any cell widgets until leaving this context.
 
     This may give a better performance when adding many cells.
-    
+
     Example
     -------
 

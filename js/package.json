@@ -45,7 +45,8 @@
     "style-loader": "^0.18.2",
     "ts-loader": "~2.2.2",
     "typescript": "~2.3.1",
-    "webpack": "^1.12.14"
+    "webpack": "^1.12.14",
+    "puppeteer": "^1.12.1"
   },
   "dependencies": {
     "@jupyter-widgets/base": "^1.0.1",
