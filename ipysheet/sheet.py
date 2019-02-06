@@ -1,24 +1,25 @@
 import ipywidgets as widgets
 import traitlets
-from traitlets import Unicode, CFloat, CInt, List, Tuple, Instance, Union, Dict, Bool, Float, Int, Any
+from traitlets import Unicode, CInt, List, Tuple, Instance, Union, Dict, Bool, Any
 
 from .utils import transpose
+from ._version import __version_js__
 
-import ipysheet._version
-semver_range_frontend = "~" + ipysheet._version.__version_js__
+semver_range_frontend = "~" + __version_js__
+
 
 @widgets.register('ipysheet.Cell')
 class Cell(widgets.Widget):
     _model_name = Unicode('CellRangeModel').tag(sync=True)
     _model_module = Unicode('ipysheet').tag(sync=True)
-    #_view_module_version = Unicode('^0.1.0').tag(sync=True)
+    # _view_module_version = Unicode('^0.1.0').tag(sync=True)
     _model_module_version = Unicode(semver_range_frontend).tag(sync=True)
-    #value = Union([Bool(), Unicode(), Float(), Int()], allow_none=True, default_value=None).tag(sync=True)
+    # value = Union([Bool(), Unicode(), Float(), Int()], allow_none=True, default_value=None).tag(sync=True)
     value = Any().tag(sync=True)
-    row_start =  CInt(3).tag(sync=True)
-    column_start =  CInt(4).tag(sync=True)
-    row_end =  CInt(3).tag(sync=True)
-    column_end =  CInt(4).tag(sync=True)
+    row_start = CInt(3).tag(sync=True)
+    column_start = CInt(4).tag(sync=True)
+    row_end = CInt(3).tag(sync=True)
+    column_end = CInt(4).tag(sync=True)
     type = Unicode(None, allow_none=True).tag(sync=True)
     name = Unicode(None, allow_none=True).tag(sync=True)
     style = Dict({}).tag(sync=True)
@@ -37,20 +38,20 @@ class Cell(widgets.Widget):
             value = [value]
         try:
             len(value)
-        except:
+        except TypeError:
             raise ValueError('value shape is incorrect')
         if self.squeeze_column:
             value = [[k] for k in value]
-        #print(self.squeeze_row, self.squeeze_column, value)
+        # print(self.squeeze_row, self.squeeze_column, value)
         try:
             len(value[0])
-        except:
+        except TypeError:
             raise ValueError('value shape is incorrect')
         if self.transpose:  # we just work with the 'correct' shape
             value = transpose(value)
         row_length = self.row_end - self.row_start + 1
         if row_length != len(value):
-             raise ValueError("length or array (%d) doesn't match number of rows (%d)" % (len(value), row_length))
+            raise ValueError("length or array (%d) doesn't match number of rows (%d)" % (len(value), row_length))
         column_length = self.column_end - self.column_start + 1
         for row in value:
             if column_length != len(row):
@@ -58,15 +59,16 @@ class Cell(widgets.Widget):
         return proposal['value']
 
 
-
 # Bug in traitlets, it doesn't set it, which triggers the bug fixed here:
 # https://github.com/jupyter-widgets/ipywidgets/pull/1675
 # which is not released yet (7.0.2 should have it)
 Cell.choice.default_value = None
 
+
 @widgets.register('ipysheet.Range')
 class Range(widgets.Widget):
     value = Union([List(), List(Instance(list))], default_value=[0, 1]).tag(sync=True)
+
 
 @widgets.register('ipysheet.Sheet')
 class Sheet(widgets.DOMWidget):
@@ -77,8 +79,8 @@ class Sheet(widgets.DOMWidget):
     _model_module = Unicode('ipysheet').tag(sync=True)
     _view_module_version = Unicode(semver_range_frontend).tag(sync=True)
     _model_module_version = Unicode(semver_range_frontend).tag(sync=True)
-    rows =  CInt(3).tag(sync=True)
-    columns =  CInt(4).tag(sync=True)
+    rows = CInt(3).tag(sync=True)
+    columns = CInt(4).tag(sync=True)
     data = List(Instance(list), [[]]).tag(sync=True)
     cells = Tuple().tag(sync=True, **widgets.widget_serialization)
     named_cells = Dict(value={}, allow_none=False).tag(sync=True, **widgets.widget_serialization)
@@ -112,5 +114,5 @@ class Renderer(widgets.Widget):
     _model_module = Unicode('ipysheet/renderer').tag(sync=True)
     _view_module_version = Unicode(semver_range_frontend).tag(sync=True)
     _model_module_version = Unicode(semver_range_frontend).tag(sync=True)
-    name =  Unicode('custom').tag(sync=True)
-    code =  Unicode('').tag(sync=True)
+    name = Unicode('custom').tag(sync=True)
+    code = Unicode('').tag(sync=True)

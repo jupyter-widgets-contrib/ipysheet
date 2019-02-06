@@ -2,25 +2,26 @@
 
 Comparible to matplotlib pylab interface, this interface keeps track of the current
 sheet. Using the :ref:`cell` function, :ref:`Cell` widgets are added to the current sheet.
-
-
 """
 __all__ = ['sheet', 'current', 'cell', 'calculation', 'row', 'column', 'cell_range', 'hold_cells', 'renderer']
-import copy
+
 import numbers
 import six
+from contextlib import contextmanager
 
 import ipywidgets as widgets
-from .sheet import *
+
+from .sheet import Cell, Sheet, Renderer
 from .utils import transpose as default_transpose
 
 _last_sheet = None
-_sheets = {} # maps from key to Sheet instance
-_hold_cells = False # when try (using hold_cells() it does not add cells directly)
-_cells = () # cells that aren't added directly
+_sheets = {}  # maps from key to Sheet instance
+_hold_cells = False  # when try (using hold_cells() it does not add cells directly)
+_cells = ()  # cells that aren't added directly
+
 
 def sheet(key=None, rows=5, columns=5, column_width=None, row_headers=True, column_headers=True,
-        stretch_headers='all', cls=Sheet, **kwargs):
+          stretch_headers='all', cls=Sheet, **kwargs):
     """Creates a new Sheet instance or retrieves one registered with key, and sets this as the 'current'.
 
     If the key argument is given, and no sheet is created before with this key, it will be registered under
@@ -45,28 +46,29 @@ def sheet(key=None, rows=5, columns=5, column_width=None, row_headers=True, colu
     -------
     Sheet
         The new sheet, or if key is given, the previously created sheet registered with this key.
-
     """
     global _last_sheet
     if isinstance(key, Sheet):
         _last_sheet = key
     elif key is None or key not in _sheets:
         _last_sheet = cls(rows=rows, columns=columns, column_width=column_width,
-        row_headers=row_headers, column_headers=column_headers,
-        stretch_headers=stretch_headers, **kwargs)
+                          row_headers=row_headers, column_headers=column_headers,
+                          stretch_headers=stretch_headers, **kwargs)
         if key is not None:
             _sheets[key] = _last_sheet
     else:
         _last_sheet = _sheets[key]
     return _last_sheet
 
+
 def current():
     """Returns the current `Sheet` instance"""
     return _last_sheet
 
+
 def cell(row, column, value=0., type=None, color=None, background_color=None,
-    font_style=None, font_weight=None, style=None, label_left=None, choice=None,
-    read_only=False, format='0.[000]', renderer=None):
+         font_style=None, font_weight=None, style=None, label_left=None, choice=None,
+         read_only=False, format='0.[000]', renderer=None):
     """Adds a new `Cell` widget to the current sheet
 
     Parameters
@@ -82,9 +84,6 @@ def cell(row, column, value=0., type=None, color=None, background_color=None,
         the type will be assumed to be dropdown.
         The types refer (currently) to the handsontable types:
           https://docs.handsontable.com/0.35.1/demo-custom-renderers.html
-
-
-
     """
     global _cells
     if type is None:
@@ -107,8 +106,8 @@ def cell(row, column, value=0., type=None, color=None, background_color=None,
     if font_weight is not None:
         style['fontWeight'] = font_weight
     c = Cell(value=value, row_start=row, column_start=column, row_end=row, column_end=column,
-        squeeze_row=True, squeeze_column=True, type=type, style=style,
-        read_only=read_only, choice=choice, renderer=renderer, format=format)
+             squeeze_row=True, squeeze_column=True, type=type, style=style,
+             read_only=read_only, choice=choice, renderer=renderer, format=format)
     if _hold_cells:
         _cells += (c,)
     else:
@@ -117,6 +116,7 @@ def cell(row, column, value=0., type=None, color=None, background_color=None,
         assert column-1 >= 0, "cannot put label to the left"
         cell(row, column-1, value=label_left, font_weight='bold')
     return c
+
 
 def row(row, value, column_start=0, column_end=None, choice=None,
         read_only=False, format='0.[000]', renderer=None,
@@ -137,7 +137,6 @@ def row(row, value, column_start=0, column_end=None, choice=None,
     Returns
     -------
         A CellRange widget.
-
     """
     return cell_range(value, column_start=column_start, column_end=column_end, row_start=row, row_end=row,
                       squeeze_row=True, squeeze_column=False,
@@ -164,13 +163,13 @@ def column(column, value, row_start=0, row_end=None,  choice=None,
     Returns
     -------
         A CellRange widget.
-
     """
     return cell_range(value, column_start=column, column_end=column, row_start=row_start, row_end=row_end,
                       squeeze_row=False, squeeze_column=True,
                       read_only=read_only, format=format, renderer=renderer,
                       color=color, background_color=background_color,
                       font_style=font_style, font_weight=font_weight)
+
 
 def cell_range(value, row_start=0, column_start=0, row_end=None, column_end=None, transpose=False,
                squeeze_row=False, squeeze_column=False, type=None, choice=None,
@@ -201,8 +200,8 @@ def cell_range(value, row_start=0, column_start=0, row_end=None, column_end=None
     -------
     Range
         A CellRange widget.
-
     """
+    global _cells
     # instead of an if statements, we just use T to transpose or not when needed
     value_original = value
     T = (lambda x: x) if not transpose else default_transpose
@@ -268,6 +267,7 @@ def cell_range(value, row_start=0, column_start=0, row_end=None, column_end=None
         _last_sheet.cells = _last_sheet.cells+(c,)
     return c
 
+
 def renderer(code, name):
     """Adds a cell renderer (to the front end)
 
@@ -292,13 +292,13 @@ function() {
     return renderer
 
 
-
 def _assign(object, value):
     if isinstance(object, widgets.Widget):
         object, trait = object, 'value'
     else:
         object, trait = object
     setattr(object, trait, value)
+
 
 def calculation(inputs, output, initial_calulation=True):
     def decorator(f):
@@ -312,7 +312,7 @@ def calculation(inputs, output, initial_calulation=True):
             calculate()
     return decorator
 
-from contextlib import contextmanager
+
 @contextmanager
 def hold_cells():
     """Hold adding any cell widgets until leaving this context.
@@ -339,6 +339,6 @@ def hold_cells():
             yield
         finally:
             _hold_cells = False
-            #print(_cells, _last_sheet.cells)
+            # print(_cells, _last_sheet.cells)
             _last_sheet.cells = tuple(_last_sheet.cells) + tuple(_cells)
             _cells = ()

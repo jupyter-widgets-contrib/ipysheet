@@ -1,11 +1,13 @@
 import ipysheet
 import pytest
-from ipysheet.easy import transpose
+from ipysheet.utils import transpose
+
 
 def test_transpose():
     assert transpose([[1, 2]]) == [[1], [2]]
-    assert transpose([[1, 2], [3, 4]]) == [[1,3], [2, 4]]
+    assert transpose([[1, 2], [3, 4]]) == [[1, 3], [2, 4]]
     assert transpose([[1], [2]]) == [[1, 2]]
+
 
 def test_current_sheet():
     sheet1 = ipysheet.sheet()
@@ -24,31 +26,34 @@ def test_current_sheet():
     assert sheet4 is ipysheet.sheet('key4')
     assert sheet4 is ipysheet.current()
 
+
 def test_cell_add():
     sheet1 = ipysheet.sheet()
     sheet2 = ipysheet.sheet()
-    cell2a = ipysheet.cell(0, 0, value='1')
+    ipysheet.cell(0, 0, value='1')
     assert len(sheet1.cells) == 0
     assert len(sheet2.cells) == 1
     ipysheet.sheet(sheet1)
-    cell1a = ipysheet.cell(0, 0, value='2')
-    cell1b = ipysheet.cell(0, 1, value='2')
+    ipysheet.cell(0, 0, value='2')
+    ipysheet.cell(0, 1, value='2')
     assert len(sheet1.cells) == 2
     assert len(sheet2.cells) == 1
 
     with ipysheet.hold_cells():
-        cell1c = ipysheet.cell(1, 0, value='3')
-        cell1d = ipysheet.cell(1, 1, value='4')
+        ipysheet.cell(1, 0, value='3')
+        ipysheet.cell(1, 1, value='4')
         assert len(sheet1.cells) == 2
         assert len(sheet2.cells) == 1
     assert len(sheet1.cells) == 4
     assert len(sheet2.cells) == 1
 
+
 def test_calculation():
-    sheet = ipysheet.sheet()
+    ipysheet.sheet()
     a = ipysheet.cell(0, 0, value=1)
     b = ipysheet.cell(0, 0, value=2)
     c = ipysheet.cell(0, 0, value=0)
+
     @ipysheet.calculation(inputs=[a, b], output=c)
     def add(a, b):
         return a + b
@@ -58,22 +63,24 @@ def test_calculation():
     b.value = 20
     assert c.value == 10+20
 
+
 def test_getitem():
     sheet = ipysheet.sheet()
     cell00 = ipysheet.cell(0, 0, value='0_0')
     cell10 = ipysheet.cell(1, 0, value='1_0')
     cell21 = ipysheet.cell(2, 1, value='2_1')
-    assert sheet[0,0] is cell00
-    assert sheet[1,0] is cell10
-    assert sheet[2,1] is cell21
+    assert sheet[0, 0] is cell00
+    assert sheet[1, 0] is cell10
+    assert sheet[2, 1] is cell21
     with pytest.raises(IndexError):
-        sheet[1,1]
+        sheet[1, 1]
     # TODO: what do we do with copies.. ? now we return the first values
-    cell00_copy = ipysheet.cell(0, 0, value='0_0')
-    assert sheet[0,0] is cell00
+    ipysheet.cell(0, 0, value='0_0')
+    assert sheet[0, 0] is cell00
+
 
 def test_row_and_column():
-    sheet = ipysheet.sheet(rows=3, columns=4)
+    ipysheet.sheet(rows=3, columns=4)
     ipysheet.row(0, [0, 1, 2, 3])
     ipysheet.row(0, [0, 1, 2])
     ipysheet.row(0, [0, 1, 2], column_end=2)
@@ -114,31 +121,30 @@ def test_row_and_column():
 
 
 def test_cell_range():
-    sheet = ipysheet.sheet(rows=3, columns=4)
+    ipysheet.sheet(rows=3, columns=4)
     # [row][column]
-    ipysheet.cell_range([[0, 1]]) # 1 row, 2 columns
-    ipysheet.cell_range([[0], [2]]) # 2 rows, 1 columns
-    ipysheet.cell_range([[0, 1], [2, 3]]) # 2 rows, 2 columns
-    ipysheet.cell_range([[0, 1], [2, 3], [4, 5]]) # 3 rows, 2 columns
-    ipysheet.cell_range([[0, 1, 9], [2, 3, 9], [4, 5, 9]]) # 3 rows, 3 columns
-    ipysheet.cell_range([[0, 1, 9]], column_end=2) # 3 rows, 3 columns
-    ipysheet.cell_range([[0, 1, 9]], column_start=1) # 1 rows, 3 columns
+    ipysheet.cell_range([[0, 1]])  # 1 row, 2 columns
+    ipysheet.cell_range([[0], [2]])  # 2 rows, 1 columns
+    ipysheet.cell_range([[0, 1], [2, 3]])  # 2 rows, 2 columns
+    ipysheet.cell_range([[0, 1], [2, 3], [4, 5]])  # 3 rows, 2 columns
+    ipysheet.cell_range([[0, 1, 9], [2, 3, 9], [4, 5, 9]])  # 3 rows, 3 columns
+    ipysheet.cell_range([[0, 1, 9]], column_end=2)  # 3 rows, 3 columns
+    ipysheet.cell_range([[0, 1, 9]], column_start=1)  # 1 rows, 3 columns
     with pytest.raises(ValueError):
-        ipysheet.cell_range([[0, 1], [2, 3], [4, 5], [6, 7]]) # 4 rows, 2 columns
+        ipysheet.cell_range([[0, 1], [2, 3], [4, 5], [6, 7]])  # 4 rows, 2 columns
     with pytest.raises(ValueError):
-        ipysheet.cell_range([[0, 1, 2, 3, 4], [2, 3, 4, 5, 6], [3, 4, 5, 6, 7]]) # 3 rows, 5 columns
+        ipysheet.cell_range([[0, 1, 2, 3, 4], [2, 3, 4, 5, 6], [3, 4, 5, 6, 7]])  # 3 rows, 5 columns
     with pytest.raises(ValueError):
-        ipysheet.cell_range([[0, 1, 2, 3, 4], [2], [3, 4, 5, 6, 7]]) # not well shaped
+        ipysheet.cell_range([[0, 1, 2, 3, 4], [2], [3, 4, 5, 6, 7]])  # not well shaped
     with pytest.raises(ValueError):
-        ipysheet.cell_range([]) # empty rows
+        ipysheet.cell_range([])  # empty rows
     with pytest.raises(ValueError):
-        ipysheet.cell_range([[], []]) # empty columns
-
+        ipysheet.cell_range([[], []])  # empty columns
 
     value = [[0, 1], [2, 3], [4, 5]]
-    valueT = [[0, 2, 4], [1, 3, 5]] # it's transpose
+    valueT = [[0, 2, 4], [1, 3, 5]]  # it's transpose
     assert value == transpose(valueT)
-    r = ipysheet.cell_range(value) # 3 rows, 2 columns
+    r = ipysheet.cell_range(value)  # 3 rows, 2 columns
     with pytest.raises(ValueError):
         r.value = 1
     with pytest.raises(ValueError):
@@ -147,9 +153,7 @@ def test_cell_range():
         r.value = [[1, 2]]
     assert r.value == transpose(valueT)
 
-
-
-    rT = ipysheet.cell_range(valueT, transpose=True) # 3 rows, 2 columns
+    rT = ipysheet.cell_range(valueT, transpose=True)  # 3 rows, 2 columns
     with pytest.raises(ValueError):
         rT.value = 1
     with pytest.raises(ValueError):
@@ -158,7 +162,6 @@ def test_cell_range():
         rT.value = [[1, 2]]
     rT.value = transpose(value)
     assert rT.value == transpose(value)
-
 
     # sheet = ipysheet.sheet(rows=3, columns=4)
     # range1, cells = ipysheet.cell_range([[0, 1], [2, 3]], return_cells=True)
@@ -188,7 +191,6 @@ def test_cell_range():
     # range2 = ipysheet.cell_range([[0], [2]], transpose=True)
 
 
-
 def test_cell_values():
     cell = ipysheet.cell(0, 0, value=True)
     assert cell.value is True
@@ -203,8 +205,7 @@ def test_cell_values():
 
     cell = ipysheet.Cell(value='1.2')
     assert cell.value == '1.2'
-    assert cell.type == None
-
+    assert cell.type is None
 
     cell = ipysheet.row(0, [True, False])
     assert cell.value == [True, False]
@@ -222,20 +223,25 @@ def test_cell_values():
     assert cell.value == ['a', 'b']
     assert cell.type == 'text'
 
-
     cell = ipysheet.row(0, [True, 0])
     assert cell.type == 'numeric'
 
     cell = ipysheet.row(0, [True, 'bla'])
-    assert cell.type == None
+    assert cell.type is None
+
 
 def test_renderer():
     ipysheet.sheet()
     renderer = ipysheet.renderer('code', 'name')
     assert renderer.code == 'code'
     assert renderer.name == 'name'
+
+    def somefunction(x):
+        pass
+
     def f(x):
         somefunction(x)
+
     renderer = ipysheet.renderer(f, 'name2')
     assert "somefunction" in renderer.code
     assert renderer.name == 'name2'
