@@ -2,6 +2,8 @@ import ipywidgets as widgets
 import traitlets
 from traitlets import Unicode, CFloat, CInt, List, Tuple, Instance, Union, Dict, Bool, Float, Int, Any
 
+from .utils import transpose
+
 import ipysheet._version
 semver_range_frontend = "~" + ipysheet._version.__version_js__
 
@@ -45,7 +47,7 @@ class Cell(widgets.Widget):
         except:
             raise ValueError('value shape is incorrect')
         if self.transpose:  # we just work with the 'correct' shape
-            value = _transpose(value)
+            value = transpose(value)
         row_length = self.row_end - self.row_start + 1
         if row_length != len(value):
              raise ValueError("length or array (%d) doesn't match number of rows (%d)" % (len(value), row_length))
@@ -112,6 +114,3 @@ class Renderer(widgets.Widget):
     _model_module_version = Unicode(semver_range_frontend).tag(sync=True)
     name =  Unicode('custom').tag(sync=True)
     code =  Unicode('').tag(sync=True)
-
-# UGLY, should transpose go into a utils module?
-from ipysheet.easy import _transpose
