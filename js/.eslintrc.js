@@ -1,28 +1,10 @@
 module.exports = {
-    "env": {
-        "browser": true,
-        "es6": true
-    },
-    "extends": "eslint:recommended",
-    "parserOptions": {
-        "sourceType": "module"
-    },
+    "extends": "standard",
     "rules": {
-        "indent": [
-            "error",
-            4
-        ],
-        "linebreak-style": [
-            "error",
-            "unix"
-        ],
-        "quotes": [
-            "error",
-            "single"
-        ],
-        "semi": [
-            "error",
-            "always"
-        ]
+        "camelcase": [0, {"properties": "always"}],
+        "indent": ["error", 4],
+        "semi": ["error", "always"],
+        "space-infix-ops": 0,
+        "quotes": 0
     }
 };

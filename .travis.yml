@@ -26,6 +26,7 @@ install:
 script:
   - flake8 ipysheet
   - py.test --cov-report= --cov=ipysheet
+  - (cd js && ./node_modules/.bin/eslint src/sheet.js src/renderer.js)
   - (cd js && npm install && ./node_modules/.bin/karma start --single-run)
 after_success:
   - coveralls
