@@ -2,6 +2,8 @@
 // Generated on Fri Apr 14 2017 18:21:49 GMT+0200 (CEST)
 //var webpackConfig = require('./webpack.config')[1];
 var webpack = require('webpack');
+const process = require('process');
+process.env.CHROME_BIN = require('puppeteer').executablePath();
 
 module.exports = function(config) {
   config.set({
@@ -57,8 +59,8 @@ module.exports = function(config) {
     browsers: ['HeadlessChrome'],
     customLaunchers: {
       HeadlessChrome: {
-        base: 'Chrome',
-        flags: ['--headless', '--disable-gpu', '--remote-debugging-port=9222']
+          base: 'ChromeHeadless',
+          flags: ['--no-sandbox']
       }
     },
     // if true, Karma captures browsers, runs the tests and exits
