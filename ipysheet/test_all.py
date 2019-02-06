@@ -1,11 +1,11 @@
 import ipysheet
 import pytest
-from ipysheet.easy import _transpose
+from ipysheet.easy import transpose
 
 def test_transpose():
-    assert _transpose([[1, 2]]) == [[1], [2]]
-    assert _transpose([[1, 2], [3, 4]]) == [[1,3], [2, 4]]
-    assert _transpose([[1], [2]]) == [[1, 2]]
+    assert transpose([[1, 2]]) == [[1], [2]]
+    assert transpose([[1, 2], [3, 4]]) == [[1,3], [2, 4]]
+    assert transpose([[1], [2]]) == [[1, 2]]
 
 def test_current_sheet():
     sheet1 = ipysheet.sheet()
@@ -84,7 +84,7 @@ def test_row_and_column():
         ipysheet.row(0, [0, 1], column_end=3)
     with pytest.raises(ValueError):
         ipysheet.row(0, [0, 1, 2, 4], column_start=1)
-    
+
     row = ipysheet.row(0, [0, 1, 2, 3])
     with pytest.raises(ValueError):
         row.value = [0, 1, 2]
@@ -137,7 +137,7 @@ def test_cell_range():
 
     value = [[0, 1], [2, 3], [4, 5]]
     valueT = [[0, 2, 4], [1, 3, 5]] # it's transpose
-    assert value == _transpose(valueT)
+    assert value == transpose(valueT)
     r = ipysheet.cell_range(value) # 3 rows, 2 columns
     with pytest.raises(ValueError):
         r.value = 1
@@ -145,7 +145,7 @@ def test_cell_range():
         r.value = [1, 2, 3]
     with pytest.raises(ValueError):
         r.value = [[1, 2]]
-    assert r.value == _transpose(valueT)
+    assert r.value == transpose(valueT)
 
 
 
@@ -156,8 +156,8 @@ def test_cell_range():
         rT.value = [1, 2, 3]
     with pytest.raises(ValueError):
         rT.value = [[1, 2]]
-    rT.value = _transpose(value)
-    assert rT.value == _transpose(value)
+    rT.value = transpose(value)
+    assert rT.value == transpose(value)
 
 
     # sheet = ipysheet.sheet(rows=3, columns=4)
@@ -213,7 +213,7 @@ def test_cell_values():
     cell = ipysheet.row(0, [0, 1.2])
     assert cell.value == [0, 1.2]
     assert cell.type == 'numeric'
-    
+
     cell = ipysheet.row(0, [0, 1])
     assert cell.value == [0, 1]
     assert cell.type == 'numeric'
@@ -239,4 +239,3 @@ def test_renderer():
     renderer = ipysheet.renderer(f, 'name2')
     assert "somefunction" in renderer.code
     assert renderer.name == 'name2'
-

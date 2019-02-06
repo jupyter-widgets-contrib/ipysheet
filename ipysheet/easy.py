@@ -12,6 +12,8 @@ import six
 
 import ipywidgets as widgets
 from .sheet import *
+from .utils import transpose as default_transpose
+
 _last_sheet = None
 _sheets = {} # maps from key to Sheet instance
 _hold_cells = False # when try (using hold_cells() it does not add cells directly)
@@ -170,11 +172,6 @@ def column(column, value, row_start=0, row_end=None,  choice=None,
                       color=color, background_color=background_color,
                       font_style=font_style, font_weight=font_weight)
 
-
-def _transpose(list_of_lists):
-    return [list(k) for k in zip(*list_of_lists)]
-
-
 def cell_range(value, row_start=0, column_start=0, row_end=None, column_end=None, transpose=False,
                squeeze_row=False, squeeze_column=False, type=None, choice=None,
                read_only=False, format='0.[000]', renderer=None, style=None,
@@ -208,7 +205,7 @@ def cell_range(value, row_start=0, column_start=0, row_end=None, column_end=None
     """
     # instead of an if statements, we just use T to transpose or not when needed
     value_original = value
-    T = (lambda x: x) if not transpose else _transpose
+    T = (lambda x: x) if not transpose else default_transpose
     # we work with the optionally transposed values for simplicity
     value = T(value)
     if squeeze_row:
