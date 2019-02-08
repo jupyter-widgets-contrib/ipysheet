@@ -6,10 +6,10 @@
 if (window.require) {
     window.require.config({
         map: {
-            "*" : {
+            "*": {
                 "ipysheet": "nbextensions/ipysheet/index",
                 "handsontable": "nbextensions/ipysheet/handsontable",
-                "handsontable/dist/handsontable.full.js":  "nbextensions/ipysheet/handsontable",
+                "handsontable/dist/handsontable.full.js": "nbextensions/ipysheet/handsontable",
                 "jupyter-js-widgets": "nbextensions/jupyter-js-widgets/extension"
             }
         }
@@ -17,6 +17,4 @@ if (window.require) {
 }
 
 // Export the required load_ipython_extention
-module.exports = {
-    load_ipython_extension: function() {}
-};
+export function load_ipython_extension () {};

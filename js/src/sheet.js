@@ -4,8 +4,9 @@ import Handsontable from 'handsontable';
 import 'handsontable/dist/handsontable.min.css';
 import 'pikaday/css/pikaday.css';
 import './custom.css';
+import version from '../package.json';
 
-let semver_range = '~' + require('../package.json').version;
+let semver_range = '~' + version;
 
 export class CellRangeModel extends widgets.WidgetModel {
     defaults () {
@@ -54,7 +55,7 @@ export class SheetModel extends widgets.DOMWidgetModel {
     }
 
     initialize () {
-        super.initialize();
+        super.initialize(arguments);
 
         this.update_data_grid();
         this._updating_grid = false;
@@ -322,7 +323,8 @@ export class SheetView extends widgets.DOMWidgetView {
     }
 
     processPhosphorMessage (msg) {
-        SheetView.__super__.processPhosphorMessage.apply(this, arguments);
+        super.processPhosphorMessage(msg);
+
         switch (msg.type) {
         case 'resize':
         case 'after-show':

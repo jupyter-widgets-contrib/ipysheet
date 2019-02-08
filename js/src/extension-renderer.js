@@ -6,14 +6,12 @@
 if (window.require) {
     window.require.config({
         map: {
-            "*" : {
-                "ipysheet/renderer": "nbextensions/ipysheet/renderer",
+            "*": {
+                "ipysheet/renderer": "nbextensions/ipysheet/renderer"
             }
         }
     });
 }
 
 // Export the required load_ipython_extention
-module.exports = {
-    load_ipython_extension: function() {}
-};
+export function load_ipython_extension () {};
