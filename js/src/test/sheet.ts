@@ -1,6 +1,6 @@
 import * as widgets from '@jupyter-widgets/base';
 import * as _ from 'underscore';
-import * as ipysheet from '../../js';
+import * as ipysheet from '../sheet';
 import {DummyManager} from './dummy-manager';
 import { expect } from 'chai';
 

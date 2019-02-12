@@ -20,12 +20,14 @@ before_install:
   - conda create -q -n test-environment python=$PYTHON_VERSION ipywidgets runipy
   - source activate test-environment
   - conda install -c conda-forge pytest pytest-cov nodejs pscript flake8
+  - if [[ $TRAVIS_OS_NAME == linux ]]; then conda install -c conda-forge jupyterlab; fi
   - pip install coveralls
 install:
   - pip install -e .
+  - if [[ $TRAVIS_OS_NAME == linux && $PYTHON_VERSION != 2.7 ]]; then jupyter labextension link js; fi
 script:
   - flake8 ipysheet
   - py.test --cov-report= --cov=ipysheet
-  - (cd js && npm install && ./node_modules/.bin/karma start --single-run)
+  - (cd js && npm run test)
 after_success:
   - coveralls
