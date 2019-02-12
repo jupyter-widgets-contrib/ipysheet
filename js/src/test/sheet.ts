@@ -161,6 +161,11 @@ describe('sheet', function() {
         var data = this.sheet.get('data')
         expect(data[1][2].value, 'when cell.value is change').to.equal(999);
     })
+    it('numeric cell with value zero should indeed have value zero', async function() {
+        await make_cell.apply(this, [{value: 0.00, type:'numeric'}]);
+        var data = this.sheet.get('data');
+        expect(data[1][2].value, 'for initial value').to.equal(0);
+    })
     it('multiple cells added', async function() {
         var cell1 = await make_cell.apply(this, [{value: 777}, true])
         var cell2 = await make_cell.apply(this, [{row_start: 0, row_end:0, value: 555}, true])
