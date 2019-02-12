@@ -3,8 +3,8 @@
 // which is required for any notebook extension.
 
 // Configure requirejs
-if (window.require) {
-    window.require.config({
+if (window['require'] !== undefined) {
+    window['require'].config({
         map: {
             "*" : {
                 "ipysheet": "nbextensions/ipysheet/index",
@@ -17,6 +17,4 @@ if (window.require) {
 }
 
 // Export the required load_ipython_extention
-module.exports = {
-    load_ipython_extension: function() {}
-};
+export function load_ipython_extension () {};

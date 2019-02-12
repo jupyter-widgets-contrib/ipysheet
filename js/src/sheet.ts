@@ -1,14 +1,12 @@
 import * as widgets  from '@jupyter-widgets/base';
 import {cloneDeep, extend, includes as contains, each, debounce, times, map, unzip as transpose} from 'lodash';
-import Handsontable from 'handsontable';
-import 'handsontable/dist/handsontable.min.css';
-import 'pikaday/css/pikaday.css';
-import './custom.css';
+import {Handsontable} from './handsontable';
+import * as pkg from '../package.json';
 
-var semver_range = '~' + require('../package.json').version;
+let semver_range = '~' + pkg.version;
 
 
-var CellRangeModel = widgets.WidgetModel.extend({
+let CellRangeModel = widgets.WidgetModel.extend({
     defaults: function() {
         return extend(CellRangeModel.__super__.defaults.call(this), {
             _model_name : 'CellRangeModel',
@@ -26,7 +24,7 @@ var CellRangeModel = widgets.WidgetModel.extend({
             read_only: false,
             choice: null,
             squeeze_row: true,
-            squeeze_column: true, 
+            squeeze_column: true,
             transpose: false,
             format: '0.[000]'
         });
@@ -34,7 +32,7 @@ var CellRangeModel = widgets.WidgetModel.extend({
 });
 
 
-var SheetModel = widgets.DOMWidgetModel.extend({
+let SheetModel = widgets.DOMWidgetModel.extend({
     defaults: function() {
         return extend(SheetModel.__super__.defaults.call(this), {
             _model_name : 'SheetModel',
@@ -58,7 +56,6 @@ var SheetModel = widgets.DOMWidgetModel.extend({
         SheetModel.__super__.initialize.apply(this, arguments);
         this.update_data_grid();
         this._updating_grid = false;
-        window.last_sheet_model = this;
         this.on('change:rows change:columns', this.update_data_grid, this);
         this.on('change:cells', this.on_change_cells, this);
         this.on('change:data', this.grid_to_cell, this);
@@ -70,10 +67,10 @@ var SheetModel = widgets.DOMWidgetModel.extend({
         console.log('change cells');
         this._updating_grid = true;
         try {
-            var previous_cells = this.previous('cells');
-            var cells = this.get('cells');
-            for(var i = 0; i < cells.length; i++) {
-                var cell = cells[i];
+            let previous_cells = this.previous('cells');
+            let cells = this.get('cells');
+            for(let i = 0; i < cells.length; i++) {
+                let cell = cells[i];
                 if(!contains(previous_cells, cell)) {
                     console.log('adding cell', cell);
                     this.cell_bind(cell);
@@ -94,7 +91,7 @@ var SheetModel = widgets.DOMWidgetModel.extend({
         }, this);
     },
     cells_to_grid: function() {
-        var data = cloneDeep(this.get('data'));
+        let data = cloneDeep(this.get('data'));
         each(this.get('cells'), (cell) => {
             this._cell_data_to_grid(cell, data)
         })
@@ -103,7 +100,7 @@ var SheetModel = widgets.DOMWidgetModel.extend({
     },
     cell_to_grid: function(cell, save) {
         console.log('cell to grid', cell);
-        var data = cloneDeep(this.get('data'));
+        let data = cloneDeep(this.get('data'));
         this._cell_data_to_grid(cell, data)
         this.set('data', data);
         if(save) {
@@ -111,19 +108,19 @@ var SheetModel = widgets.DOMWidgetModel.extend({
         }
     },
     _cell_data_to_grid: function(cell, data) {
-        var value = cell.get('value');
+        let value = cell.get('value');
         if(!value)
             return
-        for(var i = cell.get('row_start'); i <= cell.get('row_end'); i++) {
-            for(var j = cell.get('column_start'); j <= cell.get('column_end'); j++) {
-                var value = cell.get('value');
-                var cell_row = i - cell.get('row_start');
-                var cell_col = j - cell.get('column_start');
+        for(let i = cell.get('row_start'); i <= cell.get('row_end'); i++) {
+            for(let j = cell.get('column_start'); j <= cell.get('column_end'); j++) {
+                let value = cell.get('value');
+                let cell_row = i - cell.get('row_start');
+                let cell_col = j - cell.get('column_start');
                 //console.log(cell.get('value'), i, j, cell_row, cell_col, ',', data.length, data[0].length, data, value)
                 //console.log(value[cell_row][cell_col])
                 if((i >= data.length) || (j >= data[i].length))
                     continue; // skip cells that are out of the sheet
-                var cell_data = data[i][j];
+                let cell_data = data[i][j];
                 if(cell.get('transpose')) {
                     if(!cell.get('squeeze_column'))
                         value = value[cell_col]
@@ -152,20 +149,20 @@ var SheetModel = widgets.DOMWidgetModel.extend({
             console.log('grid to cell skipped');
             return;
         }
-        console.log('grid to cell', this._massive_update);
+        console.log('grid to cell HELL YOO', this._massive_update);
         this._updating_grid = true;
         try {
-            var data = this.get('data');
+            let data = this.get('data');
             each(this.get('cells'), function(cell) {
-                var rows = [];
-                for(var i = cell.get('row_start'); i <= cell.get('row_end'); i++) {
-                    var row = [];
-                    for(var j = cell.get('column_start'); j <= cell.get('column_end'); j++) {
-                        //var cell_row = i - cell.get('row_start');
-                        //var cell_col = j - cell.get('column_start');
+                let rows = [];
+                for(let i = cell.get('row_start'); i <= cell.get('row_end'); i++) {
+                    let row = [];
+                    for(let j = cell.get('column_start'); j <= cell.get('column_end'); j++) {
+                        //let cell_row = i - cell.get('row_start');
+                        //let cell_col = j - cell.get('column_start');
                         if((i >= data.length) || (j >= data[i].length))
                             continue; // skip cells that are out of the sheet
-                        var cell_data = data[i][j];
+                        let cell_data = data[i][j];
                         row.push(cell_data.value)
                         /*cell.set('value', cell_data.value);
                         cell.set('type', cell_data.options['type']);
@@ -189,37 +186,37 @@ var SheetModel = widgets.DOMWidgetModel.extend({
                     cell.set('value', rows)
                 }
                 cell.save_changes();
-            }, this);
+            });
         } finally {
             this._updating_grid = false;
         }
     },
     update_data_grid: function() {
         // create a row x column array of arrays filled with null
-        var data = cloneDeep(this.get('data')); // clone, otherwise backbone/underscore won't notice the change
-        var rows = this.get('rows');
-        var columns = this.get('columns');
+        let data = cloneDeep(this.get('data')); // clone, otherwise backbone/underscore won't notice the change
+        let rows = this.get('rows');
+        let columns = this.get('columns');
 
-        var empty_cell = () => {
+        let empty_cell = () => {
             return {value: null, options:{}};
         };
-        var empty_row = () => {
+        let empty_row = () => {
             return times(this.get('columns'), empty_cell);
         };
         //console.log('data<', data)
         if(rows < data.length) {
             data = data.slice(0, rows);
         } else if(rows > data.length) {
-            for(var i = data.length; i < rows; i++) {
+            for(let i = data.length; i < rows; i++) {
                 data.push(empty_row());
             }
         }
-        for(var i = 0; i < rows; i++) {
-            var row = data[i];
+        for(let i = 0; i < rows; i++) {
+            let row = data[i];
             if(columns < row.length) {
                 row = row.slice(0, columns);
             } else if(columns > row.length) {
-                for(var j = row.length; j < columns; j++) {
+                for(let j = row.length; j < columns; j++) {
                     row.push(empty_cell());
                 }
             }
@@ -236,18 +233,19 @@ var SheetModel = widgets.DOMWidgetModel.extend({
 });
 
 // go from 2d array with objects to a 2d grid containing just attribute `attr` from those objects
-var extract2d = function(grid, attr) {
+let extract2d = function(grid, attr) {
     return map(grid, function(column) {
         return map(column, function(value) {
             return value[attr];
         });
     });
 };
+
 // inverse of above
-var put_values2d = function(grid, values) {
+let put_values2d = function(grid, values) {
     // TODO: the Math.min should not be needed, happens with the custom-build
-    for(var i = 0; i < Math.min(grid.length, values.length); i++) {
-        for(var j = 0; j < Math.min(grid[i].length, values[i].length); j++) {
+    for(let i = 0; i < Math.min(grid.length, values.length); i++) {
+        for(let j = 0; j < Math.min(grid[i].length, values[i].length); j++) {
             grid[i][j].value = values[i][j];
         }
     }
@@ -255,8 +253,8 @@ var put_values2d = function(grid, values) {
 
 // calls the original renderer and then applies custom styling
 Handsontable.renderers.registerRenderer('styled', function customRenderer(hotInstance, td, row, column, prop, value, cellProperties) {
-    var name = cellProperties.original_renderer || cellProperties.type || 'text';
-    var original_renderer = Handsontable.renderers.getRenderer(name);
+    let name = cellProperties.original_renderer || cellProperties.type || 'text';
+    let original_renderer = Handsontable.renderers.getRenderer(name);
     if(!original_renderer) {
         console.error('could not find renderer: ' + original_renderer)
     } else {
@@ -267,12 +265,12 @@ Handsontable.renderers.registerRenderer('styled', function customRenderer(hotIns
     }
 });
 
-var testing = false;
-var setTesting = function() {
+let testing = false;
+let setTesting = function() {
     testing = true;
 };
 
-var SheetView = widgets.DOMWidgetView.extend({
+let SheetView = widgets.DOMWidgetView.extend({
     render: function() {
         this._refresh_requested = false;
         /*
@@ -288,7 +286,7 @@ var SheetView = widgets.DOMWidgetView.extend({
             this.throttled_on_data_change = debounce(() => this._real_on_data_change(), 100);
             this.throttled_render = debounce(() => this._real_table_render(), 100);
         }
-        // 
+        //
         //this.listenTo(this.model, 'change:data', this.on_data_change)
         this.displayed.then(() => {
             this._build_table().then(hot => {
@@ -298,7 +296,6 @@ var SheetView = widgets.DOMWidgetView.extend({
                 Handsontable.hooks.add('afterRemoveRow', () => this._on_change_grid(), this.hot);
             });
         });
-        window.last_sheet_view = this;
         this.model.on('change:data', this.on_data_change, this);
         this.model.on('change:column_headers change:row_headers', this._update_hot_settings, this);
         this.model.on('change:stretch_headers change:column_width', this._update_hot_settings, this);
@@ -336,11 +333,9 @@ var SheetView = widgets.DOMWidgetView.extend({
         return extract2d(this.model.get('data'), 'value');
     },
     _cell: function(row, col) {
-        var cellProperties = {};
-        var data = this.model.get('data');
-        if((row < data.length) && (col < data[row].length)) {
-            extend(cellProperties, data[row][col].options);
-        } else {
+        let data = this.model.get('data');
+        let cellProperties = cloneDeep(data[row][col].options);
+        if(!((row < data.length) && (col < data[row].length))) {
             console.error('cell out of range');
         }
         if(cellProperties['type'] == null)
@@ -350,13 +345,13 @@ var SheetView = widgets.DOMWidgetView.extend({
         if(cellProperties['source'] == null)
             delete cellProperties['source'];
         if('renderer' in cellProperties)
-            cellProperties.original_renderer = cellProperties.renderer;
+            cellProperties.original_renderer = cellProperties['renderer'];
         cellProperties.renderer = 'styled';
         //console.log(row, col, prop, cellProperties)
         return cellProperties;
     },
     _on_change_grid: function(changes, source) {
-        var data = this.hot.getSourceDataArray();
+        let data = this.hot.getSourceDataArray();
         console.log('table altered, make sure this is reflected in the model', data.length, data[0].length);
         this.model.set({'rows': data.length, 'columns': data[0].length});
         this.model.save_changes();
@@ -368,7 +363,7 @@ var SheetView = widgets.DOMWidgetView.extend({
             return; // ignore loadData
         if(source == 'alter') {
             console.log('table altered, make sure this is reflected in the model');
-            var data = this.hot.getSourceDataArray();
+            let data = this.hot.getSourceDataArray();
             this.model.set({'rows': data.length, 'columns': data[0].length});
             this.model.save_changes();
             return;
@@ -378,8 +373,8 @@ var SheetView = widgets.DOMWidgetView.extend({
         //this.hot.validateCells(_.bind(function(valid){
         //    console.log('valid?', valid)
         //    if(valid) {
-        var data = cloneDeep(this.model.get('data'));
-        var value_data = this.hot.getSourceDataArray();
+        let data = cloneDeep(this.model.get('data'));
+        let value_data = this.hot.getSourceDataArray();
         put_values2d(data, value_data);
         this.model.set('data', cloneDeep(data));
         this.model.save_changes();
@@ -392,12 +387,12 @@ var SheetView = widgets.DOMWidgetView.extend({
         //this._real_on_data_change()
     },
     _real_on_data_change: function() {
-        var data = extract2d(this.model.get('data'), 'value');
-        var rows = data.length;
-        var cols = data[0].length;
-        var changed = false;
-        var rows_previous = this.hot.countRows();
-        var cols_previous = this.hot.countCols();
+        let data = extract2d(this.model.get('data'), 'value');
+        let rows = data.length;
+        let cols = data[0].length;
+        let changed = false;
+        let rows_previous = this.hot.countRows();
+        let cols_previous = this.hot.countCols();
         //*
         if(rows > rows_previous) {
             this.hot.alter('insert_row', rows-1, rows-rows_previous);
@@ -437,7 +432,7 @@ var SheetView = widgets.DOMWidgetView.extend({
         //this.hot.render()
         if(!this._refresh_requested) {
             this._refresh_requested = true;
-            requestAnimationFrame(() => this._real_refresh_table(), this);
+            requestAnimationFrame(() => this._real_refresh_table());
         }
     },
     _real_table_render: function() {

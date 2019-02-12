@@ -7,6 +7,7 @@ node_modules/
 
 # Compiled javascript
 ipysheet/static/
+js/lib/*
 
 # OS X
 .DS_Store
