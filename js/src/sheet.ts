@@ -110,8 +110,9 @@ let SheetModel = widgets.DOMWidgetModel.extend({
     },
     _cell_data_to_grid: function(cell, data) {
         let value = cell.get('value');
-        if(!value)
-            return
+        if((value === null) || (value === undefined)) {
+            return;
+        }
         for(let i = cell.get('row_start'); i <= cell.get('row_end'); i++) {
             for(let j = cell.get('column_start'); j <= cell.get('column_end'); j++) {
                 let value = cell.get('value');
