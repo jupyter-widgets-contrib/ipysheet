@@ -68,7 +68,7 @@ def current():
 
 def cell(row, column, value=0., type=None, color=None, background_color=None,
          font_style=None, font_weight=None, style=None, label_left=None, choice=None,
-         read_only=False, format='0.[000]', renderer=None):
+         read_only=False, numeric_format='0.[000]', date_format='YYYY/MM/DD', renderer=None, **kwargs):
     """Adds a new `Cell` widget to the current sheet
 
     Parameters
@@ -106,8 +106,9 @@ def cell(row, column, value=0., type=None, color=None, background_color=None,
     if font_weight is not None:
         style['fontWeight'] = font_weight
     c = Cell(value=value, row_start=row, column_start=column, row_end=row, column_end=column,
-             squeeze_row=True, squeeze_column=True, type=type, style=style,
-             read_only=read_only, choice=choice, renderer=renderer, format=format)
+             squeeze_row=True, squeeze_column=True, type=type, style=style, choice=choice,
+             read_only=False, numeric_format=numeric_format, date_format=date_format,
+             renderer=renderer, **kwargs)
     if _hold_cells:
         _cells += (c,)
     else:
