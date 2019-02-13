@@ -9,7 +9,6 @@ if (window['require'] !== undefined) {
             "*" : {
                 "ipysheet": "nbextensions/ipysheet/index",
                 "handsontable": "nbextensions/ipysheet/handsontable",
-                "handsontable/dist/handsontable.full.js":  "nbextensions/ipysheet/handsontable",
                 "jupyter-js-widgets": "nbextensions/jupyter-js-widgets/extension"
             }
         }

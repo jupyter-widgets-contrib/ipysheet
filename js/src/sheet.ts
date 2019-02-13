@@ -1,7 +1,8 @@
 import * as widgets  from '@jupyter-widgets/base';
 import {cloneDeep, extend, includes as contains, each, debounce, times, map, unzip as transpose} from 'lodash';
-import {Handsontable} from './handsontable';
 import * as pkg from '../package.json';
+// @ts-ignore
+import {Handsontable} from 'handsontable';
 
 let semver_range = '~' + pkg.version;
 
