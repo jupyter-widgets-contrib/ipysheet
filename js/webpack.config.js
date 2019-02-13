@@ -30,6 +30,9 @@ module.exports = [
         entry: './lib/src/extension.js',
         devtool: 'inline-source-map',
         resolve: resolve,
+        module: {
+            rules: rules
+        },
         output: {
             filename: 'extension.js',
             path: path.resolve(__dirname, '../ipysheet/static'),
@@ -65,7 +68,7 @@ module.exports = [
         module: {
             rules: rules
         },
-        externals: ['@jupyter-widgets/base']
+        externals: ['@jupyter-widgets/base', 'handsontable']
     },
     {
         // same for render
@@ -80,7 +83,7 @@ module.exports = [
         module: {
             rules: rules
         },
-        externals: ['@jupyter-widgets/base']
+        externals: ['@jupyter-widgets/base', 'handsontable']
     },
     {
         // Embeddable ipysheet bundle
@@ -109,7 +112,7 @@ module.exports = [
         module: {
             rules: rules
         },
-        externals: ['@jupyter-widgets/base']
+        externals: ['@jupyter-widgets/base', 'handsontable']
     },
     {
         // same for renderer
@@ -125,7 +128,7 @@ module.exports = [
         module: {
             rules: rules
         },
-        externals: ['@jupyter-widgets/base']
+        externals: ['@jupyter-widgets/base', 'handsontable']
     },
     {
         entry: './lib/src/handsontable.js',

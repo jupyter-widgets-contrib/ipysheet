@@ -27,7 +27,8 @@ module.exports = function (config) {
             devtool: 'inline-source-map',
             mode: 'development',
             resolve: {
-                extensions: ['.js']
+                extensions: ['.js'],
+                alias: {'handsontable$': '../src/handsontable.js'}
             },
         },
         reporters: ['progress', 'mocha'],
