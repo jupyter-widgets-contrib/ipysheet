@@ -65,7 +65,6 @@ let SheetModel = widgets.DOMWidgetModel.extend({
 
     },
     on_change_cells: function() {
-        console.log('change cells');
         this._updating_grid = true;
         try {
             let previous_cells = this.previous('cells');
@@ -73,7 +72,6 @@ let SheetModel = widgets.DOMWidgetModel.extend({
             for(let i = 0; i < cells.length; i++) {
                 let cell = cells[i];
                 if(!contains(previous_cells, cell)) {
-                    console.log('adding cell', cell);
                     this.cell_bind(cell);
                 }
             }
@@ -100,7 +98,6 @@ let SheetModel = widgets.DOMWidgetModel.extend({
         this.save_changes()
     },
     cell_to_grid: function(cell, save) {
-        console.log('cell to grid', cell);
         let data = cloneDeep(this.get('data'));
         this._cell_data_to_grid(cell, data)
         this.set('data', data);
@@ -117,8 +114,6 @@ let SheetModel = widgets.DOMWidgetModel.extend({
                 let value = cell.get('value');
                 let cell_row = i - cell.get('row_start');
                 let cell_col = j - cell.get('column_start');
-                //console.log(cell.get('value'), i, j, cell_row, cell_col, ',', data.length, data[0].length, data, value)
-                //console.log(value[cell_row][cell_col])
                 if((i >= data.length) || (j >= data[i].length))
                     continue; // skip cells that are out of the sheet
                 let cell_data = data[i][j];
@@ -135,7 +130,6 @@ let SheetModel = widgets.DOMWidgetModel.extend({
                 }
                 if(value != null)
                     cell_data.value = value;
-                //console.log(i, j, cell.get('style'), value)
                 cell_data.options['type'] = cell.get('type') || cell_data.options['type'];
                 cell_data.options['style'] = extend({}, cell_data.options['style'], cell.get('style'));
                 cell_data.options['renderer'] = cell.get('renderer') || cell_data.options['renderer'];
@@ -147,10 +141,8 @@ let SheetModel = widgets.DOMWidgetModel.extend({
     },
     grid_to_cell: function() {
         if(this._updating_grid) {
-            console.log('grid to cell skipped');
             return;
         }
-        console.log('grid to cell HELL YOO', this._massive_update);
         this._updating_grid = true;
         try {
             let data = this.get('data');
@@ -204,7 +196,6 @@ let SheetModel = widgets.DOMWidgetModel.extend({
         let empty_row = () => {
             return times(this.get('columns'), empty_cell);
         };
-        //console.log('data<', data)
         if(rows < data.length) {
             data = data.slice(0, rows);
         } else if(rows > data.length) {
@@ -223,7 +214,6 @@ let SheetModel = widgets.DOMWidgetModel.extend({
             }
             data[i] = row;
         }
-        //console.log('data>', data)
         this.set('data', data);
         this.save_changes();
     }
@@ -256,14 +246,10 @@ let put_values2d = function(grid, values) {
 Handsontable.renderers.registerRenderer('styled', function customRenderer(hotInstance, td, row, column, prop, value, cellProperties) {
     let name = cellProperties.original_renderer || cellProperties.type || 'text';
     let original_renderer = Handsontable.renderers.getRenderer(name);
-    if(!original_renderer) {
-        console.error('could not find renderer: ' + original_renderer)
-    } else {
-        original_renderer.apply(this, arguments);
-        each(cellProperties.style, function(value, key) {
-            td.style[key] = value;
-        });
-    }
+    original_renderer.apply(this, arguments);
+    each(cellProperties.style, function(value, key) {
+        td.style[key] = value;
+    });
 });
 
 let testing = false;
@@ -319,7 +305,6 @@ let SheetView = widgets.DOMWidgetView.extend({
         }, this._hot_settings())));
     },
     _update_hot_settings: function() {
-        console.log('update', this._hot_settings());
         this.hot.updateSettings(this._hot_settings());
     },
     _hot_settings: function() {
@@ -348,22 +333,18 @@ let SheetView = widgets.DOMWidgetView.extend({
         if('renderer' in cellProperties)
             cellProperties.original_renderer = cellProperties['renderer'];
         cellProperties.renderer = 'styled';
-        //console.log(row, col, prop, cellProperties)
         return cellProperties;
     },
     _on_change_grid: function(changes, source) {
         let data = this.hot.getSourceDataArray();
-        console.log('table altered, make sure this is reflected in the model', data.length, data[0].length);
         this.model.set({'rows': data.length, 'columns': data[0].length});
         this.model.save_changes();
     },
     _on_change: function(changes, source) {
-        console.log('table altered...', changes, source);
         //*
         if(source == 'loadData')
             return; // ignore loadData
         if(source == 'alter') {
-            console.log('table altered, make sure this is reflected in the model');
             let data = this.hot.getSourceDataArray();
             this.model.set({'rows': data.length, 'columns': data[0].length});
             this.model.save_changes();
