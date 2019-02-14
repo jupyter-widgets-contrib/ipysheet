@@ -13,7 +13,7 @@ describe('sheet', function() {
         this.sheet = await this.manager.new_widget({
             model_module: 'ipysheet',
             model_name: 'SheetModel',
-            model_module_version : '0.1.0',
+            model_module_version : '*',
             view_module: 'jupyter-widgets',
             view_name: 'DOMWidgetView',
             view_module_version: '*',

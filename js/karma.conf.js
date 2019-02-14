@@ -2,6 +2,7 @@
 // Generated on Wed Jun 20 2018 16:46:14 GMT+0200 (CEST)
 var webpackConfig = require('./webpack.config.js');
 var webpack = require('webpack');
+var path = require('path');
 const process = require('process');
 process.env.CHROME_BIN = require('puppeteer').executablePath();
 
@@ -28,7 +29,7 @@ module.exports = function (config) {
             mode: 'development',
             resolve: {
                 extensions: ['.js'],
-                alias: {'handsontable$': '../src/handsontable.js'}
+                alias: {'handsontable$': path.resolve(__dirname, './lib/src/handsontable.js')}
             },
         },
         reporters: ['progress', 'mocha'],
