@@ -12,12 +12,12 @@ module.exports = function (config) {
         frameworks: ['mocha', 'chai', 'sinon'],
         files: [
             // we use 1 bundle for testing
-            { pattern: 'lib/src/test/sheet.js' },
+            { pattern: 'lib/src/test/index.js' },
         ],
         exclude: ['**/embed.js'],
         preprocessors: {
             // the bundle goes through webpack, and will emit (inline) source maps, which karma needs to read again
-            'lib/src/test/sheet.js': ['webpack', 'sourcemap'],
+            'lib/src/test/index.js': ['webpack', 'sourcemap'],
         },
         webpack: {
             module: {
