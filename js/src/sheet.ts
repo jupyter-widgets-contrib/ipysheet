@@ -62,7 +62,6 @@ let SheetModel = widgets.DOMWidgetModel.extend({
         this.on('change:data', this.grid_to_cell, this);
         each(this.get('cells'), (cell) => this.cell_bind(cell))
         this.cells_to_grid()
-
     },
     on_change_cells: function() {
         this._updating_grid = true;
@@ -83,9 +82,7 @@ let SheetModel = widgets.DOMWidgetModel.extend({
         this.grid_to_cell()
     },
     cell_bind: function(cell) {
-        //this.cell_to_grid(cell, false);
         cell.on('change:value change:style change:type change:renderer change:read_only change:choice change:format', function() {
-            //this.cell_to_grid(cell, true);
             this.cells_to_grid()
         }, this);
     },
@@ -96,14 +93,6 @@ let SheetModel = widgets.DOMWidgetModel.extend({
         })
         this.set('data', data);
         this.save_changes()
-    },
-    cell_to_grid: function(cell, save) {
-        let data = cloneDeep(this.get('data'));
-        this._cell_data_to_grid(cell, data)
-        this.set('data', data);
-        if(save) {
-            this.save_changes();
-        }
     },
     _cell_data_to_grid: function(cell, data) {
         let value = cell.get('value');
@@ -140,6 +129,7 @@ let SheetModel = widgets.DOMWidgetModel.extend({
             }
         }
     },
+
     grid_to_cell: function() {
         if(this._updating_grid) {
             return;
