@@ -88,12 +88,11 @@ let SheetModel = widgets.DOMWidgetModel.extend({
         }, this);
     },
     cells_to_grid: function() {
-        let data = cloneDeep(this.get('data'));
+        let data = this.get('data');
         each(this.get('cells'), (cell) => {
             this._cell_data_to_grid(cell, data)
-        })
-        this.set('data', data);
-        this.save_changes()
+        });
+        this.set_data(data);
     },
     _cell_data_to_grid: function(cell, data) {
         let value = cell.get('value');
@@ -184,7 +183,7 @@ let SheetModel = widgets.DOMWidgetModel.extend({
     },
     update_data_grid: function() {
         // create a row x column array of arrays filled with null
-        let data = cloneDeep(this.get('data')); // clone, otherwise backbone/underscore won't notice the change
+        let data = this.get('data');
         let rows = this.get('rows');
         let columns = this.get('columns');
 
@@ -212,8 +211,17 @@ let SheetModel = widgets.DOMWidgetModel.extend({
             }
             data[i] = row;
         }
-        this.set('data', data);
-        this.save_changes();
+        this.set_data(data);
+    },
+    set_data: function(new_value) {
+        this.set('data', new_value);
+
+        // Workaround for:
+        // - sending the changes to Python
+        // - triggering the change event
+        // This workaround is faster than making a deep copy of data
+        this.sync("update", this);
+        this.trigger("change:data");
     }
 }, {
     serializers: extend({
@@ -250,55 +258,35 @@ Handsontable.renderers.registerRenderer('styled', function customRenderer(hotIns
     });
 });
 
-let testing = false;
-let setTesting = function() {
-    testing = true;
-};
-
 let SheetView = widgets.DOMWidgetView.extend({
     render: function() {
-        /*
-        We debounce rendering of the table, since rendering can take quite some time, however that
-        makes unittesting difficult, since the results don't happend instanely. Maybe a better solution
-        is to use a deferred object.
-        */
-        if(testing) {
-            this.throttled_on_data_change = this._real_on_data_change;
-            this.throttled_render = this._real_table_render;
-
-        } else {
-            this.throttled_on_data_change = debounce(() => this._real_on_data_change(), 100);
-            this.throttled_render = debounce(() => this._real_table_render(), 100);
-        }
-        //
-        //this.listenTo(this.model, 'change:data', this.on_data_change)
         this.displayed.then(() => {
-            this._build_table().then(hot => {
+            this._build_table().then((hot) => {
                 this.hot = hot;
-                Handsontable.hooks.add('afterChange',    () => this._on_change(),      this.hot);
-                Handsontable.hooks.add('afterRemoveCol', () => this._on_change_grid(), this.hot);
-                Handsontable.hooks.add('afterRemoveRow', () => this._on_change_grid(), this.hot);
+                this.model.on('change:data', this.on_data_change, this);
+                this.model.on('change:column_headers change:row_headers', this._update_hot_settings, this);
+                this.model.on('change:stretch_headers change:column_width', this._update_hot_settings, this);
             });
         });
-        this.model.on('change:data', this.on_data_change, this);
-        this.model.on('change:column_headers change:row_headers', this._update_hot_settings, this);
-        this.model.on('change:stretch_headers change:column_width', this._update_hot_settings, this);
     },
     processPhosphorMessage: function(msg) {
         SheetView.__super__.processPhosphorMessage.apply(this, arguments);
         switch (msg.type) {
         case 'resize':
         case 'after-show':
-            this.throttled_render();
+            this.table_render();
             break;
         }
     },
-    _build_table(options) {
-        return Promise.resolve(new Handsontable(this.el, extend({}, options, {
+    _build_table() {
+        return Promise.resolve(new Handsontable(this.el, extend({
             data: this._get_cell_data(),
             rowHeaders: true,
             colHeaders: true,
-            cells: (...args) => this._cell(...args)
+            cells: (...args) => this._cell(...args),
+            afterChange: (changes, source) => { this._on_change(changes, source); },
+            afterRemoveCol: (changes, source) => { this._on_change_grid(changes, source); },
+            afterRemoveRow: (changes, source) => { this._on_change_grid(changes, source); }
         }, this._hot_settings())));
     },
     _update_hot_settings: function() {
@@ -338,9 +326,9 @@ let SheetView = widgets.DOMWidgetView.extend({
         this.model.save_changes();
     },
     _on_change: function(changes, source) {
-        //*
-        if(source == 'loadData')
-            return; // ignore loadData
+        if(this.hot === undefined || source == 'loadData') {
+            return;
+        }
         if(source == 'alter') {
             let data = this.hot.getSourceDataArray();
             this.model.set({'rows': data.length, 'columns': data[0].length});
@@ -352,42 +340,32 @@ let SheetView = widgets.DOMWidgetView.extend({
         //this.hot.validateCells(_.bind(function(valid){
         //    console.log('valid?', valid)
         //    if(valid) {
-        let data = cloneDeep(this.model.get('data'));
+        let data = this.model.get('data');
         let value_data = this.hot.getSourceDataArray();
         put_values2d(data, value_data);
-        this.model.set('data', cloneDeep(data));
-        this.model.save_changes();
+        this.model.set_data(data);
         //    }
         //}, this))
         /**/
     },
     on_data_change: function() {
-        this.throttled_on_data_change();
-        //this._real_on_data_change()
-    },
-    _real_on_data_change: function() {
         let data = extract2d(this.model.get('data'), 'value');
         let rows = data.length;
         let cols = data[0].length;
-        let changed = false;
         let rows_previous = this.hot.countRows();
         let cols_previous = this.hot.countCols();
         //*
         if(rows > rows_previous) {
             this.hot.alter('insert_row', rows-1, rows-rows_previous);
-            changed = true;
         }
         if(rows < this.hot.countRows()) {
             this.hot.alter('remove_row', rows-1, rows_previous-rows);
-            changed = true;
         }
         if(cols > cols_previous) {
             this.hot.alter('insert_col', cols-1, cols-cols_previous);
-            changed = true;
         }
         if(cols < cols_previous) {
             this.hot.alter('remove_col', cols-1, cols_previous-cols);
-            changed = true;
         }/**/
 
         this.hot.loadData(data);
@@ -398,8 +376,7 @@ let SheetView = widgets.DOMWidgetView.extend({
             colHeaders: this.model.get('column_headers'),
             rowHeaders: this.model.get('row_headers')
         });
-        this.throttled_render();
-        //this.hot.render()
+        this.table_render();
     },
     set_cell: function(row, column, value) {
         this.hot.setDataAtCell(row, column, value);
@@ -407,7 +384,7 @@ let SheetView = widgets.DOMWidgetView.extend({
     get_cell: function(row, column) {
         return this.hot.getDataAtCell(row, column);
     },
-    _real_table_render: function() {
+    table_render: function() {
         this.hot.render();
     }
 });
@@ -418,6 +395,5 @@ export {
     SheetModel,
     SheetView,
     CellRangeModel,
-    Handsontable,
-    setTesting
+    Handsontable
 };
