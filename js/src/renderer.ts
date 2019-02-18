@@ -14,6 +14,7 @@ let RendererModel = widgets.WidgetModel.extend({
             _model_name : 'RendererModel',
             _model_module : 'ipysheet',
             _model_module_version : semver_range,
+            name: '',
             code: ''
         });
     },

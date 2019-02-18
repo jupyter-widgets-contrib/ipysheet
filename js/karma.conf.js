@@ -2,6 +2,7 @@
 // Generated on Wed Jun 20 2018 16:46:14 GMT+0200 (CEST)
 var webpackConfig = require('./webpack.config.js');
 var webpack = require('webpack');
+var path = require('path');
 const process = require('process');
 process.env.CHROME_BIN = require('puppeteer').executablePath();
 
@@ -12,12 +13,12 @@ module.exports = function (config) {
         frameworks: ['mocha', 'chai', 'sinon'],
         files: [
             // we use 1 bundle for testing
-            { pattern: 'lib/src/test/sheet.js' },
+            { pattern: 'lib/src/test/index.js' },
         ],
         exclude: ['**/embed.js'],
         preprocessors: {
             // the bundle goes through webpack, and will emit (inline) source maps, which karma needs to read again
-            'lib/src/test/sheet.js': ['webpack', 'sourcemap'],
+            'lib/src/test/index.js': ['webpack', 'sourcemap'],
         },
         webpack: {
             module: {
@@ -28,7 +29,7 @@ module.exports = function (config) {
             mode: 'development',
             resolve: {
                 extensions: ['.js'],
-                alias: {'handsontable$': '../src/handsontable.js'}
+                alias: {'handsontable$': path.resolve(__dirname, './lib/src/handsontable.js')}
             },
         },
         reporters: ['progress', 'mocha'],
