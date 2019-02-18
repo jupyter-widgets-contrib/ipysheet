@@ -1,0 +1,7 @@
+name: ipysheet
+channels:
+  - conda-forge
+dependencies:
+  - ipysheet=0.2.1
+  - flexx
+  - pandas
