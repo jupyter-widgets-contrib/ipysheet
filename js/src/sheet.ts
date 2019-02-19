@@ -257,7 +257,6 @@ let setTesting = function() {
 
 let SheetView = widgets.DOMWidgetView.extend({
     render: function() {
-        this._refresh_requested = false;
         /*
         We debounce rendering of the table, since rendering can take quite some time, however that
         makes unittesting difficult, since the results don't happend instanely. Maybe a better solution
@@ -408,16 +407,8 @@ let SheetView = widgets.DOMWidgetView.extend({
     get_cell: function(row, column) {
         return this.hot.getDataAtCell(row, column);
     },
-    refresh_table: function() {
-        //this.hot.render()
-        if(!this._refresh_requested) {
-            this._refresh_requested = true;
-            requestAnimationFrame(() => this._real_refresh_table());
-        }
-    },
     _real_table_render: function() {
         this.hot.render();
-        this._refresh_requested = false;
     }
 });
 
