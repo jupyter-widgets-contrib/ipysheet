@@ -129,8 +129,10 @@ setup_args = {
             'ipysheet/static/handsontable.js',
             'ipysheet/static/extension.js',
             'ipysheet/static/index.js',
+            'ipysheet/static/index.js.map',
             'ipysheet/static/extension-renderer.js',
-            'ipysheet/static/renderer.js'
+            'ipysheet/static/renderer.js',
+            'ipysheet/static/renderer.js.map'
         ]),
         ('etc/jupyter/nbconfig/notebook.d' , ['ipysheet.json'])
     ],

@@ -28,7 +28,6 @@ module.exports = [
         // extension.
         //
         entry: './lib/src/extension.js',
-        devtool: 'inline-source-map',
         resolve: resolve,
         module: {
             rules: rules
@@ -42,7 +41,6 @@ module.exports = [
     {
         // same for renderer
         entry: './lib/src/extension-renderer.js',
-        devtool: 'inline-source-map',
         resolve: resolve,
         output: {
             filename: 'extension-renderer.js',
@@ -58,7 +56,7 @@ module.exports = [
         // It must be an amd module
         //
         entry: './lib/src/index.js',
-        devtool: 'inline-source-map',
+        devtool: 'source-map',
         resolve: resolve,
         output: {
             filename: 'index.js',
@@ -73,7 +71,7 @@ module.exports = [
     {
         // same for render
         entry: './lib/src/renderer.js',
-        devtool: 'inline-source-map',
+        devtool: 'source-map',
         resolve: resolve,
         output: {
             filename: 'renderer.js',
@@ -101,7 +99,6 @@ module.exports = [
         // by the custom widget embedder.
         //
         entry: './lib/src/embed.js',
-        devtool: 'inline-source-map',
         resolve: resolve,
         output: {
             filename: 'index.js',
@@ -117,7 +114,6 @@ module.exports = [
     {
         // same for renderer
         entry: './lib/src/renderer.js',
-        devtool: 'inline-source-map',
         resolve: resolve,
         output: {
             filename: 'renderer.js',
