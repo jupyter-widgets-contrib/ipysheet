@@ -27,7 +27,8 @@ let CellRangeModel = widgets.WidgetModel.extend({
             squeeze_row: true,
             squeeze_column: true,
             transpose: false,
-            format: '0.[000]'
+            numeric_format: '0.[000]',
+            date_format: 'YYYY/MM/DD'
         });
     },
 });
@@ -82,7 +83,7 @@ let SheetModel = widgets.DOMWidgetModel.extend({
         this.grid_to_cell()
     },
     cell_bind: function(cell) {
-        cell.on('change:value change:style change:type change:renderer change:read_only change:choice change:format', function() {
+        cell.on('change:value change:style change:type change:renderer change:read_only change:choice change:numeric_format change:date_format', function() {
             this.cells_to_grid()
         }, this);
     },
@@ -125,7 +126,13 @@ let SheetModel = widgets.DOMWidgetModel.extend({
                 cell_data.options['renderer'] = cell.get('renderer') || cell_data.options['renderer'];
                 cell_data.options['readOnly'] = cell.get('read_only') || cell_data.options['readOnly'];
                 cell_data.options['source'] = cell.get('choice') || cell_data.options['source'];
-                cell_data.options['format'] = cell.get('format') || cell_data.options['format'];
+                if (cell.get('numeric_format') && cell.get('type') == 'numeric') {
+                    cell_data.options['numericFormat'] = {'pattern': cell.get('numeric_format')};
+                }
+                if (cell.get('date_format') && cell.get('type') == 'date') {
+                    cell_data.options['correctFormat'] = true;
+                    cell_data.options['dateFormat'] = cell.get('date_format') || cell_data.options['dateFormat'];
+                }
             }
         }
     },
