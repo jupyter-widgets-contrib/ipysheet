@@ -248,7 +248,4 @@ describe('sheet', function() {
         expect(data[0][2].options.style.backgrouncColor, 'effective backgrouncColor should be blue').to.equal('orange');
         expect(range.get('style').color, 'but the original should not be changed').to.equal('red');
     })
-    it('should fail', function() {
-        expect(false).to.be.false;
-    });
 })
