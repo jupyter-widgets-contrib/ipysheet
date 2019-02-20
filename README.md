@@ -2,7 +2,7 @@
 
 Spreadsheet in the Jupyter notebook:
 
-   * Try it out using binder: [![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/QuantStack/ipysheet/master?filepath=docs%2Fsource%2Findex.ipynb)
+   * Try it out using binder: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/QuantStack/ipysheet/master?filepath=docs%2Fsource%2Findex.ipynb)
    * Or check out the documentation at https://ipysheet.readthedocs.io/
 
 
