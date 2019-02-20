@@ -8,8 +8,6 @@ import { extend } from 'lodash';
 // @ts-ignore
 import {Handsontable} from 'handsontable';
 
-ipysheet.setTesting()
-
 describe('renderer', function() {
     beforeEach(async function() {
         this.manager = new DummyManager({ipysheet: extend(ipysheet, ipysheet_renderer)});

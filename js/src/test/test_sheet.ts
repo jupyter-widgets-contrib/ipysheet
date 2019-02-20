@@ -4,7 +4,26 @@ import * as ipysheet from '../sheet';
 import {DummyManager} from './dummy-manager';
 import { expect } from 'chai';
 
-ipysheet.setTesting()
+var make_view = async function() {
+    const options = { model: this.sheet };
+    const view = await this.manager.create_view(this.sheet); //new ipysheet.SheetView(options);
+    await this.manager.display_view(undefined, view);
+    return view;
+}
+
+var data_cloner = function() {
+    var data = this.sheet.get('data')
+    return JSON.parse(JSON.stringify(data))
+}
+
+var wait_validate = async function(view) {
+    return new Promise(function(resolve, reject) {
+        view.hot.validateCells(function(valid) {
+            //console.log('waited for validate,', valid)
+            resolve(valid)
+        })
+    })
+}
 
 describe('sheet', function() {
     beforeEach(async function() {
@@ -64,48 +83,26 @@ describe('sheet', function() {
         expect(this.sheet.get('data')[0]).to.have.lengthOf(5);
         expect(this.sheet.get('data')[1]).to.have.lengthOf(5);
     })
-    var make_view = async function() {
-        const options = { model: this.sheet };
-        const view = await this.manager.create_view(this.sheet); //new ipysheet.SheetView(options);
-        await this.manager.display_view(undefined, view);
-        return view;
-    }
-    var data_cloner = function() {
-        var data = this.sheet.get('data')
-        return JSON.parse(JSON.stringify(data))
-    }
-    var wait_validate = async function(view) {
-        return new Promise(function(resolve, reject) {
-            view.hot.validateCells(function(valid) {
-                //console.log('waited for validate,', valid)
-                resolve(valid)
-            })
-        })
-    }
     it('model reflecting view', async function() {
         var view = await make_view.call(this)
         view.set_cell(1,2, 123)
         await wait_validate(view)
         expect(this.sheet.get('data')[1][2].value, 'cell changes should be reflected in model').to.equal(123);
-        /**/
     })
     it('view reflecting model', async function() {
         var view = await make_view.call(this)
         var data = this.sheet.get('data')
-        console.log(data_clone)
-        var data_clone = data_cloner.call(this)
-        data_clone[1][2].value = 123
-        expect(data[1][2].value, 'cloned data check').to.not.equal(123);
-        this.sheet.set('data', data_clone)
+        data[1][2].value = 123
+        this.sheet.set_data(data)
         expect(view.get_cell(1,2), 'model change should be reflected in view').to.equal(123);
     })
     it('view reflecting different view', async function() {
         var view1 = await make_view.call(this)
         var view2 = await make_view.call(this)
-        view1.set_cell(1,2, 123)
+        view1.set_cell(1, 2, 123)
         var bla = await wait_validate(view1)
-        expect(view1.get_cell(1,2), 'model change should be reflected in view').to.equal(123);
-        expect(view1.get_cell(1,2), 'cell changes in one view should be reflected in a related view'). to.equal(view2.get_cell(1,2));
+        expect(view1.get_cell(1, 2), 'model change should be reflected in view').to.equal(123);
+        expect(view1.get_cell(1, 2), 'cell changes in one view should be reflected in a related view'). to.equal(view2.get_cell(1,2));
     })
     // we don't validate at the moment
     it.skip('invalid sheet should not propagate to model', async function() {
