@@ -1,6 +1,7 @@
 import * as widgets  from '@jupyter-widgets/base';
 import {cloneDeep, extend, includes as contains, each, debounce, times, map, unzip as transpose} from 'lodash';
 import * as pkg from '../package.json';
+import './widget_cell_type';
 // @ts-ignore
 import * as Handsontable from 'handsontable';
 
@@ -35,6 +36,10 @@ let CellRangeModel = widgets.WidgetModel.extend({
             date_format: 'YYYY/MM/DD'
         });
     },
+}, {
+    serializers: extend({
+        value: { deserialize: widgets.unpack_models }
+    }, widgets.WidgetModel.serializers)
 });
 
 
@@ -87,9 +92,9 @@ let SheetModel = widgets.DOMWidgetModel.extend({
         this.grid_to_cell()
     },
     cell_bind: function(cell) {
-        cell.on('change:value change:style change:type change:renderer change:read_only change:choice change:numeric_format change:date_format', function() {
+        cell.on_some_change(['value', 'style', 'type', 'renderer', 'read_only', 'choice', 'numeric_format', 'date_format'], () => {
             this.cells_to_grid();
-        }, this);
+        });
     },
     cells_to_grid: function() {
         each(this.get('cells'), (cell) => {
@@ -220,7 +225,8 @@ let SheetModel = widgets.DOMWidgetModel.extend({
     }
 }, {
     serializers: extend({
-        cells: { deserialize: widgets.unpack_models }
+        cells: { deserialize: widgets.unpack_models },
+        data: { deserialize: widgets.unpack_models }
     }, widgets.DOMWidgetModel.serializers)
 });
 
@@ -255,13 +261,14 @@ Handsontable.renderers.registerRenderer('styled', function customRenderer(hotIns
 
 let SheetView = widgets.DOMWidgetView.extend({
     render: function() {
-        this.displayed.then(() => {
-            this._build_table().then((hot) => {
-                this.hot = hot;
-                this.model.on('data_change', this.on_data_change, this);
-                this.model.on('change:column_headers change:row_headers', this._update_hot_settings, this);
-                this.model.on('change:stretch_headers change:column_width', this._update_hot_settings, this);
-            });
+        // this.widget_view_promises = {}
+        this.widget_views = {}
+        // promise used for unittesting
+        this._table_constructed = this.displayed.then(async () => {
+            this.hot = await this._build_table();
+            this.model.on('data_change', this.on_data_change, this);
+            this.model.on('change:column_headers change:row_headers', this._update_hot_settings, this);
+            this.model.on('change:stretch_headers change:column_width', this._update_hot_settings, this);
         });
     },
     processPhosphorMessage: function(msg) {
@@ -273,8 +280,47 @@ let SheetView = widgets.DOMWidgetView.extend({
             break;
         }
     },
-    _build_table() {
-        return Promise.resolve(new Handsontable(this.el, extend({
+    async _build_widgets_views() {
+        let data = this.model.data;
+        let rows = data.length;
+        let cols = data[0].length;
+        let widget_view_promises = {}
+        for (let row = 0; row < rows; row++) {
+            for (let col = 0; col < cols; col++) {
+                if (data[row][col] && data[row][col].options['type'] == 'widget') {
+                    let widget = data[row][col].value;
+                    let previous_view = this.widget_views[[row, col]];
+                    if (previous_view) {
+                        if(previous_view.model.cid == widget.cid) { // if this a proper comparison?
+                            widget_view_promises[[row, col]] = Promise.resolve(previous_view)
+                        } else {
+                            previous_view.remove()
+                            previous_view = null;
+                        }
+                    }
+                    if (!previous_view && widget && widget.widget_manager) {
+                        widget_view_promises[[row, col]] = widget.widget_manager.create_view(widget)
+                    }
+                }
+            }
+        }
+        for (let key in this.widget_views) {
+            if(this.widget_views.hasOwnProperty(key)) {
+                let [row, col] = String(key).split(',');
+                let widget_view = this.widget_views[key];
+                if(data[row][col] && data[row][col].value && data[row][col].value.cid == widget_view.model.cid) {
+                    // good, the previous widget_view should be reused
+                } else {
+                    // we have a leftover view from the previous run
+                    widget_view.remove()
+                }
+            }
+        }
+        this.widget_views = await widgets.resolvePromisesDict(widget_view_promises)
+    },
+    async _build_table() {
+        await this._build_widgets_views()
+        return new Handsontable(this.el, extend({
             data: this._get_cell_data(),
             rowHeaders: true,
             colHeaders: true,
@@ -282,7 +328,7 @@ let SheetView = widgets.DOMWidgetView.extend({
             afterChange: (changes, source) => { this._on_change(changes, source); },
             afterRemoveCol: (changes, source) => { this._on_change_grid(changes, source); },
             afterRemoveRow: (changes, source) => { this._on_change_grid(changes, source); }
-        }, this._hot_settings())));
+        }, this._hot_settings()));
     },
     _update_hot_settings: function() {
         this.hot.updateSettings(this._hot_settings());
@@ -313,6 +359,9 @@ let SheetView = widgets.DOMWidgetView.extend({
         if('renderer' in cellProperties)
             cellProperties.original_renderer = cellProperties['renderer'];
         cellProperties.renderer = 'styled';
+        if(this.widget_views[[row, col]]) {
+            cellProperties.widget_view = this.widget_views[[row, col]]
+        }
         return cellProperties;
     },
     _on_change_grid: function(changes, source) {
@@ -344,34 +393,39 @@ let SheetView = widgets.DOMWidgetView.extend({
         /**/
     },
     on_data_change: function() {
-        let data = extract2d(this.model.data, 'value');
-        let rows = data.length;
-        let cols = data[0].length;
-        let rows_previous = this.hot.countRows();
-        let cols_previous = this.hot.countCols();
-        //*
-        if(rows > rows_previous) {
-            this.hot.alter('insert_row', rows-1, rows-rows_previous);
-        }
-        if(rows < this.hot.countRows()) {
-            this.hot.alter('remove_row', rows-1, rows_previous-rows);
-        }
-        if(cols > cols_previous) {
-            this.hot.alter('insert_col', cols-1, cols-cols_previous);
-        }
-        if(cols < cols_previous) {
-            this.hot.alter('remove_col', cols-1, cols_previous-cols);
-        }/**/
+        // we create a promise here such that the unittests can wait till the data is really set
+        this._last_data_set = new Promise(async (resolve, reject) => {
+            let data = extract2d(this.model.data, 'value');
+            let rows = data.length;
+            let cols = data[0].length;
+            let rows_previous = this.hot.countRows();
+            let cols_previous = this.hot.countCols();
+            //*
+            if(rows > rows_previous) {
+                this.hot.alter('insert_row', rows-1, rows-rows_previous);
+            }
+            if(rows < this.hot.countRows()) {
+                this.hot.alter('remove_row', rows-1, rows_previous-rows);
+            }
+            if(cols > cols_previous) {
+                this.hot.alter('insert_col', cols-1, cols-cols_previous);
+            }
+            if(cols < cols_previous) {
+                this.hot.alter('remove_col', cols-1, cols_previous-cols);
+            }/**/
+            await this._build_widgets_views()
 
-        this.hot.loadData(data);
-        // if headers are not shows, loadData will make them show again, toggling
-        // will fix this (handsontable bug?)
-        this.hot.updateSettings({colHeaders: true, rowHeaders: true});
-        this.hot.updateSettings({
-            colHeaders: this.model.get('column_headers'),
-            rowHeaders: this.model.get('row_headers')
-        });
-        this.table_render();
+            this.hot.loadData(data);
+            // if headers are not shows, loadData will make them show again, toggling
+            // will fix this (handsontable bug?)
+            this.hot.updateSettings({colHeaders: true, rowHeaders: true});
+            this.hot.updateSettings({
+                colHeaders: this.model.get('column_headers'),
+                rowHeaders: this.model.get('row_headers')
+            });
+            this.table_render();
+            resolve()
+        })
     },
     set_cell: function(row, column, value) {
         this.hot.setDataAtCell(row, column, value);

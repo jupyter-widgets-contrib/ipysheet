@@ -3,6 +3,7 @@ import pandas as pd
 import ipysheet
 import pytest
 from ipysheet.utils import transpose
+import ipywidgets as widgets
 
 
 def test_transpose():
@@ -66,7 +67,7 @@ def test_calculation():
     b = ipysheet.cell(0, 0, value=2)
     c = ipysheet.cell(0, 0, value=0)
 
-    @ipysheet.calculation(inputs=[a, b], output=c)
+    @ipysheet.calculation(inputs=[a, (b, 'value')], output=c)
     def add(a, b):  # pylint: disable=unused-variable
         return a + b
 
@@ -87,6 +88,34 @@ def test_calculation():
     assert c.type == 'd'
     b.value = 1
     assert c.type == 'c'
+
+    ipysheet.sheet()
+    a = ipysheet.cell(0, 0, value=1)
+    b = ipysheet.cell(0, 0, value=widgets.IntSlider(value=2))
+    c = widgets.IntSlider(max=0)
+    d = ipysheet.cell(0, 0, value=1)
+
+    @ipysheet.calculation(inputs=[a, (b, 'value'), (c, 'max')], output=d)
+    def add3(a, b, c):  # pylint: disable=unused-variable
+        return a + b + c
+
+    assert d.value == 3
+    a.value = 10
+    assert d.value == 10+2
+    b.value.value = 20
+    assert d.value == 10+20
+    c.max = 30
+    assert d.value == 10+20+30
+
+    b.value = widgets.IntSlider(value=2)
+    assert d.value == 10+2+30
+    b.value = 20
+    assert d.value == 10+20+30
+
+    a.value = widgets.IntSlider(value=100)
+    assert d.value == 100+20+30
+    a.value.value = 10
+    assert d.value == 10+20+30
 
 
 def test_getitem():
