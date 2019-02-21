@@ -6,7 +6,7 @@ import {DummyManager} from './dummy-manager';
 import { expect } from 'chai';
 import { extend } from 'lodash';
 // @ts-ignore
-import {Handsontable} from 'handsontable';
+import * as Handsontable from 'handsontable';
 
 describe('renderer', function() {
     beforeEach(async function() {

@@ -29,7 +29,6 @@ module.exports = function (config) {
             mode: 'development',
             resolve: {
                 extensions: ['.js'],
-                alias: {'handsontable$': path.resolve(__dirname, './lib/src/handsontable.js')}
             },
         },
         reporters: ['progress', 'mocha'],
