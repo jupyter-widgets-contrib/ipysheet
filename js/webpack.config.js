@@ -127,7 +127,7 @@ module.exports = [
         externals: ['@jupyter-widgets/base', 'handsontable']
     },
     {
-        entry: './lib/src/handsontable_mod.js',
+        entry: './node_modules/handsontable/dist/handsontable.min.js',
         output: {
             filename: 'handsontable.js',
             path: path.resolve(__dirname, '../ipysheet/static'),
