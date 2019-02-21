@@ -16,14 +16,14 @@
   ],
   "scripts": {
     "prepare": "npm run build",
-    "build": "tsc --project . && webpack --mode=development",
+    "build": "tsc --project . || webpack --mode=development",
     "watch": "npm-run-all -p watch:*",
     "watch:lib": "tsc -w --project .",
     "watch:nbextension": "webpack --watch --mode=development",
     "test": "karma start --single-run"
   },
   "jupyterlab": {
-    "extension": "src/labplugin"
+    "extension": "lib/src/labplugin"
   },
   "devDependencies": {
     "@types/expect.js": "^0.3.29",
@@ -54,7 +54,6 @@
   },
   "dependencies": {
     "@jupyter-widgets/base": "^1.0.1",
-    "@jupyter-widgets/jupyterlab-manager": "^0.28.0",
     "handsontable": "^6.2.2",
     "lodash": "^4.17.4",
     "underscore": "^1.8.3"

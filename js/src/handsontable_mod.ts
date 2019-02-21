@@ -1,4 +1,4 @@
-import * as Handsontable from 'handsontable/dist/handsontable.full.js';
+import * as Handsontable from 'handsontable';
 
 import 'pikaday/css/pikaday.css';
 import 'handsontable/dist/handsontable.min.css';
