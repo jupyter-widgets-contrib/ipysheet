@@ -87,7 +87,25 @@ def from_dataframe(dataframe):
 
 
 def _extract_column(data, idx):
-    return [row[idx]['value'] for row in data]
+    import numpy as np
+    import pandas as pd
+
+    if len(data) == 0:
+        return np.array()
+
+    type = data[0][idx]['options'].get('type', 'text')
+    arr = [row[idx]['value'] for row in data]
+    print(type)
+    if type == 'date':
+        d = pd.to_datetime(arr)
+
+        return np.array(d, dtype='M')
+    elif type == 'checkbox':
+        return np.array(arr, dtype=np.bool)
+    elif type == 'numeric':
+        return np.array(arr, dtype='f')
+    else:
+        return np.array(arr, dtype='U')
 
 
 def to_dataframe(sheet):
