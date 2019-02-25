@@ -2,7 +2,11 @@ import * as widgets  from '@jupyter-widgets/base';
 import {cloneDeep, extend, includes as contains, each, debounce, times, map, unzip as transpose} from 'lodash';
 import * as pkg from '../package.json';
 // @ts-ignore
-import {Handsontable} from 'handsontable';
+import * as Handsontable from 'handsontable';
+
+import 'pikaday/css/pikaday.css';
+import 'handsontable/dist/handsontable.min.css';
+import '../../src/custom.css';
 
 let semver_range = '~' + pkg.version;
 

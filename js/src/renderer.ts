@@ -2,7 +2,7 @@ import * as widgets  from '@jupyter-widgets/base';
 import {extend} from 'lodash';
 import * as pkg from '../package.json';
 // @ts-ignore
-import {Handsontable} from 'handsontable';
+import * as Handsontable from 'handsontable';
 
 let version = pkg.version;
 let semver_range = '~' + version;
