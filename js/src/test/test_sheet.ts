@@ -12,7 +12,7 @@ var make_view = async function() {
 }
 
 var data_cloner = function() {
-    var data = this.sheet.get('data')
+    var data = this.sheet.data
     return JSON.parse(JSON.stringify(data))
 }
 
@@ -49,51 +49,51 @@ describe('sheet', function() {
         expect(this.sheet.get('columns')).to.equal(4);
     })
     it('data init', function() {
-        //console.log(this.sheet.get('data'))
-        expect(this.sheet.get('data')).to.have.lengthOf(2);
-        expect(this.sheet.get('data')[0]).to.have.lengthOf(4);
+        //console.log(this.sheet.data)
+        expect(this.sheet.data).to.have.lengthOf(2);
+        expect(this.sheet.data[0]).to.have.lengthOf(4);
     })
     it('data row grow', function() {
         // test grow
-        this.sheet.get('data')[1][2].value = 123
+        this.sheet.data[1][2].value = 123
         this.sheet.set('rows', 3)
-        expect(this.sheet.get('data')).to.have.lengthOf(3);
-        expect(this.sheet.get('data')[0]).to.have.lengthOf(4);
-        expect(this.sheet.get('data')[2]).to.have.lengthOf(4);
-        expect(this.sheet.get('data')[1][2].value, 'data should be preserved when changing size').to.equal(123);
+        expect(this.sheet.data).to.have.lengthOf(3);
+        expect(this.sheet.data[0]).to.have.lengthOf(4);
+        expect(this.sheet.data[2]).to.have.lengthOf(4);
+        expect(this.sheet.data[1][2].value, 'data should be preserved when changing size').to.equal(123);
 
         this.sheet.set('rows', 5)
-        expect(this.sheet.get('data')).to.have.lengthOf(5);
-        expect(this.sheet.get('data')[0]).to.have.lengthOf(4);
-        expect(this.sheet.get('data')[2]).to.have.lengthOf(4);
-        expect(this.sheet.get('data')[1][2].value, 'data should be preserved when changing size').to.equal(123);
+        expect(this.sheet.data).to.have.lengthOf(5);
+        expect(this.sheet.data[0]).to.have.lengthOf(4);
+        expect(this.sheet.data[2]).to.have.lengthOf(4);
+        expect(this.sheet.data[1][2].value, 'data should be preserved when changing size').to.equal(123);
     })
     it('data column shrink', function() {
-        this.sheet.get('data')[1][2].value = 123
-        this.sheet.get('data')[1][3].value = 1234
+        this.sheet.data[1][2].value = 123
+        this.sheet.data[1][3].value = 1234
         this.sheet.set('columns', 3)
-        expect(this.sheet.get('data')).to.have.lengthOf(2);
-        expect(this.sheet.get('data')[0]).to.have.lengthOf(3);
-        expect(this.sheet.get('data')[1]).to.have.lengthOf(3);
-        expect(this.sheet.get('data')[1][2].value, 'data should be preserved when changing size').to.equal(123);
+        expect(this.sheet.data).to.have.lengthOf(2);
+        expect(this.sheet.data[0]).to.have.lengthOf(3);
+        expect(this.sheet.data[1]).to.have.lengthOf(3);
+        expect(this.sheet.data[1][2].value, 'data should be preserved when changing size').to.equal(123);
     })
     it('data column grow', function() {
         this.sheet.set('columns', 5)
-        expect(this.sheet.get('data')).to.have.lengthOf(2);
-        expect(this.sheet.get('data')[0]).to.have.lengthOf(5);
-        expect(this.sheet.get('data')[1]).to.have.lengthOf(5);
+        expect(this.sheet.data).to.have.lengthOf(2);
+        expect(this.sheet.data[0]).to.have.lengthOf(5);
+        expect(this.sheet.data[1]).to.have.lengthOf(5);
     })
     it('model reflecting view', async function() {
         var view = await make_view.call(this)
         view.set_cell(1,2, 123)
         await wait_validate(view)
-        expect(this.sheet.get('data')[1][2].value, 'cell changes should be reflected in model').to.equal(123);
+        expect(this.sheet.data[1][2].value, 'cell changes should be reflected in model').to.equal(123);
     })
     it('view reflecting model', async function() {
         var view = await make_view.call(this)
-        var data = this.sheet.get('data')
+        var data = this.sheet.data
         data[1][2].value = 123
-        this.sheet.set_data(data)
+        this.sheet.trigger('data_change')
         expect(view.get_cell(1,2), 'model change should be reflected in view').to.equal(123);
     })
     it('view reflecting different view', async function() {
@@ -115,7 +115,7 @@ describe('sheet', function() {
         view.set_cell(1,2, 'wrong')
         await wait_validate(view)
         expect(view.get_cell(1,2), 'sheet will reflect invalid data').to.equal('wrong');
-        expect(this.sheet.get('data')[1][2].value, 'model should not have invalid data').to.not.equal('wrong');
+        expect(this.sheet.data[1][2].value, 'model should not have invalid data').to.not.equal('wrong');
     })
 
     var make_cell = async function(options, skip_add) {
@@ -152,15 +152,15 @@ describe('sheet', function() {
     }
     it('cell changes should be reflected in datamodel', async function() {
         var cell = await make_cell.apply(this, [{value: 777}])
-        var data = this.sheet.get('data')
+        var data = this.sheet.data
         expect(data[1][2].value, 'for initial value').to.equal(777);
         cell.set('value', 999)
-        var data = this.sheet.get('data')
+        var data = this.sheet.data
         expect(data[1][2].value, 'when cell.value is change').to.equal(999);
     })
     it('numeric cell with value zero should indeed have value zero', async function() {
         await make_cell.apply(this, [{value: 0.00, type:'numeric'}]);
-        var data = this.sheet.get('data');
+        var data = this.sheet.data;
         expect(data[1][2].value, 'for initial value').to.equal(0);
     })
     it('multiple cells added', async function() {
@@ -168,13 +168,13 @@ describe('sheet', function() {
         var cell2 = await make_cell.apply(this, [{row_start: 0, row_end:0, value: 555}, true])
         var cells = this.sheet.get('cells');
         this.sheet.set('cells', [...cells, cell1, cell2])
-        var data = this.sheet.get('data')
+        var data = this.sheet.data
         console.log(data[1][2], data[0][2])
         expect(data[1][2].value, 'for initial value').to.equal(777);
         expect(data[0][2].value, 'for initial value').to.equal(555);
         cell1.set('value', 999)
         cell2.set('value', 444)
-        var data = this.sheet.get('data')
+        var data = this.sheet.data
         expect(data[1][2].value, 'when cell.value is change').to.equal(999);
         expect(data[0][2].value, 'when cell.value is change').to.equal(444);
     })
@@ -182,7 +182,8 @@ describe('sheet', function() {
         var cell = await make_cell.apply(this, [{value: [[777]]}])
         var data = data_cloner.call(this)
         data[1][2].value = 999;
-        this.sheet.set('data', data)
+        this.sheet.data = data;
+        this.sheet.trigger('data_change');
         expect(cell.get('value'), 'when the data in the sheet changes').to.equal(999);
     })
     it('range should be reflected in all cells', async function() {

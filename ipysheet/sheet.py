@@ -82,7 +82,6 @@ class Sheet(widgets.DOMWidget):
     _model_module_version = Unicode(semver_range_frontend).tag(sync=True)
     rows = CInt(3).tag(sync=True)
     columns = CInt(4).tag(sync=True)
-    data = List(Instance(list), [[]]).tag(sync=True)
     cells = Tuple().tag(sync=True, **widgets.widget_serialization)
     named_cells = Dict(value={}, allow_none=False).tag(sync=True, **widgets.widget_serialization)
     row_headers = Union([Bool(), List(Unicode())], default_value=True).tag(sync=True)
