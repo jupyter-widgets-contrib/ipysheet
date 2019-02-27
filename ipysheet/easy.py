@@ -107,7 +107,7 @@ def cell(row, column, value=0., type=None, color=None, background_color=None,
         style['fontWeight'] = font_weight
     c = Cell(value=value, row_start=row, column_start=column, row_end=row, column_end=column,
              squeeze_row=True, squeeze_column=True, type=type, style=style, choice=choice,
-             read_only=False, numeric_format=numeric_format, date_format=date_format,
+             read_only=read_only, numeric_format=numeric_format, date_format=date_format,
              renderer=renderer, **kwargs)
     if _hold_cells:
         _cells += (c,)
