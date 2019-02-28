@@ -249,6 +249,12 @@ def test_renderer():
     assert renderer.name == 'name2'
 
 
+def _format_date(date):
+    import pandas as pd
+
+    return pd.to_datetime(str(date)).strftime('%Y/%m/%d')
+
+
 def test_to_dataframe():
     sheet = ipysheet.sheet(rows=5, columns=4)
     ipysheet.cell(0, 0, value=True)
@@ -261,7 +267,7 @@ def test_to_dataframe():
     assert np.all(df['C'].tolist() == [None, 543, None, None, None])
     assert np.all(df['D'].tolist() == [1.2,  1.3,  1.4,  1.5,  1.6])
 
-    sheet = ipysheet.sheet(rows=4, columns=4, column_headers=['t0', 't1', 't2', 't3'])
+    sheet = ipysheet.sheet(rows=4, columns=4, column_headers=['c0', 'c1', 'c2', 'c3'], row_headers=['r0', 'r1', 'r2', 'r3'])
     ipysheet.cell_range(
         [
             [2, 34, 543, 23],
@@ -274,10 +280,10 @@ def test_to_dataframe():
     )
 
     df = ipysheet.to_dataframe(sheet)
-    assert np.all(df['t0'].tolist() == [2, 34, 543, 23])
-    assert np.all(df['t1'].tolist() == [1,  1,   1,  1])
-    assert np.all(df['t2'].tolist() == [2,  2, 222, 22])
-    assert np.all(df['t3'].tolist() == [2,  0, 111, 11])
+    assert np.all(df['c0'].tolist() == [2, 34, 543, 23])
+    assert np.all(df['c1'].tolist() == [1,  1,   1,  1])
+    assert np.all(df['c2'].tolist() == [2,  2, 222, 22])
+    assert np.all(df['c3'].tolist() == [2,  0, 111, 11])
 
     sheet = ipysheet.sheet(rows=4, columns=4, column_headers=['t0', 't1', 't2', 't3'])
     ipysheet.cell_range(
@@ -297,8 +303,19 @@ def test_to_dataframe():
     assert np.all(df['t2'].tolist() == [543, 1, 222, 111])
     assert np.all(df['t3'].tolist() == [23,  1,  22,  11])
 
+    sheet = ipysheet.sheet(rows=0, columns=0)
 
-def test_fom_dataframe():
+    df = ipysheet.to_dataframe(sheet)
+    assert np.all(df == pd.DataFrame())
+
+    sheet = ipysheet.sheet(rows=4, columns=1)
+    ipysheet.column(0, ['2019/02/28', '2019/02/27', '2019/02/26', '2019/02/25'], type='date')
+
+    df = ipysheet.to_dataframe(sheet)
+    assert [_format_date(x) for x in df['A'].tolist()] == ['2019/02/28', '2019/02/27', '2019/02/26', '2019/02/25']
+
+
+def test_from_dataframe():
     df = pd.DataFrame({
         'A': 1.,
         'B': pd.Timestamp('20130102'),

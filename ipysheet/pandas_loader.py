@@ -104,7 +104,7 @@ def _extract_cell_data(cell, data):
                     value = value[col]
 
             data[row][col]['value'] = value
-            data[row][col]['type'] = cell.type
+            data[row][col]['options']['type'] = cell.type
 
 
 def _extract_data(sheet):
@@ -124,9 +124,6 @@ def _extract_data(sheet):
 def _extract_column(data, idx):
     import numpy as np
     import pandas as pd
-
-    if len(data) == 0:
-        return np.array()
 
     type = data[0][idx]['options'].get('type', 'text')
     arr = [row[idx]['value'] for row in data]
@@ -165,6 +162,9 @@ def to_dataframe(sheet):
     import pandas as pd
 
     data = _extract_data(sheet)
+
+    if len(data) == 0:
+        return pd.DataFrame()
 
     if (type(sheet.column_headers) == bool):
         column_headers = [chr(ord('A') + i) for i in range(len(data[0]))]
