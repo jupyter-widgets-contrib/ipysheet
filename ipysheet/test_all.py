@@ -49,6 +49,16 @@ def test_cell_add():
     assert len(sheet1.cells) == 4
     assert len(sheet2.cells) == 1
 
+    # nested hold cells
+    sheet1 = ipysheet.sheet()
+    with ipysheet.hold_cells():
+        with ipysheet.hold_cells():
+            ipysheet.cell(1, 0, value='3')
+            ipysheet.cell(1, 1, value='4')
+            assert len(sheet1.cells) == 0
+        assert len(sheet1.cells) == 0
+    assert len(sheet1.cells) == 2
+
 
 def test_calculation():
     ipysheet.sheet()
@@ -57,13 +67,26 @@ def test_calculation():
     c = ipysheet.cell(0, 0, value=0)
 
     @ipysheet.calculation(inputs=[a, b], output=c)
-    def add(a, b):
+    def add(a, b):  # pylint: disable=unused-variable
         return a + b
+
     assert c.value == 3
     a.value = 10
-    assert c.value == 10+2
+    assert c.value == 10 + 2
     b.value = 20
-    assert c.value == 10+20
+    assert c.value == 10 + 20
+
+    a.value = 1
+    b.value = 2
+    assert c.row_start == 0
+
+    @ipysheet.calculation(inputs=[a, b], output=(c, 'type'))
+    def add2(a, b):  # pylint: disable=unused-variable
+        return 'abcdefg'[a + b]
+
+    assert c.type == 'd'
+    b.value = 1
+    assert c.type == 'c'
 
 
 def test_getitem():
@@ -165,6 +188,14 @@ def test_cell_range():
     rT.value = transpose(value)
     assert rT.value == transpose(value)
 
+    sheet = ipysheet.sheet(rows=3, columns=4)
+    assert len(sheet.cells) == 0
+    with ipysheet.hold_cells():
+        ipysheet.cell_range(value)
+        ipysheet.cell_range(value)
+        assert len(sheet.cells) == 0
+    assert len(sheet.cells) == 2
+
     # sheet = ipysheet.sheet(rows=3, columns=4)
     # range1, cells = ipysheet.cell_range([[0, 1], [2, 3]], return_cells=True)
     # assert range1.value == [[0, 1], [2, 3]]
@@ -231,6 +262,40 @@ def test_cell_values():
     cell = ipysheet.row(0, [True, 'bla'])
     assert cell.type is None
 
+    cell = ipysheet.cell(0, 0, choice=['a', 'b'])
+    assert cell.type == 'dropdown'
+
+
+def test_cell_style():
+    cell = ipysheet.cell(0, 0, color='red')
+    assert cell.style['color'] == 'red'
+    cell = ipysheet.cell(0, 0, background_color='blue')
+    assert cell.style['backgroundColor'] == 'blue'
+    cell = ipysheet.cell(0, 0, font_style='nice')
+    assert cell.style['fontStyle'] == 'nice'
+    cell = ipysheet.cell(0, 0, font_weight='bold')
+    assert cell.style['fontWeight'] == 'bold'
+
+
+def test_cell_range_style():
+    values = [[1]]
+    cell = ipysheet.cell_range(values, color='red')
+    assert cell.style['color'] == 'red'
+    cell = ipysheet.cell_range(values, background_color='blue')
+    assert cell.style['backgroundColor'] == 'blue'
+    cell = ipysheet.cell_range(values, font_style='nice')
+    assert cell.style['fontStyle'] == 'nice'
+    cell = ipysheet.cell_range(values, font_weight='bold')
+    assert cell.style['fontWeight'] == 'bold'
+
+
+def test_cell_label():
+    sheet = ipysheet.sheet()
+    ipysheet.cell(0, 1, label_left='hi')
+    assert sheet.cells[-1].value == 'hi'
+    with pytest.raises(IndexError):
+        ipysheet.cell(0, 0, label_left='hi')
+
 
 def test_renderer():
     ipysheet.sheet()
@@ -243,6 +308,8 @@ def test_renderer():
 
     def f(x):
         somefunction(x)
+
+    f(1)  # for coverage
 
     renderer = ipysheet.renderer(f, 'name2')
     assert "somefunction" in renderer.code

@@ -114,7 +114,8 @@ def cell(row, column, value=0., type=None, color=None, background_color=None,
     else:
         _last_sheet.cells = _last_sheet.cells+(c,)
     if label_left:
-        assert column-1 >= 0, "cannot put label to the left"
+        if column-1 < 0:
+            raise IndexError("cannot put label to the left of column 0")
         cell(row, column-1, value=label_left, font_weight='bold')
     return c
 

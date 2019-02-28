@@ -4,7 +4,7 @@ from .easy import *
 from .pandas_loader import from_dataframe, to_dataframe
 
 
-def _jupyter_nbextension_paths():
+def _jupyter_nbextension_paths():  # pragma: no cover
     return [{
         'section': 'notebook',
         'src': 'static',
