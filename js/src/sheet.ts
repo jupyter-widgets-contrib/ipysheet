@@ -49,7 +49,6 @@ let SheetModel = widgets.DOMWidgetModel.extend({
             _view_module_version : semver_range,
             rows: 3,
             columns: 4,
-            data: [[]],
             cells: [],
             named_cells: {},
             row_headers: true,
@@ -60,11 +59,12 @@ let SheetModel = widgets.DOMWidgetModel.extend({
     },
     initialize : function () {
         SheetModel.__super__.initialize.apply(this, arguments);
+        this.data = [[]];
         this.update_data_grid();
         this._updating_grid = false;
         this.on('change:rows change:columns', this.update_data_grid, this);
         this.on('change:cells', this.on_change_cells, this);
-        this.on('change:data', this.grid_to_cell, this);
+        this.on('data_change', this.grid_to_cell, this);
         each(this.get('cells'), (cell) => this.cell_bind(cell))
         this.cells_to_grid()
     },
@@ -88,17 +88,16 @@ let SheetModel = widgets.DOMWidgetModel.extend({
     },
     cell_bind: function(cell) {
         cell.on('change:value change:style change:type change:renderer change:read_only change:choice change:numeric_format change:date_format', function() {
-            this.cells_to_grid()
+            this.cells_to_grid();
         }, this);
     },
     cells_to_grid: function() {
-        let data = this.get('data');
         each(this.get('cells'), (cell) => {
-            this._cell_data_to_grid(cell, data)
+            this._cell_data_to_grid(cell)
         });
-        this.set_data(data);
+        this.trigger('data_change');
     },
-    _cell_data_to_grid: function(cell, data) {
+    _cell_data_to_grid: function(cell) {
         let value = cell.get('value');
         if((value === null) || (value === undefined)) {
             return;
@@ -108,9 +107,9 @@ let SheetModel = widgets.DOMWidgetModel.extend({
                 let value = cell.get('value');
                 let cell_row = i - cell.get('row_start');
                 let cell_col = j - cell.get('column_start');
-                if((i >= data.length) || (j >= data[i].length))
+                if((i >= this.data.length) || (j >= this.data[i].length))
                     continue; // skip cells that are out of the sheet
-                let cell_data = data[i][j];
+                let cell_data = this.data[i][j];
                 if(cell.get('transpose')) {
                     if(!cell.get('squeeze_column'))
                         value = value[cell_col]
@@ -122,20 +121,24 @@ let SheetModel = widgets.DOMWidgetModel.extend({
                     if(!cell.get('squeeze_column'))
                         value = value[cell_col]
                 }
-                if(value != null)
+                if (value != null)
                     cell_data.value = value;
-                cell_data.options['type'] = cell.get('type') || cell_data.options['type'];
-                cell_data.options['style'] = extend({}, cell_data.options['style'], cell.get('style'));
-                cell_data.options['renderer'] = cell.get('renderer') || cell_data.options['renderer'];
-                cell_data.options['readOnly'] = cell.get('read_only') || cell_data.options['readOnly'];
-                cell_data.options['source'] = cell.get('choice') || cell_data.options['source'];
-                if (cell.get('numeric_format') && cell.get('type') == 'numeric') {
+                if (cell.get('type') != null)
+                    cell_data.options['type'] = cell.get('type');
+                if (cell.get('renderer') != null)
+                    cell_data.options['renderer'] = cell.get('renderer');
+                if (cell.get('read_only') != null)
+                    cell_data.options['readOnly'] = cell.get('read_only');
+                if (cell.get('choice') != null)
+                    cell_data.options['source'] = cell.get('choice')
+                if (cell.get('numeric_format') && cell.get('type') == 'numeric')
                     cell_data.options['numericFormat'] = {'pattern': cell.get('numeric_format')};
-                }
                 if (cell.get('date_format') && cell.get('type') == 'date') {
                     cell_data.options['correctFormat'] = true;
                     cell_data.options['dateFormat'] = cell.get('date_format') || cell_data.options['dateFormat'];
                 }
+
+                cell_data.options['style'] = extend({}, cell_data.options['style'], cell.get('style'));
             }
         }
     },
@@ -146,17 +149,16 @@ let SheetModel = widgets.DOMWidgetModel.extend({
         }
         this._updating_grid = true;
         try {
-            let data = this.get('data');
-            each(this.get('cells'), function(cell) {
+            each(this.get('cells'), (cell) => {
                 let rows = [];
                 for(let i = cell.get('row_start'); i <= cell.get('row_end'); i++) {
                     let row = [];
                     for(let j = cell.get('column_start'); j <= cell.get('column_end'); j++) {
                         //let cell_row = i - cell.get('row_start');
                         //let cell_col = j - cell.get('column_start');
-                        if((i >= data.length) || (j >= data[i].length))
+                        if((i >= this.data.length) || (j >= this.data[i].length))
                             continue; // skip cells that are out of the sheet
-                        let cell_data = data[i][j];
+                        let cell_data = this.data[i][j];
                         row.push(cell_data.value)
                         /*cell.set('value', cell_data.value);
                         cell.set('type', cell_data.options['type']);
@@ -187,7 +189,6 @@ let SheetModel = widgets.DOMWidgetModel.extend({
     },
     update_data_grid: function() {
         // create a row x column array of arrays filled with null
-        let data = this.get('data');
         let rows = this.get('rows');
         let columns = this.get('columns');
 
@@ -197,15 +198,15 @@ let SheetModel = widgets.DOMWidgetModel.extend({
         let empty_row = () => {
             return times(this.get('columns'), empty_cell);
         };
-        if(rows < data.length) {
-            data = data.slice(0, rows);
-        } else if(rows > data.length) {
-            for(let i = data.length; i < rows; i++) {
-                data.push(empty_row());
+        if(rows < this.data.length) {
+            this.data = this.data.slice(0, rows);
+        } else if(rows > this.data.length) {
+            for(let i = this.data.length; i < rows; i++) {
+                this.data.push(empty_row());
             }
         }
         for(let i = 0; i < rows; i++) {
-            let row = data[i];
+            let row = this.data[i];
             if(columns < row.length) {
                 row = row.slice(0, columns);
             } else if(columns > row.length) {
@@ -213,19 +214,9 @@ let SheetModel = widgets.DOMWidgetModel.extend({
                     row.push(empty_cell());
                 }
             }
-            data[i] = row;
+            this.data[i] = row;
         }
-        this.set_data(data);
-    },
-    set_data: function(new_value) {
-        this.set('data', new_value);
-
-        // Workaround for:
-        // - sending the changes to Python
-        // - triggering the change event
-        // This workaround is faster than making a deep copy of data
-        this.sync("update", this);
-        this.trigger("change:data");
+        this.trigger('data_change');
     }
 }, {
     serializers: extend({
@@ -267,7 +258,7 @@ let SheetView = widgets.DOMWidgetView.extend({
         this.displayed.then(() => {
             this._build_table().then((hot) => {
                 this.hot = hot;
-                this.model.on('change:data', this.on_data_change, this);
+                this.model.on('data_change', this.on_data_change, this);
                 this.model.on('change:column_headers change:row_headers', this._update_hot_settings, this);
                 this.model.on('change:stretch_headers change:column_width', this._update_hot_settings, this);
             });
@@ -305,10 +296,10 @@ let SheetView = widgets.DOMWidgetView.extend({
         };
     },
     _get_cell_data: function() {
-        return extract2d(this.model.get('data'), 'value');
+        return extract2d(this.model.data, 'value');
     },
     _cell: function(row, col) {
-        let data = this.model.get('data');
+        let data = this.model.data;
         let cellProperties = cloneDeep(data[row][col].options);
         if(!((row < data.length) && (col < data[row].length))) {
             console.error('cell out of range');
@@ -344,16 +335,16 @@ let SheetView = widgets.DOMWidgetView.extend({
         //this.hot.validateCells(_.bind(function(valid){
         //    console.log('valid?', valid)
         //    if(valid) {
-        let data = this.model.get('data');
+        let data = this.model.data;
         let value_data = this.hot.getSourceDataArray();
         put_values2d(data, value_data);
-        this.model.set_data(data);
+        this.model.trigger('data_change');
         //    }
         //}, this))
         /**/
     },
     on_data_change: function() {
-        let data = extract2d(this.model.get('data'), 'value');
+        let data = extract2d(this.model.data, 'value');
         let rows = data.length;
         let cols = data[0].length;
         let rows_previous = this.hot.countRows();

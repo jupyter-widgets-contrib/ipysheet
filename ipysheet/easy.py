@@ -121,7 +121,7 @@ def cell(row, column, value=0., type=None, color=None, background_color=None,
 
 def row(row, value, column_start=0, column_end=None, choice=None,
         read_only=False, format='0.[000]', renderer=None,
-        color=None, background_color=None, font_style=None, font_weight=None):
+        color=None, background_color=None, font_style=None, font_weight=None, type=None):
     """Create a CellRange widget, representing multiple cells in a sheet, in a horizontal column
 
     Parameters
@@ -142,12 +142,12 @@ def row(row, value, column_start=0, column_end=None, choice=None,
     return cell_range(value, column_start=column_start, column_end=column_end, row_start=row, row_end=row,
                       squeeze_row=True, squeeze_column=False,
                       color=color, background_color=background_color,
-                      font_style=font_style, font_weight=font_weight)
+                      font_style=font_style, font_weight=font_weight, type=type)
 
 
 def column(column, value, row_start=0, row_end=None,  choice=None,
            read_only=False, format='0.[000]', renderer=None,
-           color=None, background_color=None, font_style=None, font_weight=None):
+           color=None, background_color=None, font_style=None, font_weight=None, type=None):
     """Create a CellRange widget, representing multiple cells in a sheet, in a vertical column
 
     Parameters
@@ -169,7 +169,7 @@ def column(column, value, row_start=0, row_end=None,  choice=None,
                       squeeze_row=False, squeeze_column=True,
                       read_only=read_only, format=format, renderer=renderer,
                       color=color, background_color=background_color,
-                      font_style=font_style, font_weight=font_weight)
+                      font_style=font_style, font_weight=font_weight, type=type)
 
 
 def cell_range(value, row_start=0, column_start=0, row_end=None, column_end=None, transpose=False,
