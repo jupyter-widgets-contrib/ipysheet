@@ -291,7 +291,7 @@ def test_cell_range_style():
 
 def test_cell_label():
     sheet = ipysheet.sheet()
-    cell = ipysheet.cell(0, 1, label_left='hi')
+    ipysheet.cell(0, 1, label_left='hi')
     assert sheet.cells[-1].value == 'hi'
     with pytest.raises(IndexError):
         ipysheet.cell(0, 0, label_left='hi')
