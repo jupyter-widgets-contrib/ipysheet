@@ -19,7 +19,7 @@ before_install:
   - conda info -a
   - conda create -q -n test-environment python=$PYTHON_VERSION ipywidgets runipy
   - source activate test-environment
-  - conda install -c conda-forge pytest pytest-cov nodejs pscript flake8
+  - conda install -c conda-forge pytest pytest-cov nodejs pscript flake8 pandas numpy
   - if [[ $TRAVIS_OS_NAME == linux ]]; then conda install -c conda-forge jupyterlab; fi
   - pip install coveralls
 install:

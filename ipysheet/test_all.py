@@ -1,3 +1,5 @@
+import numpy as np
+import pandas as pd
 import ipysheet
 import pytest
 from ipysheet.utils import transpose
@@ -245,3 +247,78 @@ def test_renderer():
     renderer = ipysheet.renderer(f, 'name2')
     assert "somefunction" in renderer.code
     assert renderer.name == 'name2'
+
+
+def test_to_dataframe():
+    sheet = ipysheet.sheet(rows=5, columns=4)
+    ipysheet.cell(0, 0, value=True)
+    ipysheet.row(1, value=[2, 34, 543, 23])
+    ipysheet.column(3, value=[1.2, 1.3, 1.4, 1.5, 1.6])
+
+    df = ipysheet.to_dataframe(sheet)
+    assert np.all(df['A'].tolist() == [True,   2, None, None, None])
+    assert np.all(df['B'].tolist() == [None,  34, None, None, None])
+    assert np.all(df['C'].tolist() == [None, 543, None, None, None])
+    assert np.all(df['D'].tolist() == [1.2,  1.3,  1.4,  1.5,  1.6])
+
+    sheet = ipysheet.sheet(rows=4, columns=4, column_headers=['t0', 't1', 't2', 't3'])
+    ipysheet.cell_range(
+        [
+            [2, 34, 543, 23],
+            [1,  1,   1,  1],
+            [2,  2, 222, 22],
+            [2,  0, 111, 11],
+        ],
+        row_start=0, column_start=0,
+        transpose=True
+    )
+
+    df = ipysheet.to_dataframe(sheet)
+    assert np.all(df['t0'].tolist() == [2, 34, 543, 23])
+    assert np.all(df['t1'].tolist() == [1,  1,   1,  1])
+    assert np.all(df['t2'].tolist() == [2,  2, 222, 22])
+    assert np.all(df['t3'].tolist() == [2,  0, 111, 11])
+
+    sheet = ipysheet.sheet(rows=4, columns=4, column_headers=['t0', 't1', 't2', 't3'])
+    ipysheet.cell_range(
+        [
+            [2, 34, 543, 23],
+            [1,  1,   1,  1],
+            [2,  2, 222, 22],
+            [2,  0, 111, 11],
+        ],
+        row_start=0, column_start=0,
+        transpose=False
+    )
+
+    df = ipysheet.to_dataframe(sheet)
+    assert np.all(df['t0'].tolist() == [2,   1,   2,   2])
+    assert np.all(df['t1'].tolist() == [34,  1,   2,   0])
+    assert np.all(df['t2'].tolist() == [543, 1, 222, 111])
+    assert np.all(df['t3'].tolist() == [23,  1,  22,  11])
+
+
+def test_fom_dataframe():
+    df = pd.DataFrame({
+        'A': 1.,
+        'B': pd.Timestamp('20130102'),
+        'C': pd.Series(1, index=list(range(4)), dtype='float32'),
+        'D': np.array([False, True, False, False], dtype='bool'),
+        'S': pd.Categorical(["test", "train", "test", "train"]),
+        'T': 'foo'})
+
+    sheet = ipysheet.from_dataframe(df)
+    assert len(sheet.cells) == 6
+    assert sheet.column_headers == ['A', 'B', 'C', 'D', 'S', 'T']
+    assert sheet.cells[0].value == [1., 1., 1., 1.]
+    assert sheet.cells[0].type == 'numeric'
+    assert sheet.cells[1].value == ['2013/01/02', '2013/01/02', '2013/01/02', '2013/01/02']
+    assert sheet.cells[1].type == 'date'
+    assert sheet.cells[2].value == [1., 1., 1., 1.]
+    assert sheet.cells[2].type == 'numeric'
+    assert sheet.cells[3].value == [False, True, False, False]
+    assert sheet.cells[3].type == 'checkbox'
+    assert sheet.cells[4].value == ['test', 'train', 'test', 'train']
+    assert sheet.cells[4].type == 'text'
+    assert sheet.cells[5].value == ['foo', 'foo', 'foo', 'foo']
+    assert sheet.cells[5].type == 'text'

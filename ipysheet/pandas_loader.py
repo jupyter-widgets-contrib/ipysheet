@@ -15,7 +15,7 @@ def _get_cell_type(dt):
         'M': 'date',
         'S': 'text',
         'U': 'text'
-    }.get(dt.kind, None)
+    }.get(dt.kind, 'text')
 
 
 def _format_date(date):
@@ -55,16 +55,18 @@ def from_dataframe(dataframe):
     >>> sheet = from_dataframe(df)
     >>> display(sheet)
     """
+    import numpy as np
+
     # According to pandas documentation: "NumPy arrays have one dtype for the
     # entire array, while pandas DataFrames have one dtype per column", so it
     # makes more sense to create the sheet and fill it column-wise
-    columns = dataframe.columns.to_numpy()
-    rows = dataframe.index.to_numpy()
+    columns = dataframe.columns.tolist()
+    rows = dataframe.index.tolist()
     cells = []
 
     idx = 0
     for c in columns:
-        arr = dataframe[c].to_numpy()
+        arr = np.array(dataframe[c].values)
         cells.append(Cell(
             value=_get_cell_value(arr),
             row_start=0,
@@ -86,6 +88,39 @@ def from_dataframe(dataframe):
     )
 
 
+def _extract_cell_data(cell, data):
+    for row in range(cell.row_start, cell.row_end + 1):
+        for col in range(cell.column_start, cell.column_end + 1):
+            value = cell.value
+            if cell.transpose:
+                if not cell.squeeze_column:
+                    value = value[col]
+                if not cell.squeeze_row:
+                    value = value[row]
+            else:
+                if not cell.squeeze_row:
+                    value = value[row]
+                if not cell.squeeze_column:
+                    value = value[col]
+
+            data[row][col]['value'] = value
+            data[row][col]['type'] = cell.type
+
+
+def _extract_data(sheet):
+    data = []
+    for _ in range(sheet.rows):
+        data.append([
+            {'value': None, 'options': {'type': type(None)}}
+            for _ in range(sheet.columns)
+        ])
+
+    for cell in sheet.cells:
+        _extract_cell_data(cell, data)
+
+    return data
+
+
 def _extract_column(data, idx):
     import numpy as np
     import pandas as pd
@@ -95,17 +130,13 @@ def _extract_column(data, idx):
 
     type = data[0][idx]['options'].get('type', 'text')
     arr = [row[idx]['value'] for row in data]
-    print(type)
+
     if type == 'date':
         d = pd.to_datetime(arr)
 
         return np.array(d, dtype='M')
-    elif type == 'checkbox':
-        return np.array(arr, dtype=np.bool)
-    elif type == 'numeric':
-        return np.array(arr, dtype='f')
     else:
-        return np.array(arr, dtype='U')
+        return np.array(arr)
 
 
 def to_dataframe(sheet):
@@ -133,19 +164,21 @@ def to_dataframe(sheet):
     """
     import pandas as pd
 
+    data = _extract_data(sheet)
+
     if (type(sheet.column_headers) == bool):
-        column_headers = [chr(ord('A') + i) for i in range(len(sheet.data[0]))]
+        column_headers = [chr(ord('A') + i) for i in range(len(data[0]))]
     else:
         column_headers = list(sheet.column_headers)
 
     if (type(sheet.row_headers) == bool):
-        row_headers = [i for i in range(len(sheet.data))]
+        row_headers = [i for i in range(len(data))]
     else:
         row_headers = list(sheet.row_headers)
 
     return pd.DataFrame(
         {
-            header: _extract_column(sheet.data, idx)
+            header: _extract_column(data, idx)
             for idx, header in enumerate(column_headers)
         },
         index=row_headers,
