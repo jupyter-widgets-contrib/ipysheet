@@ -25,7 +25,7 @@ module.exports = function (config) {
                 rules: webpackConfig[2].module.rules
             },
             // source mapping without inline does not seem to work
-            devtool: 'source-map',
+            devtool: 'inline-source-map',
             mode: 'development',
             resolve: {
                 extensions: ['.js'],

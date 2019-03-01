@@ -91,6 +91,10 @@ def cell(row, column, value=0., type=None, color=None, background_color=None,
             type = 'checkbox'
         elif isinstance(value, numbers.Number):
             type = 'numeric'
+        elif isinstance(value, widgets.Widget):
+            type = 'widget'
+        elif isinstance(value, numbers.Number):
+            type = 'numeric'
         else:
             type = 'text'
         if choice is not None:
@@ -120,9 +124,9 @@ def cell(row, column, value=0., type=None, color=None, background_color=None,
     return c
 
 
-def row(row, value, column_start=0, column_end=None, choice=None,
-        read_only=False, format='0.[000]', renderer=None,
-        color=None, background_color=None, font_style=None, font_weight=None, type=None):
+def row(row, value, type=None, column_start=0, column_end=None, choice=None,
+        read_only=False, numeric_format='0.[000]', date_format='YYYY/MM/DD', renderer=None,
+        color=None, background_color=None, font_style=None, font_weight=None, **kwargs):
     """Create a CellRange widget, representing multiple cells in a sheet, in a horizontal column
 
     Parameters
@@ -143,12 +147,12 @@ def row(row, value, column_start=0, column_end=None, choice=None,
     return cell_range(value, column_start=column_start, column_end=column_end, row_start=row, row_end=row,
                       squeeze_row=True, squeeze_column=False,
                       color=color, background_color=background_color,
-                      font_style=font_style, font_weight=font_weight, type=type)
+                      font_style=font_style, font_weight=font_weight, type=type, **kwargs)
 
 
-def column(column, value, row_start=0, row_end=None,  choice=None,
-           read_only=False, format='0.[000]', renderer=None,
-           color=None, background_color=None, font_style=None, font_weight=None, type=None):
+def column(column, value, type=None, row_start=0, row_end=None,  choice=None,
+           read_only=False, numeric_format='0.[000]', date_format='YYYY/MM/DD', renderer=None,
+           color=None, background_color=None, font_style=None, font_weight=None, **kwargs):
     """Create a CellRange widget, representing multiple cells in a sheet, in a vertical column
 
     Parameters
@@ -168,15 +172,15 @@ def column(column, value, row_start=0, row_end=None,  choice=None,
     """
     return cell_range(value, column_start=column, column_end=column, row_start=row_start, row_end=row_end,
                       squeeze_row=False, squeeze_column=True,
-                      read_only=read_only, format=format, renderer=renderer,
-                      color=color, background_color=background_color,
-                      font_style=font_style, font_weight=font_weight, type=type)
+                      read_only=read_only, numeric_format=numeric_format, date_format=date_format, renderer=renderer,
+                      color=color, background_color=background_color, type=type,
+                      font_style=font_style, font_weight=font_weight, **kwargs)
 
 
 def cell_range(value, row_start=0, column_start=0, row_end=None, column_end=None, transpose=False,
                squeeze_row=False, squeeze_column=False, type=None, choice=None,
-               read_only=False, format='0.[000]', renderer=None, style=None,
-               color=None, background_color=None, font_style=None, font_weight=None):
+               read_only=False, numeric_format='0.[000]', date_format='YYYY/MM/DD', renderer=None, style=None,
+               color=None, background_color=None, font_style=None, font_weight=None, **kwargs):
     """Create a CellRange widget, representing multiple cells in a sheet, in a horizontal column
 
     Parameters
@@ -238,6 +242,7 @@ def cell_range(value, row_start=0, column_start=0, row_end=None, column_end=None
         type_check_map = [('checkbox', lambda x: isinstance(x, bool)),
                           ('numeric', lambda x: isinstance(x, numbers.Number)),
                           ('text', lambda x: isinstance(x, six.string_types)),
+                          ('widget', lambda x: isinstance(x, widgets.Widget)),
                           ]
         for type_check, check in type_check_map:
             checks = True  # ok until proven wrong
@@ -261,8 +266,8 @@ def cell_range(value, row_start=0, column_start=0, row_end=None, column_end=None
 
     c = Cell(value=value_original, row_start=row_start, column_start=column_start, row_end=row_end, column_end=column_end,
              squeeze_row=squeeze_row, squeeze_column=squeeze_column, transpose=transpose, type=type,
-             read_only=read_only, choice=choice, renderer=renderer, format=format,
-             style=style)
+             read_only=read_only, choice=choice, renderer=renderer, numeric_format=numeric_format, date_format=date_format,
+             style=style, **kwargs)
     if _hold_cells:
         _cells += (c,)
     else:
@@ -303,13 +308,62 @@ def _assign(object, value):
 
 
 def calculation(inputs, output, initial_calulation=True):
+    """A decorator that assigns to output widget a calculation depending on the input widgets
+
+    Example that takes three input widgets and writes the output to a cell:
+
+    >>> a = ipysheet.cell(0, 0, value=1)
+    >>> b = ipysheet.cell(0, 0, value=widgets.IntSlider(value=2))
+    >>> c = widgets.IntSlider(max=0)
+    >>> d = ipysheet.cell(0, 0, value=1)
+    >>> @ipysheet.calculation(inputs=[a, (b, 'value'), (c, 'max')], output=d)
+    >>> def add(a, b, c):
+    >>>     return a + b + c
+
+    Parameters
+    ----------
+    inputs : list of widgets, or (widget, 'traitname') pairs
+        List of all widget, whose values (default 'value', otherwise specified by 'traitname')
+        are input of the function that is decorated
+    output : widget or (widget, 'traitname')
+        The output of the decorator function will be assigned to output.value or output.<traitname>.
+    initial_calulation : bool
+        When True the calculation will be done directly for the first time.
+    """
     def decorator(f):
+        def get_value(input):
+            if isinstance(input, widgets.Widget):
+                object, trait = input, 'value'
+            else:
+                object, trait = input  # assume it's a tup;e
+            if isinstance(object, Cell) and isinstance(object.value, widgets.Widget):
+                object = object.value
+            return getattr(object, trait)
+
         def calculate(*ignore_args):
-            values = [getattr(input, 'value') for input in inputs]
+            values = map(get_value, inputs)
             result = f(*values)
             _assign(output, result)
+
         for input in inputs:
-            input.observe(calculate, 'value')
+            if isinstance(input, widgets.Widget):
+                object, trait = input, 'value'
+            else:
+                object, trait = input  # assume it's a tuple
+
+            if isinstance(object, Cell) and isinstance(object.value, widgets.Widget):
+                # when it is a cell which holds a widget, we actually want the widgets' value
+                object.value.observe(calculate, trait)
+            else:
+                object.observe(calculate, trait)
+
+            def handle_possible_widget_change(change, trait=trait):
+                if isinstance(change['old'], widgets.Widget):
+                    change['old'].unobserve(calculate, trait)
+                if isinstance(change['new'], widgets.Widget):
+                    change['new'].observe(calculate, trait)
+                calculate()
+            object.observe(handle_possible_widget_change, 'value')
         if initial_calulation:
             calculate()
     return decorator

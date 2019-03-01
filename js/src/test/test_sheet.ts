@@ -3,26 +3,11 @@ import * as _ from 'underscore';
 import * as ipysheet from '../sheet';
 import {DummyManager} from './dummy-manager';
 import { expect } from 'chai';
-
-var make_view = async function() {
-    const options = { model: this.sheet };
-    const view = await this.manager.create_view(this.sheet); //new ipysheet.SheetView(options);
-    await this.manager.display_view(undefined, view);
-    return view;
-}
+import { make_view, wait_validate, make_cell } from './utils'
 
 var data_cloner = function() {
     var data = this.sheet.data
     return JSON.parse(JSON.stringify(data))
-}
-
-var wait_validate = async function(view) {
-    return new Promise(function(resolve, reject) {
-        view.hot.validateCells(function(valid) {
-            //console.log('waited for validate,', valid)
-            resolve(valid)
-        })
-    })
 }
 
 describe('sheet', function() {
@@ -85,6 +70,7 @@ describe('sheet', function() {
     })
     it('model reflecting view', async function() {
         var view = await make_view.call(this)
+        await view._table_constructed;
         view.set_cell(1,2, 123)
         await wait_validate(view)
         expect(this.sheet.data[1][2].value, 'cell changes should be reflected in model').to.equal(123);
@@ -92,8 +78,10 @@ describe('sheet', function() {
     it('view reflecting model', async function() {
         var view = await make_view.call(this)
         var data = this.sheet.data
+        await view._table_constructed;
         data[1][2].value = 123
         this.sheet.trigger('data_change')
+        await view._last_data_set;
         expect(view.get_cell(1,2), 'model change should be reflected in view').to.equal(123);
     })
     it('view reflecting different view', async function() {
@@ -169,7 +157,6 @@ describe('sheet', function() {
         var cells = this.sheet.get('cells');
         this.sheet.set('cells', [...cells, cell1, cell2])
         var data = this.sheet.data
-        console.log(data[1][2], data[0][2])
         expect(data[1][2].value, 'for initial value').to.equal(777);
         expect(data[0][2].value, 'for initial value').to.equal(555);
         cell1.set('value', 999)
@@ -189,7 +176,6 @@ describe('sheet', function() {
     it('range should be reflected in all cells', async function() {
         var range = await make_range.apply(this, [{row_start: 0, row_end: 1, column_start: 1, column_end:2, value: [[0, 1], [2, 3]]}])
         var data = data_cloner.call(this)
-        console.log(data[1][1])
         expect(data[0][1].value, 'and in the underlying data grid').to.equal(0);
         expect(data[0][2].value, 'and in the underlying data grid').to.equal(1);
         expect(data[1][1].value, 'and in the underlying data grid').to.equal(2);
@@ -213,7 +199,6 @@ describe('sheet', function() {
     it('range tranposed should be reflected in all cells', async function() {
         var range = await make_range.apply(this, [{row_start: 0, row_end: 1, column_start: 1, column_end:2, transpose: true, value: [[0, 1], [2, 3]]}])
         var data = data_cloner.call(this)
-        console.log(data[1][1])
         expect(data[0][1].value, 'and in the underlying data grid').to.equal(0);
         expect(data[0][2].value, 'and in the underlying data grid').to.equal(2);
         expect(data[1][1].value, 'and in the underlying data grid').to.equal(1);
@@ -239,7 +224,6 @@ describe('sheet', function() {
         expect(data[0][2].options.style.backgrouncColor, 'and in the underlying data grid').to.equal('orange');
         expect(data[1][1].options.style.backgrouncColor, 'and in the underlying data grid').to.equal('orange');
         expect(data[1][2].options.style.backgrouncColor, 'and in the underlying data grid').to.equal('orange');
-        console.log('add cell')
         var cell = await make_cell.apply(this, [{row_start:0, row_end: 0, value: 777, style: {color: 'blue'}}])
         data = data_cloner.call(this)
         expect(data[0][2].options.style.color, 'effective color should be blue').to.equal('blue');

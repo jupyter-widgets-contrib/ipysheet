@@ -132,6 +132,8 @@ def _extract_column(data, idx):
         d = pd.to_datetime(arr)
 
         return np.array(d, dtype='M')
+    elif type == 'widget':
+        return np.array([wid.value for wid in arr], dtype='f')
     else:
         return np.array(arr)
 

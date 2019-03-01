@@ -15,7 +15,7 @@ class Cell(widgets.Widget):
     # _view_module_version = Unicode('^0.1.0').tag(sync=True)
     _model_module_version = Unicode(semver_range_frontend).tag(sync=True)
     # value = Union([Bool(), Unicode(), Float(), Int()], allow_none=True, default_value=None).tag(sync=True)
-    value = Any().tag(sync=True)
+    value = Any().tag(sync=True, **widgets.widget_serialization)
     row_start = CInt(3).tag(sync=True)
     column_start = CInt(4).tag(sync=True)
     row_end = CInt(3).tag(sync=True)
