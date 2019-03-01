@@ -30,6 +30,6 @@ async function widgetRenderer(instance, td, row, col, prop, value, cellPropertie
 
 }
 
-Handsontable.cellTypes.registerCellType('widget', {
+(Handsontable.cellTypes as any).registerCellType('widget', {
     renderer: widgetRenderer
 });

@@ -22,7 +22,7 @@ let RendererModel = widgets.WidgetModel.extend({
         RendererModel.__super__.initialize.apply(this, arguments);
         // we add Handsontable manually as extra argument to put it in the scope
         this.fn = new Function('Handsontable', 'return (' + this.get('code') + ')');
-        Handsontable.renderers.registerRenderer(this.get('name'), this.fn(Handsontable));
+        (Handsontable.renderers as any).registerRenderer(this.get('name'), this.fn(Handsontable));
     }
 });
 

@@ -250,9 +250,9 @@ let put_values2d = function(grid, values) {
 };
 
 // calls the original renderer and then applies custom styling
-Handsontable.renderers.registerRenderer('styled', function customRenderer(hotInstance, td, row, column, prop, value, cellProperties) {
+(Handsontable.renderers as any).registerRenderer('styled', function customRenderer(hotInstance, td, row, column, prop, value, cellProperties) {
     let name = cellProperties.original_renderer || cellProperties.type || 'text';
-    let original_renderer = Handsontable.renderers.getRenderer(name);
+    let original_renderer = (Handsontable.renderers as any).getRenderer(name);
     original_renderer.apply(this, arguments);
     each(cellProperties.style, function(value, key) {
         td.style[key] = value;
@@ -287,19 +287,20 @@ let SheetView = widgets.DOMWidgetView.extend({
         let widget_view_promises = {}
         for (let row = 0; row < rows; row++) {
             for (let col = 0; col < cols; col++) {
+                let idx = [row, col].join();
                 if (data[row][col] && data[row][col].options['type'] == 'widget') {
                     let widget = data[row][col].value;
-                    let previous_view = this.widget_views[[row, col]];
+                    let previous_view = this.widget_views[idx];
                     if (previous_view) {
                         if(previous_view.model.cid == widget.cid) { // if this a proper comparison?
-                            widget_view_promises[[row, col]] = Promise.resolve(previous_view)
+                            widget_view_promises[idx] = Promise.resolve(previous_view)
                         } else {
                             previous_view.remove()
                             previous_view = null;
                         }
                     }
                     if (!previous_view && widget && widget.widget_manager) {
-                        widget_view_promises[[row, col]] = widget.widget_manager.create_view(widget)
+                        widget_view_promises[idx] = widget.widget_manager.create_view(widget)
                     }
                 }
             }
@@ -307,9 +308,7 @@ let SheetView = widgets.DOMWidgetView.extend({
         for (let key in this.widget_views) {
             if(this.widget_views.hasOwnProperty(key)) {
                 // Ugly, this should be properly done
-                let [row, col] = String(key).split(',');
-                row = parseInt(row);
-                col = parseInt(col);
+                let [row, col] = String(key).split(',').map(parseInt);
                 let widget_view = this.widget_views[key];
                 if(data[row][col] && data[row][col].value && data[row][col].value.cid == widget_view.model.cid) {
                     // good, the previous widget_view should be reused
@@ -362,8 +361,8 @@ let SheetView = widgets.DOMWidgetView.extend({
         if('renderer' in cellProperties)
             cellProperties.original_renderer = cellProperties['renderer'];
         cellProperties.renderer = 'styled';
-        if(this.widget_views[[row, col]]) {
-            cellProperties.widget_view = this.widget_views[[row, col]]
+        if(this.widget_views[[row, col].join()]) {
+            cellProperties.widget_view = this.widget_views[[row, col].join()]
         }
         return cellProperties;
     },
