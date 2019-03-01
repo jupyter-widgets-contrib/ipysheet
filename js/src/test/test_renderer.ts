@@ -109,6 +109,22 @@ describe('widget_renderer', function() {
         expect(view.widget_views[[1,2]].cid).to.equal(view_widget_first.cid)
     })
 
+    it('widgets views should not be removed when updated', async function() {
+        var view = await make_view.call(this)
+        var cell1 = await make_cell.apply(this, [{row_start: 1, row_end:1, value: 0}])
+        cell1.set({value: this.first, type: 'widget'})
+
+        await view._last_data_set;
+        let view_widget_first = view.widget_views[[1,2]];
+        expect(view.widget_views[[1,2]].model.cid).to.equal(this.first.cid)
+
+        // we manually call building the widget views
+        let wid = view.widget_views[[1,2]];
+        await view._build_widgets_views()
+        this.first.set('value', 36)
+        expect(this.first.get('_view_count')).to.equal(1)
+    })
+
     it('widgets should disappear', async function() {
         var view = await make_view.call(this)
         var cell1 = await make_cell.apply(this, [{row_start: 1, row_end:1, value: 0}])

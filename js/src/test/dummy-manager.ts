@@ -155,6 +155,10 @@ class TestWidget extends widgets.WidgetModel {
 class TestWidgetView extends widgets.WidgetView {
     render() {
         this.el.innerHTML = this.model.get('value');
+
+        this.model.on('change:value', () => {
+            this.el.innerHTML = this.model.get('value');
+        });
     }
 }
 
