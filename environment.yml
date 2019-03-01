@@ -3,5 +3,6 @@ channels:
   - conda-forge
 dependencies:
   - ipysheet=0.3.0
-  - flexx
+  - pscript
   - pandas
+  - widgetsnbextension>=3.4.2
