@@ -2,9 +2,8 @@
 
 Spreadsheet in the Jupyter notebook:
 
-   * Try it out using binder: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/QuantStack/ipysheet/master?filepath=docs%2Fsource%2Findex.ipynb)
+   * Try it out using binder: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/QuantStack/ipysheet/stable?filepath=docs%2Fsource%2Findex.ipynb)
    * Or check out the documentation at https://ipysheet.readthedocs.io/
-
 
 **Create a table and drive a value using ipywidgets:**
 
@@ -46,7 +45,6 @@ If you have notebook 5.2 or below, you also need to execute:
 $ jupyter nbextension enable --py --sys-prefix ipysheet
 $ jupyter nbextension enable --py --sys-prefix ipysheet.renderer_nbext
 ```
-
 
 For a development installation (requires npm),
 
