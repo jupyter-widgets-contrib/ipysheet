@@ -6,7 +6,7 @@ from setuptools.command.egg_info import egg_info
 from subprocess import check_call
 import os
 import sys
-import platform
+from distutils import log
 
 here = os.path.dirname(os.path.abspath(__file__))
 node_root = os.path.join(here, 'js')
@@ -14,15 +14,15 @@ is_repo = os.path.exists(os.path.join(here, '.git'))
 
 npm_path = os.pathsep.join([
     os.path.join(node_root, 'node_modules', '.bin'),
-                os.environ.get('PATH', os.defpath),
+    os.environ.get('PATH', os.defpath),
 ])
 
-from distutils import log
 log.set_verbosity(log.DEBUG)
 log.info('setup.py entered')
 log.info('$PATH=%s' % os.environ['PATH'])
 
 LONG_DESCRIPTION = 'Spreadsheet in the Jupyter notebook'
+
 
 def js_prerelease(command, strict=False):
     """decorator for building minified js/css prior to another command"""
@@ -49,6 +49,7 @@ def js_prerelease(command, strict=False):
             command.run(self)
             update_package_data(self.distribution)
     return DecoratedCommand
+
 
 def update_package_data(distribution):
     """update package_data to catch changes during setup"""
@@ -114,6 +115,7 @@ class NPM(Command):
         # update package data in case this created new files
         update_package_data(self.distribution)
 
+
 version_ns = {}
 with open(os.path.join(here, 'ipysheet', '_version.py')) as f:
     exec(f.read(), {}, version_ns)
@@ -134,10 +136,10 @@ setup_args = {
             'ipysheet/static/renderer.js',
             'ipysheet/static/renderer.js.map'
         ]),
-        ('etc/jupyter/nbconfig/notebook.d' , ['ipysheet.json'])
+        ('etc/jupyter/nbconfig/notebook.d', ['ipysheet.json'])
     ],
     'install_requires': [
-        'ipywidgets>=7.0.0',
+        'ipywidgets>=7.4.2',
     ],
     'packages': find_packages(),
     'zip_safe': False,
