@@ -308,7 +308,7 @@ let SheetView = widgets.DOMWidgetView.extend({
         for (let key in this.widget_views) {
             if(this.widget_views.hasOwnProperty(key)) {
                 // Ugly, this should be properly done
-                let [row, col] = String(key).split(',').map(parseInt);
+                let [row, col] = String(key).split(',').map(x => parseInt(x));
                 let widget_view = this.widget_views[key];
                 if(data[row][col] && data[row][col].value && data[row][col].value.cid == widget_view.model.cid) {
                     // good, the previous widget_view should be reused

@@ -16,7 +16,7 @@
   ],
   "scripts": {
     "prepare": "npm run build",
-    "build": "tsc --project . || webpack --mode=development",
+    "build": "tsc --project . && webpack --mode=development",
     "watch": "npm-run-all -p watch:*",
     "watch:lib": "tsc -w --project .",
     "watch:nbextension": "webpack --watch --mode=development",
