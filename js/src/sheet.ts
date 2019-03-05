@@ -281,6 +281,9 @@ let SheetView = widgets.DOMWidgetView.extend({
         }
     },
     async _build_widgets_views() {
+        // Workaround for ipywidgets < 7.4.0
+        let options = {output: {handle_output: () => {}, handle_clear_output: () => {}}};
+
         let data = this.model.data;
         let rows = data.length;
         let cols = data[0].length;
@@ -300,7 +303,7 @@ let SheetView = widgets.DOMWidgetView.extend({
                         }
                     }
                     if (!previous_view && widget && widget.widget_manager) {
-                        widget_view_promises[idx] = widget.widget_manager.create_view(widget)
+                        widget_view_promises[idx] = widget.widget_manager.create_view(widget, options);
                     }
                 }
             }
