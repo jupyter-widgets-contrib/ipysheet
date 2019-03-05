@@ -307,7 +307,7 @@ def _assign(object, value):
     setattr(object, trait, value)
 
 
-def calculation(inputs, output, initial_calulation=True):
+def calculation(inputs, output, initial_calculation=True):
     """A decorator that assigns to output widget a calculation depending on the input widgets
 
     Example that takes three input widgets and writes the output to a cell:
@@ -327,7 +327,7 @@ def calculation(inputs, output, initial_calulation=True):
         are input of the function that is decorated
     output : widget or (widget, 'traitname')
         The output of the decorator function will be assigned to output.value or output.<traitname>.
-    initial_calulation : bool
+    initial_calculation : bool
         When True the calculation will be done directly for the first time.
     """
     def decorator(f):
@@ -364,7 +364,7 @@ def calculation(inputs, output, initial_calulation=True):
                     change['new'].observe(calculate, trait)
                 calculate()
             object.observe(handle_possible_widget_change, 'value')
-        if initial_calulation:
+        if initial_calculation:
             calculate()
     return decorator
 
