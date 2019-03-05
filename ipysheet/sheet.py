@@ -2,7 +2,8 @@ import ipywidgets as widgets
 import traitlets
 from traitlets import Unicode, CInt, List, Tuple, Instance, Union, Dict, Bool, Any
 
-from .utils import transpose
+from .serializer import create_value_serializer
+from .utils import transpose, adapt_value
 from ._version import __version_js__
 
 semver_range_frontend = "~" + __version_js__
@@ -15,7 +16,7 @@ class Cell(widgets.Widget):
     # _view_module_version = Unicode('^0.1.0').tag(sync=True)
     _model_module_version = Unicode(semver_range_frontend).tag(sync=True)
     # value = Union([Bool(), Unicode(), Float(), Int()], allow_none=True, default_value=None).tag(sync=True)
-    value = Any().tag(sync=True, **widgets.widget_serialization)
+    value = Any().tag(sync=True, **create_value_serializer('value'))
     row_start = CInt(3).tag(sync=True)
     column_start = CInt(4).tag(sync=True)
     row_end = CInt(3).tag(sync=True)
@@ -35,6 +36,10 @@ class Cell(widgets.Widget):
     @traitlets.validate('value')
     def _validate_value(self, proposal):
         value = proposal['value']
+
+        original_value = value
+
+        value = adapt_value(value)
         if self.squeeze_row:
             value = [value]
         try:
@@ -57,7 +62,7 @@ class Cell(widgets.Widget):
         for row in value:
             if column_length != len(row):
                 raise ValueError("not a regular matrix, columns lengths differ")
-        return proposal['value']
+        return original_value
 
 
 # Bug in traitlets, it doesn't set it, which triggers the bug fixed here:
