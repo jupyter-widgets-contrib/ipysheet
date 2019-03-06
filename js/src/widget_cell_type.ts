@@ -17,12 +17,8 @@ async function widgetRenderer(instance, td, row, col, prop, value, cellPropertie
             // clean up leftover text or elements from previous renderings
             td.innerHTML = '';
             if(el) {
-                // setting with and height to 100% makes the widget look ok in the table, but we may want to
-                /// have a better method
-                el.style.width = '100%';
-                el.style.height = '100%';
                 td.appendChild(el);
-                cellProperties.widget_view.trigger('displayed')
+                cellProperties.widget_view.trigger('displayed');
             }
         }
 
