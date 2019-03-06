@@ -105,6 +105,20 @@ class DummyManager extends widgets.ManagerBase<HTMLElement> {
         return Promise.resolve(new MockComm());
     }
 
+    setViewOptions(options) {
+        // mimics widgetsnbextension's manager that goes with ipywidgets<=7.3.2
+        var options = options || {};
+        if (!options.output && options.parent) {
+            // use the parent output if we don't have one
+            options.output = options.parent.options.output;
+        }
+        options.iopub_callbacks = {
+            output: options.output.handle_output.bind(options.output),
+            clear_output: options.output.handle_clear_output.bind(options.output)
+        }
+        return options;
+    }
+
     el: HTMLElement;
     library: any;
 }
