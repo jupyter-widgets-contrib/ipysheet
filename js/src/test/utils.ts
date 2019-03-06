@@ -1,7 +1,7 @@
 export
 async function make_view() {
-    const options = { model: this.sheet };
-    const view = await this.manager.create_view(this.sheet); //new ipysheet.SheetView(options);
+    const options = { model: this.sheet, output: {handle_output: () => {}, handle_clear_output: () => {}}};
+    const view = await this.manager.create_view(this.sheet, options); //new ipysheet.SheetView(options);
     await this.manager.display_view(undefined, view);
     return view;
 }

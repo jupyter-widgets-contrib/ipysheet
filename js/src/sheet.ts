@@ -299,8 +299,8 @@ let SheetView = widgets.DOMWidgetView.extend({
                             previous_view = null;
                         }
                     }
-                    if (!previous_view && widget && widget.widget_manager) {
-                        widget_view_promises[idx] = widget.widget_manager.create_view(widget)
+                    if (!previous_view && widget) {
+                        widget_view_promises[idx] = this.create_child_view(widget);
                     }
                 }
             }
