@@ -276,7 +276,9 @@ let SheetView = widgets.DOMWidgetView.extend({
         switch (msg.type) {
         case 'resize':
         case 'after-show':
-            this.table_render();
+            this._table_constructed.then(() => {
+                this.hot.render();
+            });
             break;
         }
     },
@@ -425,7 +427,7 @@ let SheetView = widgets.DOMWidgetView.extend({
                 colHeaders: this.model.get('column_headers'),
                 rowHeaders: this.model.get('row_headers')
             });
-            this.table_render();
+            this.hot.render();
             resolve()
         })
     },
@@ -434,9 +436,6 @@ let SheetView = widgets.DOMWidgetView.extend({
     },
     get_cell: function(row, column) {
         return this.hot.getDataAtCell(row, column);
-    },
-    table_render: function() {
-        this.hot.render();
     }
 });
 
