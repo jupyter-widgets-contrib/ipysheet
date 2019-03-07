@@ -37,7 +37,7 @@ $ pip install ipysheet
 
 To make it work for Jupyter lab:
 ```
-$ jupyter labextension ipysheet
+$ jupyter labextension install ipysheet
 ```
 
 If you have notebook 5.2 or below, you also need to execute:
