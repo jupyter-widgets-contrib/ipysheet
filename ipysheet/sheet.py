@@ -88,6 +88,8 @@ class Sheet(widgets.DOMWidget):
     column_headers = Union([Bool(), List(Unicode())], default_value=True).tag(sync=True)
     stretch_headers = Unicode('all').tag(sync=True)
     column_width = Union([CInt(), List(CInt())], default_value=None, allow_none=True).tag(sync=True)
+    column_resizing = Bool(True).tag(sync=True)
+    row_resizing = Bool(True).tag(sync=True)
 
     def __getitem__(self, item):
         '''Gets a previously created cell at row and column

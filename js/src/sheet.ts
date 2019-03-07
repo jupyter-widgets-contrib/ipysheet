@@ -60,6 +60,8 @@ let SheetModel = widgets.DOMWidgetModel.extend({
             column_headers: true,
             stretch_headers: 'all',
             column_width: null,
+            column_resizing: true,
+            row_resizing: true
         });
     },
     initialize : function () {
@@ -269,6 +271,7 @@ let SheetView = widgets.DOMWidgetView.extend({
             this.model.on('data_change', this.on_data_change, this);
             this.model.on('change:column_headers change:row_headers', this._update_hot_settings, this);
             this.model.on('change:stretch_headers change:column_width', this._update_hot_settings, this);
+            this.model.on('change:column_resizing change:row_resizing', this._update_hot_settings, this);
         });
     },
     processPhosphorMessage: function(msg) {
@@ -340,7 +343,9 @@ let SheetView = widgets.DOMWidgetView.extend({
             colHeaders: this.model.get('column_headers'),
             rowHeaders: this.model.get('row_headers'),
             stretchH: this.model.get('stretch_headers'),
-            colWidths: this.model.get('column_width') || undefined
+            colWidths: this.model.get('column_width') || undefined,
+            manualColumnResize: this.model.get('column_resizing'),
+            manualRowResize: this.model.get('row_resizing')
         };
     },
     _get_cell_data: function() {
