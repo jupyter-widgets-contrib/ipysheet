@@ -94,8 +94,6 @@ def cell(row, column, value=0., type=None, color=None, background_color=None,
             type = 'numeric'
         elif isinstance(value, widgets.Widget):
             type = 'widget'
-        elif isinstance(value, numbers.Number):
-            type = 'numeric'
         else:
             type = 'text'
         if choice is not None:

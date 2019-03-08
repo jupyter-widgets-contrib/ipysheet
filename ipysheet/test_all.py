@@ -453,6 +453,45 @@ def test_from_dataframe():
     assert sheet.cells[5].type == 'text'
 
 
+def test_to_array():
+    sheet = ipysheet.sheet(rows=5, columns=4)
+    ipysheet.cell(0, 0, value=True)
+    ipysheet.row(1, value=[2, 34, 543, 23])
+    ipysheet.column(3, value=[1.2, 1.3, 1.4, 1.5, 1.6])
+
+    arr = ipysheet.to_array(sheet)
+    expected = np.array([
+        [True, None, None, 1.2],
+        [2,      34,  543, 1.3],
+        [None, None, None, 1.4],
+        [None, None, None, 1.5],
+        [None, None, None, 1.6]
+    ])
+    assert np.all(arr == expected)
+
+
+def test_from_array():
+    arr = np.random.randn(6, 10, 2)
+    with pytest.raises(RuntimeError):
+        ipysheet.from_array(arr)
+
+    arr = np.random.randn(6, 10)
+    sheet = ipysheet.from_array(arr)
+    assert len(sheet.cells) == 1
+    assert sheet.cells[0].type == 'numeric'
+    assert sheet.cells[0].value is arr
+    assert sheet.rows == 6
+    assert sheet.columns == 10
+
+    arr = np.array([True, False, True])
+    sheet = ipysheet.from_array(arr)
+    assert len(sheet.cells) == 1
+    assert sheet.cells[0].type == 'checkbox'
+    assert sheet.cells[0].value is arr
+    assert sheet.rows == 3
+    assert sheet.columns == 1
+
+
 def test_value_types_serialize(kernel):
     # test scalars, list, ndarray and pandas series
     # this test duplicates a bit from test_cell_range and test_row_and_column
