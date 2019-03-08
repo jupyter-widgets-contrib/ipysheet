@@ -5,3 +5,4 @@ dependencies:
   - ipysheet=0.3.0
   - pscript
   - pandas
+  - bqplot

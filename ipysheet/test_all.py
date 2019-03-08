@@ -4,6 +4,22 @@ import ipysheet
 import pytest
 from ipysheet.utils import transpose
 import ipywidgets as widgets
+import ipykernel.kernelbase
+from .utils import adapt_value
+
+
+class _KernelMock(ipykernel.kernelbase.Kernel):
+    @property
+    def session(self):
+        return self
+
+    def send(self, *args, **kwargs):
+        pass
+
+
+@pytest.fixture
+def kernel():
+    return _KernelMock()
 
 
 def test_transpose():
@@ -435,3 +451,129 @@ def test_from_dataframe():
     assert sheet.cells[4].type == 'text'
     assert sheet.cells[5].value == ['foo', 'foo', 'foo', 'foo']
     assert sheet.cells[5].type == 'text'
+
+
+def test_value_types_serialize(kernel):
+    # test scalars, list, ndarray and pandas series
+    # this test duplicates a bit from test_cell_range and test_row_and_column
+    x = np.arange(3)
+    y = x**2
+    xr = x[::-1]
+    x_list = x.tolist()
+    xr_list = xr.tolist()
+    matrix = np.array([x, y]).T
+    matrix_list = matrix.tolist()
+    matrix_r = matrix[::, ::-1]
+    matrix_list_r = matrix_r.tolist()
+    df = pd.DataFrame({'x': x})
+    df['y'] = y
+    assert not isinstance(df.x, np.ndarray)
+
+    cell_scalar = ipysheet.Cell()
+    cell_vector = ipysheet.Cell(row_start=0, row_end=2, squeeze_row=False)
+    cell_matrix = ipysheet.Cell(row_start=0, row_end=2, column_start=0, column_end=1,
+                                squeeze_row=False, squeeze_column=False)
+    cell_scalar.comm.kernel = kernel
+    cell_vector.comm.kernel = kernel
+    cell_matrix.comm.kernel = kernel
+
+    # scalar
+
+    cell_scalar.value = 1
+    assert cell_scalar.value == 1
+
+    cell_scalar.value = 1.1
+    assert cell_scalar.value == 1.1
+
+    cell_scalar.value = True
+    assert cell_scalar.value is True
+
+    cell_scalar.value = 'voila'
+    assert cell_scalar.value == 'voila'
+
+    cell_scalar.value = np.int64(1)
+    assert cell_scalar.value == 1
+
+    # vector
+    cell_vector.value = x_list
+    assert cell_vector.value == x_list
+
+    cell_vector.set_state({'value': xr_list})
+    assert cell_vector.value == xr_list
+
+    # vector+numpy
+    cell_vector.value = x
+    assert isinstance(cell_vector.value, np.ndarray)
+    assert cell_vector.value.tolist() == x.tolist()
+
+    # we'd like it to stay a ndarray
+    cell_vector.set_state({'value': xr_list})
+    assert isinstance(cell_vector.value, np.ndarray)
+    assert cell_vector.value.tolist() == xr_list
+
+    # vector+series
+    cell_vector.value = df.x
+    assert cell_vector.value.tolist() == df.x.tolist()
+    assert isinstance(cell_vector.value, pd.Series)
+
+    # we'd like it to stay a series
+    cell_vector.set_state({'value': x_list})
+    assert isinstance(cell_vector.value, pd.Series)
+    assert cell_vector.value.tolist() == x_list
+
+    with pytest.raises(ValueError):
+        cell_vector.value = 1
+
+    # matrix
+    cell_matrix.value = matrix_list
+    assert cell_matrix.value == matrix_list
+
+    # matrix+numpy
+    cell_matrix.value = matrix
+    assert isinstance(cell_matrix.value, np.ndarray)
+    assert cell_matrix.value.tolist() == matrix_list
+
+    # we'd like it to stay a ndarray
+    cell_matrix.set_state({'value': matrix_list_r})
+    assert isinstance(cell_matrix.value, np.ndarray)
+    assert cell_matrix.value.tolist() == matrix_list_r
+
+    # matrix+dataframe
+    cell_matrix.value = df  # pandas to_numpy->tolist() gives the transposed result
+    assert adapt_value(cell_matrix.value) == matrix_list
+    assert isinstance(cell_matrix.value, pd.DataFrame)
+
+    # we'd like it to stay a dataframe
+    cell_matrix.set_state({'value': matrix_list})
+    assert isinstance(cell_matrix.value, pd.DataFrame)
+    assert adapt_value(cell_matrix.value) == matrix_list
+
+    with pytest.raises(ValueError):
+        cell_matrix.value = 1
+    with pytest.raises(ValueError):
+        cell_matrix.value = x
+
+    # make sure we can still set the widgets, and they serialize
+
+    button = widgets.Button()
+    slider = widgets.FloatSlider()
+    cell_scalar.value = button
+
+    cell_vector.value = [slider, button, button]
+    cell_vector.set_state(
+        {'value': ['IPY_MODEL_' + button.model_id, 'IPY_MODEL_' + slider.model_id, 'IPY_MODEL_' + slider.model_id]})
+    assert cell_vector.value == [button, slider, slider]
+
+    # even when originally a ndarray
+    cell_vector.value = x
+    cell_vector.set_state(
+        {'value': ['IPY_MODEL_' + button.model_id, 'IPY_MODEL_' + button.model_id, 'IPY_MODEL_' + slider.model_id]})
+    assert cell_vector.value == [button, button, slider]
+
+    # or series
+    # TODO: this code path fails, we can consider it not supported
+    #   * you cannot change a cell's value from the frontend from to a different type when it's a pandas series
+    # cell_vector.value = df.x
+    # cell_vector.set_state(
+    #     {'value': ['IPY_MODEL_' + slider.model_id, 'IPY_MODEL_' + button.model_id, 'IPY_MODEL_' + slider.model_id]})
+    # assert cell_vector.value == [slider, button, slider]

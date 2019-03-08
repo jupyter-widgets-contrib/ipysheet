@@ -13,6 +13,7 @@ import ipywidgets as widgets
 
 from .sheet import Cell, Sheet, Renderer
 from .utils import transpose as default_transpose
+from .utils import adapt_value
 
 _last_sheet = None
 _sheets = {}  # maps from key to Sheet instance
@@ -208,8 +209,11 @@ def cell_range(value, row_start=0, column_start=0, row_end=None, column_end=None
         A CellRange widget.
     """
     global _cells
-    # instead of an if statements, we just use T to transpose or not when needed
+
     value_original = value
+
+    value = adapt_value(value)
+    # instead of an if statements, we just use T to transpose or not when needed
     T = (lambda x: x) if not transpose else default_transpose
     # we work with the optionally transposed values for simplicity
     value = T(value)
