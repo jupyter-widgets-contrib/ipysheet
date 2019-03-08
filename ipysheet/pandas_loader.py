@@ -1,4 +1,5 @@
 from .sheet import Cell, Sheet
+from .utils import extract_data
 
 
 def _get_cell_type(dt):
@@ -88,39 +89,6 @@ def from_dataframe(dataframe):
     )
 
 
-def _extract_cell_data(cell, data):
-    for row in range(cell.row_start, cell.row_end + 1):
-        for col in range(cell.column_start, cell.column_end + 1):
-            value = cell.value
-            if cell.transpose:
-                if not cell.squeeze_column:
-                    value = value[col]
-                if not cell.squeeze_row:
-                    value = value[row]
-            else:
-                if not cell.squeeze_row:
-                    value = value[row]
-                if not cell.squeeze_column:
-                    value = value[col]
-
-            data[row][col]['value'] = value
-            data[row][col]['options']['type'] = cell.type
-
-
-def _extract_data(sheet):
-    data = []
-    for _ in range(sheet.rows):
-        data.append([
-            {'value': None, 'options': {'type': type(None)}}
-            for _ in range(sheet.columns)
-        ])
-
-    for cell in sheet.cells:
-        _extract_cell_data(cell, data)
-
-    return data
-
-
 def _extract_column(data, idx):
     import numpy as np
     import pandas as pd
@@ -163,7 +131,7 @@ def to_dataframe(sheet):
     """
     import pandas as pd
 
-    data = _extract_data(sheet)
+    data = extract_data(sheet)
 
     if len(data) == 0:
         return pd.DataFrame()
