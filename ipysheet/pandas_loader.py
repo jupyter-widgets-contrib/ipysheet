@@ -26,8 +26,10 @@ def _format_date(date):
 
 
 def _get_cell_value(arr):
+    import pandas as pd
+
     if (arr.dtype.kind == 'M'):
-        return [_format_date(date) for date in arr]
+        return [_format_date(date) if not pd.isna(date) else None for date in arr]
     else:
         return arr.tolist()
 
