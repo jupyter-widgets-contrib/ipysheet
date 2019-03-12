@@ -265,6 +265,8 @@ let SheetView = widgets.DOMWidgetView.extend({
     render: function() {
         // this.widget_view_promises = {}
         this.widget_views = {}
+        this.table_container = document.createElement('div');
+        this.el.appendChild(this.table_container);
         // promise used for unittesting
         this._table_constructed = this.displayed.then(async () => {
             this.hot = await this._build_table();
@@ -327,7 +329,7 @@ let SheetView = widgets.DOMWidgetView.extend({
     },
     async _build_table() {
         await this._build_widgets_views()
-        return new Handsontable(this.el, extend({
+        return new Handsontable(this.table_container, extend({
             data: this._get_cell_data(),
             rowHeaders: true,
             colHeaders: true,
