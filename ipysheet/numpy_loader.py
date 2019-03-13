@@ -5,24 +5,20 @@ from .utils import extract_data
 def from_array(array):
     """ Helper function for creating a sheet out of a NumPy Array
 
-    Parameters
-    ----------
-    array : NumPy Array
+    Args:
+        :array (NumPy Array):
 
-    Returns
-    -------
-    sheet : Sheet widget
+    Returns:
+        ``Sheet`` widget
 
-    Example
-    -------
-
-    >>> import numpy as np
-    >>> from ipysheet import from_array
-    >>>
-    >>> arr = np.random.randn(6, 26)
-    >>>
-    >>> sheet = from_array(arr)
-    >>> display(sheet)
+    Example:
+        >>> import numpy as np
+        >>> from ipysheet import from_array
+        >>>
+        >>> arr = np.random.randn(6, 26)
+        >>>
+        >>> sheet = from_array(arr)
+        >>> display(sheet)
     """
     if len(array.shape) > 2:
         raise RuntimeError('The NumPy Array should be of 1-D or 2-D')
@@ -41,25 +37,21 @@ def from_array(array):
 def to_array(sheet):
     """ Helper function for creating a NumPy Array out of a sheet
 
-    Parameters
-    ----------
-    sheet : Sheet widget
+    Args:
+        :sheet (Sheet widget):
 
-    Returns
-    -------
-    array : NumPy Array
+    Returns:
+        A NumPy Array
 
-    Example
-    -------
-
-    >>> import ipysheet
-    >>>
-    >>> sheet = ipysheet.sheet(rows=3, columns=4)
-    >>> ipysheet.cell(0, 0, 'Hello')
-    >>> ipysheet.cell(2, 0, 'World')
-    >>>
-    >>> arr = to_array(sheet)
-    >>> display(arr)
+    Example:
+        >>> import ipysheet
+        >>>
+        >>> sheet = ipysheet.sheet(rows=3, columns=4)
+        >>> ipysheet.cell(0, 0, 'Hello')
+        >>> ipysheet.cell(2, 0, 'World')
+        >>>
+        >>> arr = to_array(sheet)
+        >>> display(arr)
     """
     import numpy as np
 

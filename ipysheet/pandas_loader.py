@@ -37,26 +37,22 @@ def _get_cell_value(arr):
 def from_dataframe(dataframe):
     """ Helper function for creating a sheet out of a Pandas DataFrame
 
-    Parameters
-    ----------
-    dataframe : Pandas DataFrame
+    Args:
+        :dataframe (Pandas DataFrame):
 
-    Returns
-    -------
-    sheet : Sheet widget
+    Returns:
+        ``Sheet`` widget
 
-    Example
-    -------
-
-    >>> import numpy as np
-    >>> import pandas as pd
-    >>> from ipysheet import from_dataframe
-    >>>
-    >>> dates = pd.date_range('20130101', periods=6)
-    >>> df = pd.DataFrame(np.random.randn(6, 4), index=dates, columns=list('ABCD'))
-    >>>
-    >>> sheet = from_dataframe(df)
-    >>> display(sheet)
+    Example:
+        >>> import numpy as np
+        >>> import pandas as pd
+        >>> from ipysheet import from_dataframe
+        >>>
+        >>> dates = pd.date_range('20130101', periods=6)
+        >>> df = pd.DataFrame(np.random.randn(6, 4), index=dates, columns=list('ABCD'))
+        >>>
+        >>> sheet = from_dataframe(df)
+        >>> display(sheet)
     """
     import numpy as np
 
@@ -111,25 +107,21 @@ def _extract_column(data, idx):
 def to_dataframe(sheet):
     """ Helper function for creating a Pandas DataFrame out of a sheet
 
-    Parameters
-    ----------
-    sheet : Sheet widget
+    Args:
+        :sheet (Sheet widget):
 
-    Returns
-    -------
-    dataframe : Pandas DataFrame
+    Returns:
+        A Pandas DataFrame
 
-    Example
-    -------
-
-    >>> import ipysheet
-    >>>
-    >>> sheet = ipysheet.sheet(rows=3, columns=4)
-    >>> ipysheet.cell(0, 0, 'Hello')
-    >>> ipysheet.cell(2, 0, 'World')
-    >>>
-    >>> df = to_dataframe(sheet)
-    >>> display(df)
+    Example:
+        >>> import ipysheet
+        >>>
+        >>> sheet = ipysheet.sheet(rows=3, columns=4)
+        >>> ipysheet.cell(0, 0, 'Hello')
+        >>> ipysheet.cell(2, 0, 'World')
+        >>>
+        >>> df = to_dataframe(sheet)
+        >>> display(df)
     """
     import pandas as pd
 
