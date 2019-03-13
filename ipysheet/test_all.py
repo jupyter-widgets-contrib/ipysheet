@@ -436,12 +436,14 @@ def test_from_dataframe():
         'S': pd.Categorical(["test", "train", "test", "train"]),
         'T': 'foo'})
 
+    df.loc[[0, 2], ['B']] = np.nan
+
     sheet = ipysheet.from_dataframe(df)
     assert len(sheet.cells) == 6
     assert sheet.column_headers == ['A', 'B', 'C', 'D', 'S', 'T']
     assert sheet.cells[0].value == [1., 1., 1., 1.]
     assert sheet.cells[0].type == 'numeric'
-    assert sheet.cells[1].value == ['2013/01/02', '2013/01/02', '2013/01/02', '2013/01/02']
+    assert sheet.cells[1].value == [None, '2013/01/02', None, '2013/01/02']
     assert sheet.cells[1].type == 'date'
     assert sheet.cells[2].value == [1., 1., 1., 1.]
     assert sheet.cells[2].type == 'numeric'
@@ -451,6 +453,25 @@ def test_from_dataframe():
     assert sheet.cells[4].type == 'text'
     assert sheet.cells[5].value == ['foo', 'foo', 'foo', 'foo']
     assert sheet.cells[5].type == 'text'
+
+
+def test_from_to_dataframe():
+    df = pd.DataFrame({
+        'A': 1.,
+        'B': pd.Timestamp('20130102'),
+        'C': pd.Series(1, index=list(range(4)), dtype='float32'),
+        'D': np.array([False, True, False, False], dtype='bool'),
+        'S': pd.Categorical(["test", "train", "test", "train"]),
+        'T': 'foo'})
+
+    df.loc[[0, 2], ['B']] = np.nan
+
+    sheet = ipysheet.from_dataframe(df)
+    df2 = ipysheet.to_dataframe(sheet)
+
+    a = np.array(df.values)
+    b = np.array(df2.values)
+    assert ((a == b) | (pd.isna(a) & pd.isna(b))).all()
 
 
 def test_to_array():
