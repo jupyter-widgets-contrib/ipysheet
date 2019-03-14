@@ -7,9 +7,9 @@ import * as Handsontable from 'handsontable';
 
 import 'pikaday/css/pikaday.css';
 import 'handsontable/dist/handsontable.min.css';
-import '../../src/theme/materialcolors.css';
-import '../../src/theme/labvariables.css';
-import '../../src/theme/custom.css';
+import '@jupyter-widgets/controls/css/materialcolors.css'
+import '@jupyter-widgets/controls/css/labvariables.css'
+import '../../css/custom.css';
 
 let semver_range = '~' + pkg.version;
 
