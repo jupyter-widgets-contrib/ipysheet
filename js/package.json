@@ -3,7 +3,7 @@
   "version": "0.3.2",
   "description": "Spreadsheet in the Jupyter notebook",
   "author": "Maarten A. Breddels",
-  "main": "src/index.js",
+  "main": "lib/src/index.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/QuantStack/ipysheet.git"
@@ -54,6 +54,7 @@
   },
   "dependencies": {
     "@jupyter-widgets/base": "^1.0.1",
+    "@jupyter-widgets/controls": "^1.0.1",
     "handsontable": "^6.2.2",
     "lodash": "^4.17.4",
     "underscore": "^1.8.3"
