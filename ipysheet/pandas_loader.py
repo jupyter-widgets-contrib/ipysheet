@@ -38,7 +38,7 @@ def from_dataframe(dataframe):
     """ Helper function for creating a sheet out of a Pandas DataFrame
 
     Args:
-        :dataframe (Pandas DataFrame):
+        dataframe (Pandas DataFrame):
 
     Returns:
         ``Sheet`` widget
@@ -108,7 +108,7 @@ def to_dataframe(sheet):
     """ Helper function for creating a Pandas DataFrame out of a sheet
 
     Args:
-        :sheet (Sheet widget):
+        sheet (Sheet widget):
 
     Returns:
         A Pandas DataFrame

@@ -6,7 +6,7 @@ def from_array(array):
     """ Helper function for creating a sheet out of a NumPy Array
 
     Args:
-        :array (NumPy Array):
+        array (NumPy Array):
 
     Returns:
         ``Sheet`` widget
@@ -38,7 +38,7 @@ def to_array(sheet):
     """ Helper function for creating a NumPy Array out of a sheet
 
     Args:
-        :sheet (Sheet widget):
+        sheet (Sheet widget):
 
     Returns:
         A NumPy Array

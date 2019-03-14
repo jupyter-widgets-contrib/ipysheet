@@ -13,14 +13,6 @@ ipysheet.easy
     :undoc-members:
     :show-inheritance:
 
-ipysheet.sheet
---------------
-
-.. automodule:: ipysheet.sheet
-    :members: Sheet, Cell, Range
-    :undoc-members:
-    :show-inheritance:
-
 
 ipysheet.pandas_loader
 ----------------------
@@ -36,5 +28,14 @@ ipysheet.numpy_loader
 
 .. automodule:: ipysheet.numpy_loader
     :members: from_array, to_array
+    :undoc-members:
+    :show-inheritance:
+
+
+ipysheet.sheet
+--------------
+
+.. automodule:: ipysheet.sheet
+    :members: Sheet, Cell, Range
     :undoc-members:
     :show-inheritance:

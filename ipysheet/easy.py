@@ -22,18 +22,18 @@ _hold_cells = False  # when try (using hold_cells() it does not add cells direct
 _cells = ()  # cells that aren't added directly
 
 _common_doc = {
-    'kwargs': """
-        :type (string): Type of cell, options are: text, numeric, checkbox, dropdown, numeric, date, widget.
+    'args': """
+        type (string): Type of cell, options are: text, numeric, checkbox, dropdown, numeric, date, widget.
             If type is None, the type is inferred from the type of the value being passed,
             numeric (float or int type), boolean (bool type), widget (any widget object), or else text.
             When choice is given the type will be assumed to be dropdown.
             The types refer (currently) to the handsontable types: https://handsontable.com/docs/6.2.2/demo-custom-renderers.html
-        :color (string): The text color in the cell
-        :background_color (string): The background color in the cell
-        :read_only (bool): Whether the cell is editable or not
-        :numeric_format (string): Numbers format
-        :date_format (string): Dates format
-        :renderer (string): Renderer name to use for the cell
+        color (string): The text color in the cell
+        background_color (string): The background color in the cell
+        read_only (bool): Whether the cell is editable or not
+        numeric_format (string): Numbers format
+        date_format (string): Dates format
+        renderer (string): Renderer name to use for the cell
     """
 }
 
@@ -46,14 +46,14 @@ def sheet(key=None, rows=5, columns=5, column_width=None, row_headers=True, colu
     this key. If this function is called again with the same key argument, that ``Sheet`` instance
     will be returned.
 
-    Kwargs:
-        :key (string): If not used before, register the sheet under this key. If used before, return the
+    Args:
+        key (string): If not used before, register the sheet under this key. If used before, return the
             previous ``Sheet`` instance registered with this key.
-        :rows (int): The number of rows in the sheet
-        :columns (int): The number of columns in the sheet
-        :row_headers (bool, list): Either a boolean specifying if row headers should be displayed or not,
+        rows (int): The number of rows in the sheet
+        columns (int): The number of columns in the sheet
+        row_headers (bool, list): Either a boolean specifying if row headers should be displayed or not,
             or a list of strings containing the row headers
-        :column_headers (bool, list): Either a boolean specifying if column headers should be displayed or not,
+        column_headers (bool, list): Either a boolean specifying if column headers should be displayed or not,
             or a list of strings containing the column headers
 
     Returns:
@@ -98,12 +98,10 @@ def cell(row, column, value=0., type=None, color=None, background_color=None,
     """Adds a new ``Cell`` widget to the current ``Sheet``
 
     Args:
-        :row (int): Zero based row index where to put the cell in the sheet
-        :column (int): Zero based column index where to put the cell in the sheet
-
-    Kwargs:
-        :value (int, float, string, bool, Widget): The value of the cell
-        {kwargs}
+        row (int): Zero based row index where to put the cell in the sheet
+        column (int): Zero based column index where to put the cell in the sheet
+        value (int, float, string, bool, Widget): The value of the cell
+        {args}
 
     Returns:
         The new ``Cell`` widget.
@@ -162,13 +160,11 @@ def row(row, value, column_start=0, column_end=None, type=None, color=None, back
     """Create a ``Cell`` widget, representing multiple cells in a sheet, in a horizontal row
 
     Args:
-        :row (int): Zero based row index where to put the row in the sheet
-        :value (list): The list of cell values representing the row
-
-    Kwargs:
-        :column_start (int): Which column the row will start, default 0.
-        :column_end (int): Which column the row will end, default is the last.
-        {kwargs}
+        row (int): Zero based row index where to put the row in the sheet
+        value (list): The list of cell values representing the row
+        column_start (int): Which column the row will start, default 0.
+        column_end (int): Which column the row will end, default is the last.
+        {args}
 
     Returns:
         The new ``Cell`` widget.
@@ -193,13 +189,11 @@ def column(column, value, row_start=0, row_end=None, type=None, color=None, back
     """Create a ``Cell`` widget, representing multiple cells in a sheet, in a vertical column
 
     Args:
-        :column (int): Zero based column index where to put the column in the sheet
-        :value (list): The list of cell values representing the column
-
-    Kwargs:
-        :row_start (int): Which row the column will start, default 0.
-        :row_end (int): Which row the column will end, default is the last.
-        {kwargs}
+        column (int): Zero based column index where to put the column in the sheet
+        value (list): The list of cell values representing the column
+        row_start (int): Which row the column will start, default 0.
+        row_end (int): Which row the column will end, default is the last.
+        {args}
 
     Returns:
         The new ``Cell`` widget.
@@ -227,17 +221,15 @@ def cell_range(value,
     """Create a ``Cell`` widget, representing multiple cells in a sheet
 
     Args:
-        :value (list): The list of cell values representing the range
-
-    Kwargs:
-        :row_start (int): Which row the range will start, default 0.
-        :column_start (int): Which column the range will start, default 0.
-        :row_end (int): Which row the range will end, default is the last.
-        :column_end (int): Which column the range will end, default is the last.
-        :transpose (bool): Whether to interpret the value array as value[column_index][row_index] or not.
-        :squeeze_row (bool): Take out the row dimensions, meaning only value[column_index] is used.
-        :squeeze_column (bool): Take out the column dimensions, meaning only value[row_index] is used.
-        {kwargs}
+        value (list): The list of cell values representing the range
+        row_start (int): Which row the range will start, default 0.
+        column_start (int): Which column the range will start, default 0.
+        row_end (int): Which row the range will end, default is the last.
+        column_end (int): Which column the range will end, default is the last.
+        transpose (bool): Whether to interpret the value array as value[column_index][row_index] or not.
+        squeeze_row (bool): Take out the row dimensions, meaning only value[column_index] is used.
+        squeeze_column (bool): Take out the column dimensions, meaning only value[row_index] is used.
+        {args}
 
     Returns:
         The new ``Cell`` widget.
@@ -323,10 +315,10 @@ def renderer(code, name):
     """Create a ``Renderer`` widget
 
     Args:
-        :code (string or code or function object): If a string object, it is assumed to be a JavaScript
+        code (string or code or function object): If a string object, it is assumed to be a JavaScript
             snippet, else it is assumed to be a function or code object and will be transpiled to
             javascript using flexxui/pscript.
-        :name (string): Name of the renderer
+        name (string): Name of the renderer
 
     Returns:
         The new ``Renderer`` widget.
@@ -373,14 +365,12 @@ def calculation(inputs, output, initial_calculation=True):
     """A decorator that assigns to output cell a calculation depending on the inputs
 
     Args:
-        :inputs (list of widgets, or (widget, 'traitname') pairs): List of all widget, whose
+        inputs (list of widgets, or (widget, 'traitname') pairs): List of all widget, whose
             values (default 'value', otherwise specified by 'traitname') are input of the function
             that is decorated
-        :output (widget or (widget, 'traitname')): The output of the decorator function will be
+        output (widget or (widget, 'traitname')): The output of the decorator function will be
             assigned to output.value or output.<traitname>.
-
-    Kwargs:
-        :initial_calculation (bool): When True the calculation will be done
+        initial_calculation (bool): When True the calculation will be done
             directly for the first time.
 
     Example:
