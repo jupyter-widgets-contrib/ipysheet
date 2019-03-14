@@ -1,11 +1,8 @@
 import * as widgets  from '@jupyter-widgets/base';
 import {extend} from 'lodash';
-import * as pkg from '../package.json';
+import {version, semver_range} from './version';
 // @ts-ignore
 import * as Handsontable from 'handsontable';
-
-let version = pkg.version;
-let semver_range = '~' + version;
 
 
 let RendererModel = widgets.WidgetModel.extend({
