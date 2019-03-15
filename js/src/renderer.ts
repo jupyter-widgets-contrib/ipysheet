@@ -2,7 +2,7 @@ import * as widgets  from '@jupyter-widgets/base';
 import {extend} from 'lodash';
 import {version, semver_range} from './version';
 // @ts-ignore
-import * as Handsontable from 'handsontable';
+import {Handsontable} from 'ipysheet';
 
 
 let RendererModel = widgets.WidgetModel.extend({

@@ -66,7 +66,7 @@ module.exports = [
         module: {
             rules: rules
         },
-        externals: ['@jupyter-widgets/base', 'handsontable']
+        externals: ['@jupyter-widgets/base']
     },
     {
         // same for render
@@ -81,7 +81,7 @@ module.exports = [
         module: {
             rules: rules
         },
-        externals: ['@jupyter-widgets/base', 'handsontable']
+        externals: ['@jupyter-widgets/base', 'ipysheet']
     },
     {
         // Embeddable ipysheet bundle
@@ -109,7 +109,7 @@ module.exports = [
         module: {
             rules: rules
         },
-        externals: ['@jupyter-widgets/base', 'handsontable']
+        externals: ['@jupyter-widgets/base']
     },
     {
         // same for renderer
@@ -124,17 +124,6 @@ module.exports = [
         module: {
             rules: rules
         },
-        externals: ['@jupyter-widgets/base', 'handsontable']
+        externals: ['@jupyter-widgets/base', 'ipysheet']
     },
-    {
-        entry: './node_modules/handsontable/dist/handsontable.min.js',
-        output: {
-            filename: 'handsontable.js',
-            path: path.resolve(__dirname, '../ipysheet/static'),
-            libraryTarget: 'amd'
-        },
-        module: {
-            rules: rules
-        },
-    }
 ];

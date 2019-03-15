@@ -10,3 +10,5 @@
 // Export widget models and views, and the npm package version number.
 export * from './sheet';
 export { version } from './version';
+import * as Handsontable from 'handsontable';
+export { Handsontable };
