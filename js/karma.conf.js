@@ -29,6 +29,8 @@ module.exports = function (config) {
             mode: 'development',
             resolve: {
                 extensions: ['.js'],
+                alias: {'ipysheet$': path.resolve(__dirname, './lib/ipysheet')}
+
             },
         },
         reporters: ['progress', 'mocha'],
