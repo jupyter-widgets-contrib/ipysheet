@@ -27,7 +27,7 @@ module.exports = [
         // "load_ipython_extension" function which is required for any notebook
         // extension.
         //
-        entry: './lib/src/extension.js',
+        entry: './lib/extension.js',
         resolve: resolve,
         module: {
             rules: rules
@@ -40,7 +40,7 @@ module.exports = [
     },
     {
         // same for renderer
-        entry: './lib/src/extension-renderer.js',
+        entry: './lib/extension-renderer.js',
         resolve: resolve,
         output: {
             filename: 'extension-renderer.js',
@@ -55,7 +55,7 @@ module.exports = [
         // custom widget.
         // It must be an amd module
         //
-        entry: './lib/src/index.js',
+        entry: './lib/index.js',
         devtool: 'source-map',
         resolve: resolve,
         output: {
@@ -70,7 +70,7 @@ module.exports = [
     },
     {
         // same for render
-        entry: './lib/src/renderer.js',
+        entry: './lib/renderer.js',
         devtool: 'source-map',
         resolve: resolve,
         output: {
@@ -98,7 +98,7 @@ module.exports = [
         // The target bundle is always `dist/index.js`, which is the path required
         // by the custom widget embedder.
         //
-        entry: './lib/src/embed.js',
+        entry: './lib/embed.js',
         resolve: resolve,
         output: {
             filename: 'index.js',
@@ -113,7 +113,7 @@ module.exports = [
     },
     {
         // same for renderer
-        entry: './lib/src/renderer.js',
+        entry: './lib/renderer.js',
         resolve: resolve,
         output: {
             filename: 'renderer.js',

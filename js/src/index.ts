@@ -9,4 +9,4 @@
 
 // Export widget models and views, and the npm package version number.
 export * from './sheet';
-export { version } from '../package.json';
+export { version } from './version';

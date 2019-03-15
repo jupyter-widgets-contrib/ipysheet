@@ -16,14 +16,14 @@
   ],
   "scripts": {
     "prepare": "npm run build",
-    "build": "tsc --project . && webpack --mode=development",
+    "build": "tsc --project . && webpack --mode=production",
     "watch": "npm-run-all -p watch:*",
     "watch:lib": "tsc -w --project .",
     "watch:nbextension": "webpack --watch --mode=development",
     "test": "karma start --single-run"
   },
   "jupyterlab": {
-    "extension": "lib/src/labplugin"
+    "extension": "lib/labplugin"
   },
   "devDependencies": {
     "@types/expect.js": "^0.3.29",

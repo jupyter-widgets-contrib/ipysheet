@@ -1,6 +1,6 @@
 import * as widgets  from '@jupyter-widgets/base';
 import {cloneDeep, extend, includes as contains, each, debounce, times, map, unzip as transpose} from 'lodash';
-import * as pkg from '../package.json';
+import {semver_range} from './version';
 import './widget_cell_type';
 // @ts-ignore
 import * as Handsontable from 'handsontable';
@@ -9,9 +9,7 @@ import 'pikaday/css/pikaday.css';
 import 'handsontable/dist/handsontable.min.css';
 import '@jupyter-widgets/controls/css/materialcolors.css'
 import '@jupyter-widgets/controls/css/labvariables.css'
-import '../../css/custom.css';
-
-let semver_range = '~' + pkg.version;
+import '../css/custom.css';
 
 
 let CellRangeModel = widgets.WidgetModel.extend({

@@ -1,7 +1,7 @@
 import * as sheet from './sheet';
 import * as renderer from './renderer';
 import * as base from '@jupyter-widgets/base';
-import * as pkg from '../package.json';
+import {version} from './version';
 
 const ipysheetPlugin = {
     id: 'ipysheet',
@@ -9,7 +9,7 @@ const ipysheetPlugin = {
     activate: function(app, widgets) {
         widgets.registerWidget({
             name: 'ipysheet',
-            version: pkg.version,
+            version: version,
             exports: sheet
         });
     },
@@ -22,7 +22,7 @@ const rendererPlugin = {
     activate: function(app, widgets) {
         widgets.registerWidget({
             name: 'ipysheet/renderer',
-            version: pkg.version,
+            version: version,
             exports: renderer
         });
     },
