@@ -70,8 +70,7 @@ class NPM(Command):
         os.path.join(here, 'ipysheet', 'static', 'extension.js'),
         os.path.join(here, 'ipysheet', 'static', 'index.js'),
         os.path.join(here, 'ipysheet', 'static', 'extension-renderer.js'),
-        os.path.join(here, 'ipysheet', 'static', 'renderer.js'),
-        os.path.join(here, 'ipysheet', 'static', 'handsontable.js')
+        os.path.join(here, 'ipysheet', 'static', 'renderer.js')
     ]
 
     def initialize_options(self):
