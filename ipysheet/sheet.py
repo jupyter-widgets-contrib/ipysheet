@@ -15,6 +15,7 @@ class Cell(widgets.Widget):
     _model_module = Unicode('ipysheet').tag(sync=True)
     # _view_module_version = Unicode('^0.1.0').tag(sync=True)
     _model_module_version = Unicode(semver_range_frontend).tag(sync=True)
+
     # value = Union([Bool(), Unicode(), Float(), Int()], allow_none=True, default_value=None).tag(sync=True)
     value = Any().tag(sync=True, **create_value_serializer('value'))
     row_start = CInt(3).tag(sync=True)
@@ -85,6 +86,7 @@ class Sheet(widgets.DOMWidget):
     _model_module = Unicode('ipysheet').tag(sync=True)
     _view_module_version = Unicode(semver_range_frontend).tag(sync=True)
     _model_module_version = Unicode(semver_range_frontend).tag(sync=True)
+
     rows = CInt(3).tag(sync=True)
     columns = CInt(4).tag(sync=True)
     cells = Tuple().tag(sync=True, **widgets.widget_serialization)
@@ -95,6 +97,7 @@ class Sheet(widgets.DOMWidget):
     column_width = Union([CInt(), List(CInt())], default_value=None, allow_none=True).tag(sync=True)
     column_resizing = Bool(True).tag(sync=True)
     row_resizing = Bool(True).tag(sync=True)
+    search_token = Unicode('').tag(sync=True)
 
     def __getitem__(self, item):
         '''Gets a previously created cell at row and column
