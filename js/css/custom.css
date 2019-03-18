@@ -97,8 +97,8 @@
 
 .p-Widget .handsontable tbody th.ht__active_highlight,
 .p-Widget .handsontable thead th.ht__active_highlight {
-  background-color: var(--jp-brand-color3);
-  color: var(--jp-content-font-color0);
+  background-color: var(--jp-brand-color1);
+  color: white;
 }
 
 .p-Widget .handsontableInput {
@@ -118,8 +118,8 @@
 }
 
 .p-Widget .handsontable td.htSearchResult {
-  background: var(--jp-accent-color3);
-  color: var(--jp-content-font-color0);
+  background: var(--jp-accent-color1);
+  color: white;
 }
 
 .p-Widget .htBordered.htTopBorderSolid {
