@@ -1,22 +1,5 @@
 from .sheet import Cell, Sheet
-from .utils import extract_data
-
-
-def _get_cell_type(dt):
-    # TODO Differentiate integer and float? Using custom renderers and
-    # validators for integers?
-    # Add support for void type from NumPy?
-    # See https://handsontable.com/docs/6.2.2/tutorial-cell-types.html
-    return {
-        'b': 'checkbox',
-        'i': 'numeric',
-        'u': 'numeric',
-        'f': 'numeric',
-        'm': 'numeric',
-        'M': 'date',
-        'S': 'text',
-        'U': 'text'
-    }.get(dt.kind, 'text')
+from .utils import extract_data, get_cell_numeric_format, get_cell_type
 
 
 def _format_date(date):
@@ -76,7 +59,8 @@ def from_dataframe(dataframe):
             row_end=len(rows) - 1,
             column_start=idx,
             column_end=idx,
-            type=_get_cell_type(arr.dtype),
+            type=get_cell_type(arr.dtype),
+            numeric_format=get_cell_numeric_format(arr.dtype),
             squeeze_row=False,
             squeeze_column=True
         ))

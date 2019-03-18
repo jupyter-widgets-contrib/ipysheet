@@ -69,7 +69,7 @@ def current():
 
 def cell(row, column, value=0., type=None, color=None, background_color=None,
          font_style=None, font_weight=None, style=None, label_left=None, choice=None,
-         read_only=False, numeric_format='0.[000]', date_format='YYYY/MM/DD', renderer=None, **kwargs):
+         read_only=False, numeric_format='0.000', date_format='YYYY/MM/DD', renderer=None, **kwargs):
     """Adds a new `Cell` widget to the current sheet
 
     Parameters
@@ -124,7 +124,7 @@ def cell(row, column, value=0., type=None, color=None, background_color=None,
 
 
 def row(row, value, type=None, column_start=0, column_end=None, choice=None,
-        read_only=False, numeric_format='0.[000]', date_format='YYYY/MM/DD', renderer=None,
+        read_only=False, numeric_format='0.000', date_format='YYYY/MM/DD', renderer=None,
         color=None, background_color=None, font_style=None, font_weight=None, **kwargs):
     """Create a CellRange widget, representing multiple cells in a sheet, in a horizontal column
 
@@ -150,7 +150,7 @@ def row(row, value, type=None, column_start=0, column_end=None, choice=None,
 
 
 def column(column, value, type=None, row_start=0, row_end=None,  choice=None,
-           read_only=False, numeric_format='0.[000]', date_format='YYYY/MM/DD', renderer=None,
+           read_only=False, numeric_format='0.000', date_format='YYYY/MM/DD', renderer=None,
            color=None, background_color=None, font_style=None, font_weight=None, **kwargs):
     """Create a CellRange widget, representing multiple cells in a sheet, in a vertical column
 
@@ -178,7 +178,7 @@ def column(column, value, type=None, row_start=0, row_end=None,  choice=None,
 
 def cell_range(value, row_start=0, column_start=0, row_end=None, column_end=None, transpose=False,
                squeeze_row=False, squeeze_column=False, type=None, choice=None,
-               read_only=False, numeric_format='0.[000]', date_format='YYYY/MM/DD', renderer=None, style=None,
+               read_only=False, numeric_format='0.000', date_format='YYYY/MM/DD', renderer=None, style=None,
                color=None, background_color=None, font_style=None, font_weight=None, **kwargs):
     """Create a CellRange widget, representing multiple cells in a sheet, in a horizontal column
 

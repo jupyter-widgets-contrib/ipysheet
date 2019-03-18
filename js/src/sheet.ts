@@ -32,7 +32,7 @@ let CellRangeModel = widgets.WidgetModel.extend({
             squeeze_row: true,
             squeeze_column: true,
             transpose: false,
-            numeric_format: '0.[000]',
+            numeric_format: '0.000',
             date_format: 'YYYY/MM/DD'
         });
     },
