@@ -8,7 +8,6 @@ if (window['require'] !== undefined) {
         map: {
             "*" : {
                 "ipysheet": "nbextensions/ipysheet/index",
-                "handsontable": "nbextensions/ipysheet/handsontable",
                 "jupyter-js-widgets": "nbextensions/jupyter-js-widgets/extension"
             }
         }
