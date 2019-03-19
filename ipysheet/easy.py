@@ -1,7 +1,7 @@
 """Easy context-based interface for generating a sheet and cells.
 
-Comparible to matplotlib pylab interface, this interface keeps track of the current
-sheet. Using the :ref:`cell` function, :ref:`Cell` widgets are added to the current sheet.
+Comparable to matplotlib pylab interface, this interface keeps track of the current
+sheet. Using the ``cell`` function, ``Cell`` widgets are added to the current sheet.
 """
 __all__ = ['sheet', 'current', 'cell', 'calculation', 'row', 'column', 'cell_range', 'hold_cells', 'renderer']
 
@@ -14,39 +14,60 @@ import ipywidgets as widgets
 from .sheet import Cell, Sheet, Renderer
 from .utils import transpose as default_transpose
 from .utils import adapt_value
+from .docutils import doc_subst
 
 _last_sheet = None
 _sheets = {}  # maps from key to Sheet instance
 _hold_cells = False  # when try (using hold_cells() it does not add cells directly)
 _cells = ()  # cells that aren't added directly
 
+_common_doc = {
+    'args': """
+        type (string): Type of cell, options are: text, numeric, checkbox, dropdown, numeric, date, widget.
+            If type is None, the type is inferred from the type of the value being passed,
+            numeric (float or int type), boolean (bool type), widget (any widget object), or else text.
+            When choice is given the type will be assumed to be dropdown.
+            The types refer (currently) to the handsontable types: https://handsontable.com/docs/6.2.2/demo-custom-renderers.html
+        color (string): The text color in the cell
+        background_color (string): The background color in the cell
+        read_only (bool): Whether the cell is editable or not
+        numeric_format (string): Numbers format
+        date_format (string): Dates format
+        renderer (string): Renderer name to use for the cell
+    """
+}
+
 
 def sheet(key=None, rows=5, columns=5, column_width=None, row_headers=True, column_headers=True,
           stretch_headers='all', cls=Sheet, **kwargs):
-    """Creates a new Sheet instance or retrieves one registered with key, and sets this as the 'current'.
+    """Creates a new ``Sheet`` instance or retrieves one registered with key, and sets this as the 'current'.
 
     If the key argument is given, and no sheet is created before with this key, it will be registered under
-    this key. If this function is called again with the same key argument, that :ref:`Sheet` instance
+    this key. If this function is called again with the same key argument, that ``Sheet`` instance
     will be returned.
 
+    Args:
+        key (string): If not used before, register the sheet under this key. If used before, return the
+            previous ``Sheet`` instance registered with this key.
+        rows (int): The number of rows in the sheet
+        columns (int): The number of columns in the sheet
+        row_headers (bool, list): Either a boolean specifying if row headers should be displayed or not,
+            or a list of strings containing the row headers
+        column_headers (bool, list): Either a boolean specifying if column headers should be displayed or not,
+            or a list of strings containing the column headers
+
+    Returns:
+        The new ``Sheet`` widget, or if key is given, the previously created sheet registered with this key.
+
     Example:
-
-    >>> sheet1 = ipysheet.sheet('key1')
-    >>> sheet2 = ipysheet.sheet('key2')
-    >>> assert sheet2 is ipysheet.current()
-    >>> assert sheet1 is ipysheet.sheet('key1')
-    >>> assert sheet1 is ipysheet.current()
-
-    Parameters
-    ----------
-    key : any
-        If not used before, register the sheet under this key. If used before, return the previous `Sheet` instance
-        registered with this key.
-
-    Returns
-    -------
-    Sheet
-        The new sheet, or if key is given, the previously created sheet registered with this key.
+        >>> from ipysheet import sheet, current
+        >>>
+        >>> s1 = sheet('key1')
+        >>> s2 = sheet('key2')
+        >>>
+        >>> assert s2 is current()
+        >>> assert s1 is sheet('key1')
+        >>> assert s1 is current()
     """
     global _last_sheet
     if isinstance(key, Sheet):
@@ -63,28 +84,37 @@ def sheet(key=None, rows=5, columns=5, column_width=None, row_headers=True, colu
 
 
 def current():
-    """Returns the current `Sheet` instance"""
+    """
+    Returns:
+        the current ``Sheet`` instance
+    """
     return _last_sheet
 
 
+@doc_subst(_common_doc)
 def cell(row, column, value=0., type=None, color=None, background_color=None,
          font_style=None, font_weight=None, style=None, label_left=None, choice=None,
          read_only=False, numeric_format='0.000', date_format='YYYY/MM/DD', renderer=None, **kwargs):
-    """Adds a new `Cell` widget to the current sheet
+    """Adds a new ``Cell`` widget to the current ``Sheet``
 
-    Parameters
-    ----------
-    row : int
-        Zero based row index
-    column : int
-        Zero based column index
-    type : string
-        Type of cell, options are: text, numeric, checkbox, dropdown, numeric, date.
-        If type is None, the type is inferred from the type of the value being passed,
-        numeric (float or int type), boolean (bool type), or else text. When choise is given
-        the type will be assumed to be dropdown.
-        The types refer (currently) to the handsontable types:
-          https://docs.handsontable.com/0.35.1/demo-custom-renderers.html
+    Args:
+        row (int): Zero based row index where to put the cell in the sheet
+        column (int): Zero based column index where to put the cell in the sheet
+        value (int, float, string, bool, Widget): The value of the cell
+        {args}
+
+    Returns:
+        The new ``Cell`` widget.
+
+    Example:
+        >>> from ipysheet import sheet, cell
+        >>>
+        >>> s1 = sheet()
+        >>> cell(0, 0, 36.)            # The Cell type will be 'numeric'
+        >>> cell(1, 0, True)           # The Cell type will be 'checkbox'
+        >>> cell(0, 1, 'Hello World!') # The Cell type will be 'text'
+        >>> c = cell(1, 1, True)
+        >>> c.value = False            # Dynamically changing the cell value at row=1, column=1
     """
     global _cells
     if type is None:
@@ -123,88 +153,92 @@ def cell(row, column, value=0., type=None, color=None, background_color=None,
     return c
 
 
-def row(row, value, type=None, column_start=0, column_end=None, choice=None,
-        read_only=False, numeric_format='0.000', date_format='YYYY/MM/DD', renderer=None,
-        color=None, background_color=None, font_style=None, font_weight=None, **kwargs):
-    """Create a CellRange widget, representing multiple cells in a sheet, in a horizontal column
+@doc_subst(_common_doc)
+def row(row, value, column_start=0, column_end=None, type=None, color=None, background_color=None,
+        font_style=None, font_weight=None, style=None, choice=None,
+        read_only=False, numeric_format='0.000', date_format='YYYY/MM/DD', renderer=None, **kwargs):
+    """Create a ``Cell`` widget, representing multiple cells in a sheet, in a horizontal row
 
-    Parameters
-    ----------
-    column : int
-        Which rows, 0 based.
-    value : list
-        List of values for each cell.
-    row_start : int
-        Which row the column will start, default 0.
-    row_end : int
-        Which row the column will end, default is the last.
+    Args:
+        row (int): Zero based row index where to put the row in the sheet
+        value (list): The list of cell values representing the row
+        column_start (int): Which column the row will start, default 0.
+        column_end (int): Which column the row will end, default is the last.
+        {args}
 
-    Returns
-    -------
-        A CellRange widget.
+    Returns:
+        The new ``Cell`` widget.
+
+    Example:
+        >>> from ipysheet import sheet, row
+        >>>
+        >>> s1 = sheet()
+        >>> row(0, [1, 2, 3, 34, 5])                    # The Cell type will be 'numeric'
+        >>> row(1, [True, False, True], column_start=2) # The Cell type will be 'checkbox'
     """
     return cell_range(value, column_start=column_start, column_end=column_end, row_start=row, row_end=row,
                       squeeze_row=True, squeeze_column=False,
                       color=color, background_color=background_color,
-                      font_style=font_style, font_weight=font_weight, type=type, **kwargs)
+                      font_style=font_style, font_weight=font_weight, style=style, type=type, **kwargs)
 
 
-def column(column, value, type=None, row_start=0, row_end=None,  choice=None,
-           read_only=False, numeric_format='0.000', date_format='YYYY/MM/DD', renderer=None,
-           color=None, background_color=None, font_style=None, font_weight=None, **kwargs):
-    """Create a CellRange widget, representing multiple cells in a sheet, in a vertical column
+@doc_subst(_common_doc)
+def column(column, value, row_start=0, row_end=None, type=None, color=None, background_color=None,
+           font_style=None, font_weight=None, style=None, choice=None,
+           read_only=False, numeric_format='0.000', date_format='YYYY/MM/DD', renderer=None, **kwargs):
+    """Create a ``Cell`` widget, representing multiple cells in a sheet, in a vertical column
 
-    Parameters
-    ----------
-    column : int
-        Which rows, 0 based.
-    value : list
-        List of values for each cell.
-    row_start : int
-        Which row the column will start, default 0.
-    row_end : int
-        Which row the column will end, default is the last.
+    Args:
+        column (int): Zero based column index where to put the column in the sheet
+        value (list): The list of cell values representing the column
+        row_start (int): Which row the column will start, default 0.
+        row_end (int): Which row the column will end, default is the last.
+        {args}
 
-    Returns
-    -------
-        A CellRange widget.
+    Returns:
+        The new ``Cell`` widget.
+
+    Example:
+        >>> from ipysheet import sheet, column
+        >>>
+        >>> s1 = sheet()
+        >>> column(0, [1, 2, 3, 34, 5])                 # The Cell type will be 'numeric'
+        >>> column(1, [True, False, True], row_start=2) # The Cell type will be 'checkbox'
     """
     return cell_range(value, column_start=column, column_end=column, row_start=row_start, row_end=row_end,
-                      squeeze_row=False, squeeze_column=True,
+                      squeeze_row=False, squeeze_column=True, style=style,
                       read_only=read_only, numeric_format=numeric_format, date_format=date_format, renderer=renderer,
                       color=color, background_color=background_color, type=type,
                       font_style=font_style, font_weight=font_weight, **kwargs)
 
 
-def cell_range(value, row_start=0, column_start=0, row_end=None, column_end=None, transpose=False,
-               squeeze_row=False, squeeze_column=False, type=None, choice=None,
-               read_only=False, numeric_format='0.000', date_format='YYYY/MM/DD', renderer=None, style=None,
-               color=None, background_color=None, font_style=None, font_weight=None, **kwargs):
-    """Create a CellRange widget, representing multiple cells in a sheet, in a horizontal column
+@doc_subst(_common_doc)
+def cell_range(value,
+               row_start=0, column_start=0, row_end=None, column_end=None, transpose=False,
+               squeeze_row=False, squeeze_column=False, type=None, color=None, background_color=None,
+               font_style=None, font_weight=None, style=None, choice=None,
+               read_only=False, numeric_format='0.000', date_format='YYYY/MM/DD', renderer=None, **kwargs):
+    """Create a ``Cell`` widget, representing multiple cells in a sheet
 
-    Parameters
-    ----------
-    value : list of lists
-        List of lists values for each cell.
-    row_start : int
-        Which rows to start, 0 based.
-    column_start : int
-        Which rows to start, 0 based.
-    row_end : int
-        Which row the column will end, default is the last.
-    column_end : int
-        Which row the column will end, default is the last.
-    transpose : bool
-        Interpret the value array as value[column_index][row_index]
-    squeeze_row : bool
-        Take out the row dimensions, meaning only value[column_index] is used
-    squeeze_column : bool
-        Take out the column dimensions, meaning only value[row_index] is used
+    Args:
+        value (list): The list of cell values representing the range
+        row_start (int): Which row the range will start, default 0.
+        column_start (int): Which column the range will start, default 0.
+        row_end (int): Which row the range will end, default is the last.
+        column_end (int): Which column the range will end, default is the last.
+        transpose (bool): Whether to interpret the value array as value[column_index][row_index] or not.
+        squeeze_row (bool): Take out the row dimensions, meaning only value[column_index] is used.
+        squeeze_column (bool): Take out the column dimensions, meaning only value[row_index] is used.
+        {args}
 
-    Returns
-    -------
-    Range
-        A CellRange widget.
+    Returns:
+        The new ``Cell`` widget.
+
+    Example:
+        >>> from ipysheet import sheet, cell_range
+        >>>
+        >>> s1 = sheet()
+        >>> cell_range([[1, 2, 3, 34, 5], [6, 7, 8, 89, 10]])
     """
     global _cells
 
@@ -278,14 +312,32 @@ def cell_range(value, row_start=0, column_start=0, row_end=None, column_end=None
 
 
 def renderer(code, name):
-    """Adds a cell renderer (to the front end)
+    """Create a ``Renderer`` widget
 
-    Parameters
-    ----------
-    code : str or code or function objject
-        If a string object, it is assumed to be a JavaScript snippet, else it is assumed
-        to be a function or code object and will be transpiled to javascript using flexxui/pscript.
-    name : name of the renderer
+    Args:
+        code (string or code or function object): If a string object, it is assumed to be a JavaScript
+            snippet, else it is assumed to be a function or code object and will be transpiled to
+            javascript using flexxui/pscript.
+        name (string): Name of the renderer
+
+    Returns:
+        The new ``Renderer`` widget.
+
+    Example:
+        >>> from ipysheet import sheet, renderer, cell
+        >>>
+        >>> s1 = sheet()
+        >>>
+        >>> def renderer_negative(instance, td, row, col, prop, value, cellProperties):
+        >>>     Handsontable.renderers.TextRenderer.apply(this, arguments);
+        >>>     if value < 0:
+        >>>         td.style.backgroundColor = 'orange'
+        >>>     else:
+        >>>         td.style.backgroundColor = ''
+        >>>
+        >>> renderer(code=renderer_negative, name='negative');
+        >>> cell(0, 0, 36, renderer='negative')  # Will be white
+        >>> cell(1, 0, -36, renderer='negative') # Will be orange
     """
     if not isinstance(code, six.string_types):
         from pscript import py2js
@@ -310,27 +362,29 @@ def _assign(object, value):
 
 
 def calculation(inputs, output, initial_calculation=True):
-    """A decorator that assigns to output widget a calculation depending on the input widgets
+    """A decorator that assigns to output cell a calculation depending on the inputs
 
-    Example that takes three input widgets and writes the output to a cell:
+    Args:
+        inputs (list of widgets, or (widget, 'traitname') pairs): List of all widget, whose
+            values (default 'value', otherwise specified by 'traitname') are input of the function
+            that is decorated
+        output (widget or (widget, 'traitname')): The output of the decorator function will be
+            assigned to output.value or output.<traitname>.
+        initial_calculation (bool): When True the calculation will be done
+            directly for the first time.
 
-    >>> a = ipysheet.cell(0, 0, value=1)
-    >>> b = ipysheet.cell(0, 0, value=widgets.IntSlider(value=2))
-    >>> c = widgets.IntSlider(max=0)
-    >>> d = ipysheet.cell(0, 0, value=1)
-    >>> @ipysheet.calculation(inputs=[a, (b, 'value'), (c, 'max')], output=d)
-    >>> def add(a, b, c):
-    >>>     return a + b + c
-
-    Parameters
-    ----------
-    inputs : list of widgets, or (widget, 'traitname') pairs
-        List of all widget, whose values (default 'value', otherwise specified by 'traitname')
-        are input of the function that is decorated
-    output : widget or (widget, 'traitname')
-        The output of the decorator function will be assigned to output.value or output.<traitname>.
-    initial_calculation : bool
-        When True the calculation will be done directly for the first time.
+    Example:
+        >>> from ipywidgets import IntSlider
+        >>> from ipysheet import cell, calculation
+        >>>
+        >>> a = cell(0, 0, value=1)
+        >>> b = cell(1, 0, value=IntSlider(value=2))
+        >>> c = IntSlider(max=56)
+        >>> d = cell(3, 0, value=1)
+        >>>
+        >>> @calculation(inputs=[a, (b, 'value'), (c, 'max')], output=d)
+        >>> def add(a, b, c):
+        >>>     return a + b + c
     """
     def decorator(f):
         def get_value(input):
@@ -377,15 +431,15 @@ def hold_cells():
 
     This may give a better performance when adding many cells.
 
-    Example
-    -------
-
-    >>> ipsheet.sheet(rows=10,columns=10)
-    >>> with ipysheet.hold_cells()
-    >>>  for i in range(10):
-    >>>    for j in range(10):
-    >>>      ipysheet.cell(i,j, value=i*10+j)
-    >>> # at this line, the Cell widgets are added
+    Example:
+        >>> from ipysheet import sheet, cell, hold_cells
+        >>>
+        >>> sheet(rows=10,columns=10)
+        >>> with hold_cells()
+        >>>    for i in range(10):
+        >>>        for j in range(10):
+        >>>            cell(i, j, value=i * 10 + j)
+        >>> # at this line, the Cell widgets are added
     """
     global _hold_cells
     global _cells
