@@ -276,6 +276,7 @@ let SheetView = widgets.DOMWidgetView.extend({
             this.model.on('change:stretch_headers change:column_width', this._update_hot_settings, this);
             this.model.on('change:column_resizing change:row_resizing', this._update_hot_settings, this);
             this.model.on('change:search_token', this._search, this);
+            this._search()
         });
     },
     processPhosphorMessage: function(msg) {
