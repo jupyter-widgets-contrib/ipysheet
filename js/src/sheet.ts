@@ -355,9 +355,16 @@ let SheetView = widgets.DOMWidgetView.extend({
             manualRowResize: this.model.get('row_resizing')
         };
     },
-    _search: function() {
-        let res = this.hot.getPlugin('search').query(this.model.get('search_token'));
-        this.hot.render();
+    _search: function(render=true, ignore_empty_string=false) {
+        let token = this.model.get('search_token');
+        if (ignore_empty_string && token == '') {
+            return;
+        }
+
+        let res = this.hot.getPlugin('search').query(token);
+        if (render) {
+            this.hot.render();
+        }
     },
     _get_cell_data: function() {
         return extract2d(this.model.data, 'value');
@@ -441,6 +448,7 @@ let SheetView = widgets.DOMWidgetView.extend({
                 colHeaders: this.model.get('column_headers'),
                 rowHeaders: this.model.get('row_headers')
             });
+            this._search(false, true);
             this.hot.render();
             resolve()
         })
