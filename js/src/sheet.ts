@@ -61,7 +61,8 @@ let SheetModel = widgets.DOMWidgetModel.extend({
             stretch_headers: 'all',
             column_width: null,
             column_resizing: true,
-            row_resizing: true
+            row_resizing: true,
+            search_token: ''
         });
     },
     initialize : function () {
@@ -274,6 +275,8 @@ let SheetView = widgets.DOMWidgetView.extend({
             this.model.on('change:column_headers change:row_headers', this._update_hot_settings, this);
             this.model.on('change:stretch_headers change:column_width', this._update_hot_settings, this);
             this.model.on('change:column_resizing change:row_resizing', this._update_hot_settings, this);
+            this.model.on('change:search_token', this._search, this);
+            this._search()
         });
     },
     processPhosphorMessage: function(msg) {
@@ -333,6 +336,7 @@ let SheetView = widgets.DOMWidgetView.extend({
             data: this._get_cell_data(),
             rowHeaders: true,
             colHeaders: true,
+            search: true,
             cells: (...args) => this._cell(...args),
             afterChange: (changes, source) => { this._on_change(changes, source); },
             afterRemoveCol: (changes, source) => { this._on_change_grid(changes, source); },
@@ -351,6 +355,17 @@ let SheetView = widgets.DOMWidgetView.extend({
             manualColumnResize: this.model.get('column_resizing'),
             manualRowResize: this.model.get('row_resizing')
         };
+    },
+    _search: function(render=true, ignore_empty_string=false) {
+        let token = this.model.get('search_token');
+        if (ignore_empty_string && token == '') {
+            return;
+        }
+
+        let res = this.hot.getPlugin('search').query(token);
+        if (render) {
+            this.hot.render();
+        }
     },
     _get_cell_data: function() {
         return extract2d(this.model.data, 'value');
@@ -434,6 +449,7 @@ let SheetView = widgets.DOMWidgetView.extend({
                 colHeaders: this.model.get('column_headers'),
                 rowHeaders: this.model.get('row_headers')
             });
+            this._search(false, true);
             this.hot.render();
             resolve()
         })

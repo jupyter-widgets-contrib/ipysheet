@@ -230,4 +230,32 @@ describe('sheet', function() {
         expect(data[0][2].options.style.backgrouncColor, 'effective backgrouncColor should be blue').to.equal('orange');
         expect(range.get('style').color, 'but the original should not be changed').to.equal('red');
     })
+    it('should search at table creation', async function() {
+        var cell = await make_cell.apply(this, [{value: [['Hello']]}]);
+        this.sheet.set('search_token', 'Hell');
+        var view = await make_view.call(this)
+        await view._table_constructed;
+
+        expect(view.el.querySelector('td[class*="htSearchResult"]')).to.not.equal(null);
+    })
+    it('should search', async function() {
+        var cell = await make_cell.apply(this, [{value: [['Hello']]}]);
+        var view = await make_view.call(this)
+        await view._table_constructed;
+
+        expect(view.el.querySelector('td[class*="htSearchResult"]')).to.equal(null);
+        this.sheet.set('search_token', 'Hell');
+        expect(view.el.querySelector('td[class*="htSearchResult"]')).to.not.equal(null);
+    })
+    it('should search after change', async function() {
+        var cell = await make_cell.apply(this, [{value: [['Yop']]}]);
+        var view = await make_view.call(this)
+        await view._table_constructed;
+
+        this.sheet.set('search_token', 'Hell');
+        expect(view.el.querySelector('td[class*="htSearchResult"]')).to.equal(null);
+        cell.set('value', [['Hello']]);
+        await view._last_data_set;
+        expect(view.el.querySelector('td[class*="htSearchResult"]')).to.not.equal(null);
+    })
 })
