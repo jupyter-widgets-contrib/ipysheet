@@ -68,7 +68,7 @@ let SheetModel = widgets.DOMWidgetModel.extend({
     initialize : function () {
         SheetModel.__super__.initialize.apply(this, arguments);
         this.data = [[]];
-        this.update_data_grid();
+        this.update_data_grid(false);
         this._updating_grid = false;
         this.on('change:rows change:columns', this.update_data_grid, this);
         this.on('change:cells', this.on_change_cells, this);
@@ -100,6 +100,9 @@ let SheetModel = widgets.DOMWidgetModel.extend({
         });
     },
     cells_to_grid: function() {
+        this.data = [[]];
+        this.update_data_grid(false);
+
         each(this.get('cells'), (cell) => {
             this._cell_data_to_grid(cell)
         });
@@ -195,7 +198,7 @@ let SheetModel = widgets.DOMWidgetModel.extend({
             this._updating_grid = false;
         }
     },
-    update_data_grid: function() {
+    update_data_grid: function(trigger_change_event=true) {
         // create a row x column array of arrays filled with null
         let rows = this.get('rows');
         let columns = this.get('columns');
@@ -224,7 +227,9 @@ let SheetModel = widgets.DOMWidgetModel.extend({
             }
             this.data[i] = row;
         }
-        this.trigger('data_change');
+        if (trigger_change_event) {
+            this.trigger('data_change');
+        }
     }
 }, {
     serializers: extend({

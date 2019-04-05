@@ -151,6 +151,14 @@ describe('sheet', function() {
         var data = this.sheet.data;
         expect(data[1][2].value, 'for initial value').to.equal(0);
     })
+    it('none cell with should be set', async function() {
+        var cell = await make_cell.apply(this, [{value: 0.00, type:'numeric'}]);
+        var data = this.sheet.data;
+        expect(data[1][2].value, 'for initial value').to.equal(0);
+        cell.set('value', null);
+        var data = this.sheet.data;
+        expect(data[1][2].value, 'for new value').to.equal(null);
+    })
     it('multiple cells added', async function() {
         var cell1 = await make_cell.apply(this, [{value: 777}, true])
         var cell2 = await make_cell.apply(this, [{row_start: 0, row_end:0, value: 555}, true])
