@@ -342,11 +342,50 @@ let SheetView = widgets.DOMWidgetView.extend({
             rowHeaders: true,
             colHeaders: true,
             search: true,
+            columnSorting: {
+                sortEmptyCells: false,
+                indicator: true,
+                headerAction: true,
+                compareFunctionFactory: this._compareFunctionFactory
+            },
             cells: (...args) => this._cell(...args),
             afterChange: (changes, source) => { this._on_change(changes, source); },
             afterRemoveCol: (changes, source) => { this._on_change_grid(changes, source); },
             afterRemoveRow: (changes, source) => { this._on_change_grid(changes, source); }
         }, this._hot_settings()));
+    },
+    _compareFunctionFactory: function(sortOrder, columnMeta) {
+        return function(value, nextValue) {
+            let a, b;
+            if (sortOrder == 'desc') {
+                a = value;
+                b = nextValue;
+            } else {
+                a = nextValue;
+                b = value;
+            }
+
+            if (a instanceof widgets.WidgetModel) {
+                a = a.get("value");
+            }
+
+            if (b instanceof widgets.WidgetModel) {
+                b = b.get("value");
+            }
+
+            if (a == undefined || b == undefined) {
+                return 0;
+            }
+
+            if (a < b) {
+                return -1;
+            }
+            if (a > b) {
+                return 1;
+            }
+
+            return 0;
+        }
     },
     _update_hot_settings: function() {
         this.hot.updateSettings(this._hot_settings());
@@ -401,7 +440,7 @@ let SheetView = widgets.DOMWidgetView.extend({
         this.model.save_changes();
     },
     _on_change: function(changes, source) {
-        if(this.hot === undefined || source == 'loadData') {
+        if(this.hot === undefined || source == 'loadData' || source == 'ObserveChanges.change') {
             return;
         }
         if(source == 'alter') {
