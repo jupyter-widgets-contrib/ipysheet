@@ -180,7 +180,8 @@ def row(row, value, column_start=0, column_end=None, type=None, color=None, back
     return cell_range(value, column_start=column_start, column_end=column_end, row_start=row, row_end=row,
                       squeeze_row=True, squeeze_column=False,
                       color=color, background_color=background_color,
-                      font_style=font_style, font_weight=font_weight, style=style, type=type, **kwargs)
+                      font_style=font_style, font_weight=font_weight, style=style, type=type, choice=choice,
+                      read_only=read_only, numeric_format=numeric_format, date_format=date_format, renderer=renderer, **kwargs)
 
 
 @doc_subst(_common_doc)
@@ -207,7 +208,7 @@ def column(column, value, row_start=0, row_end=None, type=None, color=None, back
         >>> column(1, [True, False, True], row_start=2) # The Cell type will be 'checkbox'
     """
     return cell_range(value, column_start=column, column_end=column, row_start=row_start, row_end=row_end,
-                      squeeze_row=False, squeeze_column=True, style=style,
+                      squeeze_row=False, squeeze_column=True, style=style, choice=choice,
                       read_only=read_only, numeric_format=numeric_format, date_format=date_format, renderer=renderer,
                       color=color, background_color=background_color, type=type,
                       font_style=font_style, font_weight=font_weight, **kwargs)
