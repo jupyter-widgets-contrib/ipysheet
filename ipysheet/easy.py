@@ -33,6 +33,7 @@ _common_doc = {
         read_only (bool): Whether the cell is editable or not
         numeric_format (string): Numbers format
         date_format (string): Dates format
+        time_format (string): Time format
         renderer (string): Renderer name to use for the cell
     """
 }
