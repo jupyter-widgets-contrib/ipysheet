@@ -33,7 +33,8 @@ let CellRangeModel = widgets.WidgetModel.extend({
             squeeze_column: true,
             transpose: false,
             numeric_format: '0.000',
-            date_format: 'YYYY/MM/DD'
+            date_format: 'YYYY/MM/DD',
+            time_format: 'h:mm:ss a'
         });
     },
 }, {
@@ -95,7 +96,7 @@ let SheetModel = widgets.DOMWidgetModel.extend({
         this.grid_to_cell()
     },
     cell_bind: function(cell) {
-        cell.on_some_change(['value', 'style', 'type', 'renderer', 'read_only', 'choice', 'numeric_format', 'date_format'], () => {
+        cell.on_some_change(['value', 'style', 'type', 'renderer', 'read_only', 'choice', 'numeric_format', 'date_format', 'time_format'], () => {
             this.cells_to_grid();
         });
     },
@@ -144,6 +145,10 @@ let SheetModel = widgets.DOMWidgetModel.extend({
                 if (cell.get('date_format') && cell.get('type') == 'date') {
                     cell_data.options['correctFormat'] = true;
                     cell_data.options['dateFormat'] = cell.get('date_format') || cell_data.options['dateFormat'];
+                }
+                if (cell.get('time_format') && cell.get('type') == 'time') {
+                    cell_data.options['correctFormat'] = true;
+                    cell_data.options['timeFormat'] = cell.get('time_format') || cell_data.options['timeFormat'];
                 }
 
                 cell_data.options['style'] = extend({}, cell_data.options['style'], cell.get('style'));

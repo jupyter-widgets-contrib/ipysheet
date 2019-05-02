@@ -33,6 +33,7 @@ class Cell(widgets.Widget):
     choice = List(Unicode(), allow_none=True, default_value=None).tag(sync=True)
     numeric_format = Unicode('0.000', allow_none=True).tag(sync=True)
     date_format = Unicode('YYYY/MM/DD', allow_none=True).tag(sync=True)
+    time_format = Unicode('h:mm:ss a', allow_none=True).tag(sync=True)
 
     @traitlets.validate('value')
     def _validate_value(self, proposal):
