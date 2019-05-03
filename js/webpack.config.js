@@ -39,16 +39,6 @@ module.exports = [
         }
     },
     {
-        // same for renderer
-        entry: './lib/extension-renderer.js',
-        resolve: resolve,
-        output: {
-            filename: 'extension-renderer.js',
-            path: path.resolve(__dirname, '../ipysheet/static'),
-            libraryTarget: 'amd'
-        }
-    },
-    {
         // Bundle for the notebook containing the custom widget views and models
         //
         // This bundle contains the implementation for the custom widget views and
@@ -67,21 +57,6 @@ module.exports = [
             rules: rules
         },
         externals: ['@jupyter-widgets/base']
-    },
-    {
-        // same for render
-        entry: './lib/renderer.js',
-        devtool: 'source-map',
-        resolve: resolve,
-        output: {
-            filename: 'renderer.js',
-            path: path.resolve(__dirname, '../ipysheet/static'),
-            libraryTarget: 'amd'
-        },
-        module: {
-            rules: rules
-        },
-        externals: ['@jupyter-widgets/base', 'ipysheet']
     },
     {
         // Embeddable ipysheet bundle
@@ -110,20 +85,5 @@ module.exports = [
             rules: rules
         },
         externals: ['@jupyter-widgets/base']
-    },
-    {
-        // same for renderer
-        entry: './lib/renderer.js',
-        resolve: resolve,
-        output: {
-            filename: 'renderer.js',
-            path: path.resolve(__dirname, './dist'),
-            libraryTarget: 'amd',
-            publicPath: 'https://unpkg.com/ipysheet@' + version + '/dist/renderer'
-        },
-        module: {
-            rules: rules
-        },
-        externals: ['@jupyter-widgets/base', 'ipysheet']
-    },
+    }
 ];
