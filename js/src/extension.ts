@@ -4,14 +4,14 @@
 
 // Configure requirejs
 if (window['require'] !== undefined) {
-    window['require'].config({
-        map: {
-            "*" : {
-                "ipysheet": "nbextensions/ipysheet/index",
-                "jupyter-js-widgets": "nbextensions/jupyter-js-widgets/extension"
-            }
-        }
-    });
+  window['require'].config({
+    map: {
+      "*" : {
+        "ipysheet": "nbextensions/ipysheet/index",
+        "jupyter-js-widgets": "nbextensions/jupyter-js-widgets/extension"
+      }
+    }
+  });
 }
 
 // Export the required load_ipython_extention
