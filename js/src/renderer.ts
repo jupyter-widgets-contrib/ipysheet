@@ -1,9 +1,8 @@
 import * as widgets  from '@jupyter-widgets/base';
+import * as Handsontable from 'handsontable';
 import {extend} from 'lodash';
 import {version, semver_range} from './version';
-// @ts-ignore
-import {Handsontable} from 'ipysheet';
-
+import {safeEval} from './worker_eval';
 
 let RendererModel = widgets.WidgetModel.extend({
     defaults: function() {
@@ -17,9 +16,15 @@ let RendererModel = widgets.WidgetModel.extend({
     },
     initialize: function() {
         RendererModel.__super__.initialize.apply(this, arguments);
-        // we add Handsontable manually as extra argument to put it in the scope
-        this.fn = new Function('Handsontable', 'return (' + this.get('code') + ')');
-        (Handsontable.renderers as any).registerRenderer(this.get('name'), this.fn(Handsontable));
+        // We add Handsontable manually as extra argument to put it in the scope
+        var that = this;
+        this.fn = function (instance, td, row, col, prop, value, cellProperties) {
+          Handsontable.renderers.TextRenderer.apply(this, arguments);
+          safeEval(`(${that.get('code')})(${value})`).then(function(style) {
+            (Object as any).assign(td.style, style);
+          });
+        };
+        (Handsontable.renderers as any).registerRenderer(this.get('name'), this.fn);
     }
 });
 

@@ -1,6 +1,5 @@
 {
   "load_extensions": {
-    "ipysheet/extension": true,
-    "ipysheet/extension-renderer": true
+    "ipysheet/extension": true
   }
 }
