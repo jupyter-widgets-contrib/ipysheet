@@ -1,7 +1,6 @@
-import * as sheet from './sheet';
-import * as renderer from './renderer';
 import * as base from '@jupyter-widgets/base';
 import {version} from './version';
+import * as sheet from './sheet';
 
 const ipysheetPlugin = {
     id: 'ipysheet',
@@ -16,17 +15,4 @@ const ipysheetPlugin = {
     autoStart: true
 };
 
-const rendererPlugin = {
-    id: 'ipysheet:renderer',
-    requires: [base.IJupyterWidgetRegistry],
-    activate: function(app, widgets) {
-        widgets.registerWidget({
-            name: 'ipysheet/renderer',
-            version: version,
-            exports: renderer
-        });
-    },
-    autoStart: true
-};
-
-export default [ipysheetPlugin, rendererPlugin];
+export default ipysheetPlugin;

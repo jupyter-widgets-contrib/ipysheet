@@ -1,7 +1,7 @@
 import * as widgets  from '@jupyter-widgets/base';
 import * as Handsontable from 'handsontable';
 import {extend} from 'lodash';
-import {version, semver_range} from './version';
+import {semver_range} from './version';
 import {safeEval} from './worker_eval';
 
 let RendererModel = widgets.WidgetModel.extend({
@@ -29,5 +29,5 @@ let RendererModel = widgets.WidgetModel.extend({
 });
 
 export {
-    RendererModel, version
+    RendererModel 
 };
