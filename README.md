@@ -15,7 +15,7 @@ Spreadsheet in the Jupyter notebook:
 
 **Change cell style depending on the value using renderers:**
 
-![Cell Style Screencast](docs/source/ipysheet_renderer.gif)
+![Conditional formatting](docs/source/conditional_formatting.png)
 
 **Populate table using cell ranges:**
 
