@@ -2,7 +2,7 @@ name: ipysheet
 channels:
   - conda-forge
 dependencies:
-  - ipysheet=0.4.0
+  - ipysheet=0.4.1
   - pscript
   - pandas
   - bqplot
