@@ -298,6 +298,8 @@ let SheetView = widgets.DOMWidgetView.extend({
         case 'after-show':
             this._table_constructed.then(() => {
                 this.hot.render();
+                // working around table not re-rendering fully upon resize.
+                this.hot._refreshBorders(null);
             });
             break;
         }
