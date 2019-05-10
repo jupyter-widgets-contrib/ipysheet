@@ -276,6 +276,8 @@ let SheetView = widgets.DOMWidgetView.extend({
     render: function() {
         // this.widget_view_promises = {}
         this.widget_views = {}
+        this.el.classList.add("handsontable");
+        this.el.classList.add("jupyter-widgets");
         this.table_container = document.createElement('div');
         this.el.appendChild(this.table_container);
         // promise used for unittesting
@@ -334,7 +336,7 @@ let SheetView = widgets.DOMWidgetView.extend({
                     // good, the previous widget_view should be reused
                 } else {
                     // we have a leftover view from the previous run
-                    widget_view.remove()
+                    widget_view.remove();
                 }
             }
         }

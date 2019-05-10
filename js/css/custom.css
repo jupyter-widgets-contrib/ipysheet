@@ -1,13 +1,20 @@
-.wtHolder {
-  width: auto !important;
-  height: auto !important;
+/* handsontable layout*/
+
+/* These properties can be overridden with the Layout widget.
+ *
+ *  - overflow: hidden;
+ *   the first parent element with defined dimension and overflow: hidden is considered as the container for the spreadsheet
+ *
+ *  - height: 250px;
+ *   we used a fixed value in pixels for the the natural height because `auto` yields a zero-height table in the Jupyter notebook.
+ *
+ */
+.handsontable.jupyter-widgets {
+   overflow: hidden;
+   height: 250px;
 }
 
-.handsontable .jupyter-widgets {
-    width: 100%;
-    height: 100%;
-}
-
+/* handsontable theme */
 .p-Widget .handsontable .table caption + thead tr:first-child th,
 .p-Widget .handsontable .table caption + thead tr:first-child td,
 .p-Widget .handsontable .table colgroup + thead tr:first-child th,
