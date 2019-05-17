@@ -4,7 +4,6 @@ var webpackConfig = require('./webpack.config.js');
 var webpack = require('webpack');
 var path = require('path');
 const process = require('process');
-process.env.CHROME_BIN = require('puppeteer').executablePath();
 
 
 module.exports = function (config) {
@@ -39,11 +38,11 @@ module.exports = function (config) {
         logLevel: config.LOG_INFO,
         autoWatch: true,
         // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-        browsers: ['HeadlessChrome'],
-        customLaunchers: {
-            HeadlessChrome: {
+        browsers: ['ChromeHeadless'],
+        customLauncher: {
+            ChromeHeadless: {
                 base: 'ChromeHeadless',
-                flags: ['--no-sandbox']
+                flags: ['--headless', '--remote-debugging-port=9222']
             }
         },
         // if true, Karma captures browsers, runs the tests and exits
