@@ -50,24 +50,15 @@ def extract_data(sheet):
 
 
 def get_cell_type(dt):
-    # TODO Differentiate integer and float? Using custom renderers and
-    # validators for integers?
     # Add support for void type from NumPy?
     # See https://handsontable.com/docs/6.2.2/tutorial-cell-types.html
     return {
         'b': 'checkbox',
-        'i': 'numeric',
-        'u': 'numeric',
-        'f': 'numeric',
-        'm': 'numeric',
+        'i': 'int',
+        'u': 'int',
+        'f': 'float',
+        'm': 'float',
         'M': 'date',
         'S': 'text',
         'U': 'text'
     }.get(dt.kind, 'text')
-
-
-def get_cell_numeric_format(dt):
-    return {
-        'i': '0[.]0',
-        'f': '0.000',
-    }.get(dt.kind)

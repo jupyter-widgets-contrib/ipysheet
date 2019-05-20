@@ -147,12 +147,12 @@ describe('sheet', function() {
         expect(data[1][2].value, 'when cell.value is change').to.equal(999);
     })
     it('numeric cell with value zero should indeed have value zero', async function() {
-        await make_cell.apply(this, [{value: 0.00, type:'numeric'}]);
+        await make_cell.apply(this, [{value: 0.00, type:'float'}]);
         var data = this.sheet.data;
-        expect(data[1][2].value, 'for initial value').to.equal(0);
+        expect(data[1][2].value, 'for initial value').to.equal(0.0);
     })
     it('none cell with should be set', async function() {
-        var cell = await make_cell.apply(this, [{value: 0.00, type:'numeric'}]);
+        var cell = await make_cell.apply(this, [{value: 0.00, type:'float'}]);
         var data = this.sheet.data;
         expect(data[1][2].value, 'for initial value').to.equal(0);
         cell.set('value', null);

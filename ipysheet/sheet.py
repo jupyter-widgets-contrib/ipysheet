@@ -1,5 +1,6 @@
 import ipywidgets as widgets
 from ipywidgets.widgets.widget_layout import LayoutTraitType
+from ipywidgets.widgets.trait_types import NumberFormat
 
 import traitlets
 from traitlets import Unicode, CInt, List, Tuple, Instance, Union, Dict, Bool, Any
@@ -33,7 +34,7 @@ class Cell(widgets.Widget):
     squeeze_column = Bool(True).tag(sync=True)
     transpose = Bool(False).tag(sync=True)
     choice = List(Unicode(), allow_none=True, default_value=None).tag(sync=True)
-    numeric_format = Unicode('0.000', allow_none=True).tag(sync=True)
+    numeric_format = NumberFormat(None, allow_none=True).tag(sync=True)
     date_format = Unicode('YYYY/MM/DD', allow_none=True).tag(sync=True)
     time_format = Unicode('h:mm:ss a', allow_none=True).tag(sync=True)
 
