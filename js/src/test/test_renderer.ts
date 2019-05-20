@@ -45,7 +45,7 @@ describe('custom', function() {
     });
 
     it('register', function() {
-        expect(this.renderer.fn).to.not.equal(undefined);
+        expect(this.renderer.rendering_function).to.not.equal(undefined);
         expect((Handsontable.renderers as any).getRenderer('test_renderer')).to.not.equal(undefined);
     });
 });
