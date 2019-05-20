@@ -2,6 +2,8 @@ language: c
 os:
  - linux
  - osx
+addons:
+ chrome: beta
 env:
  matrix:
   - PYTHON_VERSION=2.7
