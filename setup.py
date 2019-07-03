@@ -132,7 +132,7 @@ setup_args = {
         ('etc/jupyter/nbconfig/notebook.d', ['ipysheet.json'])
     ],
     'install_requires': [
-        'ipywidgets>=7.0.0',
+        'ipywidgets>=7.5.0,<8.0',
     ],
     'packages': find_packages(),
     'zip_safe': False,

@@ -10,8 +10,6 @@ import * as Handsontable from 'handsontable';
 // CSS
 import 'pikaday/css/pikaday.css';
 import 'handsontable/dist/handsontable.min.css';
-import '@jupyter-widgets/controls/css/materialcolors.css';
-import '@jupyter-widgets/controls/css/labvariables.css';
 import '../css/custom.css';
 
 
