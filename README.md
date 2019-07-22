@@ -37,7 +37,7 @@ $ pip install ipysheet
 
 To make it work for Jupyter lab:
 ```
-$ jupyter labextension @jupyter-widgets/jupyterlab-manager
+$ jupyter labextension install @jupyter-widgets/jupyterlab-manager
 $ jupyter labextension install ipysheet
 ```
 
