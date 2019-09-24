@@ -94,7 +94,7 @@
 .p-Widget .handsontable td.area-5:before,
 .p-Widget .handsontable td.area-6:before,
 .p-Widget .handsontable td.area-7:before {
-  background-color: var(--jp-brand-color2);
+  background-color: var(--jp-brand-color1);
 }
 
 .p-Widget .handsontable tbody th.ht__highlight,
@@ -162,6 +162,10 @@
 .p-Widget .handsontable .wtBorder.area {
   background-color: var(--jp-brand-color0) !important;
   border-color: var(--jp-layout-color0) !important;
+}
+
+.p-Widget .handsontable td.area::before {
+  opacity: .2;
 }
 
 /* Pikaday styling */
