@@ -119,6 +119,7 @@ with open(os.path.join(here, 'ipysheet', '_version.py')) as f:
 
 setup_args = {
     'name': 'ipysheet',
+    'license': 'MIT License',
     'version': version_ns['__version__'],
     'description': 'Spreadsheet in the Jupyter notebook',
     'long_description': LONG_DESCRIPTION,
