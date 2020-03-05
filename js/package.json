@@ -52,7 +52,7 @@
     "webpack-cli": "^3.2.3"
   },
   "dependencies": {
-    "@jupyter-widgets/base": "^2.0",
+    "@jupyter-widgets/base": "^2.0 || ^3.0",
     "handsontable": "^6.2.2",
     "lodash": "^4.17.4",
     "underscore": "^1.8.3"
