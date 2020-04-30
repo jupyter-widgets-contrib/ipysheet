@@ -101,6 +101,8 @@ class Sheet(widgets.DOMWidget):
     column_resizing = Bool(True).tag(sync=True)
     row_resizing = Bool(True).tag(sync=True)
     search_token = Unicode('').tag(sync=True)
+    highlight_selected_rows = Bool(False).tag(sync=True)
+    highlight_selected_columns = Bool(False).tag(sync=True)
 
     layout = LayoutTraitType(kw=dict(height='auto', width='auto')).tag(sync=True, **widgets.widget_serialization)
 

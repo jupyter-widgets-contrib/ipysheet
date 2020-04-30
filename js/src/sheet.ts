@@ -285,6 +285,13 @@ let SheetView = widgets.DOMWidgetView.extend({
             this.model.on('change:column_headers change:row_headers', this._update_hot_settings, this);
             this.model.on('change:stretch_headers change:column_width', this._update_hot_settings, this);
             this.model.on('change:column_resizing change:row_resizing', this._update_hot_settings, this);
+            this.model.on('change:highlight_selected_rows change:highlight_selected_columns', () => {
+                [...this.hot.selection.highlight.headers.values()].forEach(highlight => {
+                    highlight.settings.highlightRowClassName = this.model.get('highlight_selected_rows')  ? 'area' : undefined;
+                    highlight.settings.highlightColumnClassName = this.model.get('highlight_selected_columns')  ? 'area' : undefined;
+                });
+                this.hot.render();
+            });
             this.model.on('change:search_token', this._search, this);
             this._search()
         });
@@ -404,7 +411,9 @@ let SheetView = widgets.DOMWidgetView.extend({
             stretchH: this.model.get('stretch_headers'),
             colWidths: this.model.get('column_width') || undefined,
             manualColumnResize: this.model.get('column_resizing'),
-            manualRowResize: this.model.get('row_resizing')
+            manualRowResize: this.model.get('row_resizing'),
+            currentRowClassName: this.model.get('highlight_selected_rows')    ? 'area' : undefined,
+            currentColClassName: this.model.get('highlight_selected_columns') ? 'area' : undefined
         };
     },
     _search: function(render=true, ignore_empty_string=false) {
