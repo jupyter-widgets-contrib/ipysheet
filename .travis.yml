@@ -1,32 +1,28 @@
 language: c
 os:
  - linux
- - osx
 addons:
  chrome: beta
 env:
  matrix:
-  - PYTHON_VERSION=2.7
-  - PYTHON_VERSION=3.5
-  - PYTHON_VERSION=3.6
+  - PYTHON_VERSION=3.7
+  - PYTHON_VERSION=3.8
 before_install:
-  - if [[ $TRAVIS_OS_NAME == linux ]]; then sudo apt-get update; fi
-  - if [[ $TRAVIS_OS_NAME == linux ]]; then wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh; fi
-  - if [[ $TRAVIS_OS_NAME == osx ]]; then wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh; fi
+  - sudo apt-get update
+  - wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
   - bash miniconda.sh -b -p $HOME/miniconda
   - export PATH="$HOME/miniconda/bin:$PATH"
   - hash -r
   - conda config --set always_yes yes --set changeps1 no
   - conda update -q conda
   - conda info -a
-  - conda create -q -n test-environment python=$PYTHON_VERSION ipywidgets runipy
+  - conda create -q -n test-environment python=$PYTHON_VERSION ipywidgets
   - source activate test-environment
-  - conda install -c conda-forge pytest pytest-cov nodejs pscript flake8 pandas numpy
-  - if [[ $TRAVIS_OS_NAME == linux ]]; then conda install -c conda-forge jupyterlab; fi
+  - conda install -c conda-forge pytest pytest-cov nodejs pscript flake8 pandas numpy jupyterlab
   - pip install coveralls
 install:
   - pip install -e .
-  - if [[ $TRAVIS_OS_NAME == linux && $PYTHON_VERSION != 2.7 ]]; then jupyter labextension link js; fi
+  - jupyter labextension link js
 script:
   - flake8 ipysheet
   - py.test --cov-report= --cov=ipysheet
