@@ -1,12 +1,13 @@
 {
 "compilerOptions": {
     "noImplicitAny": false,
-    "lib": ["dom", "es5", "es2015.promise", "es2015.iterable"],
+    "lib": ["dom", "es2015"],
     "strictNullChecks": true,
     "module": "commonjs",
     "moduleResolution": "node",
     "target": "es2015",
     "outDir": "lib",
+    "rootDir": "src",
     "skipLibCheck": true,
     "strictNullChecks": false,
     "inlineSourceMap": true
