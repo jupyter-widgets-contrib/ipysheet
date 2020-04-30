@@ -276,10 +276,10 @@ def test_cell_values():
 
     cell = ipysheet.cell(0, 0, value=1.2)
     assert cell.value == 1.2
-    assert cell.type == 'numeric'
+    assert cell.type == 'float'
     cell = ipysheet.cell(0, 0, value=1)
     assert cell.value == 1
-    assert cell.type == 'numeric'
+    assert cell.type == 'int'
 
     cell = ipysheet.Cell(value='1.2')
     assert cell.value == '1.2'
@@ -291,18 +291,18 @@ def test_cell_values():
 
     cell = ipysheet.row(0, [0, 1.2])
     assert cell.value == [0, 1.2]
-    assert cell.type == 'numeric'
+    assert cell.type == 'float'
 
     cell = ipysheet.row(0, [0, 1])
     assert cell.value == [0, 1]
-    assert cell.type == 'numeric'
+    assert cell.type == 'int'
 
     cell = ipysheet.row(0, ['a', 'b'])
     assert cell.value == ['a', 'b']
     assert cell.type == 'text'
 
     cell = ipysheet.row(0, [True, 0])
-    assert cell.type == 'numeric'
+    assert cell.type == 'int'
 
     cell = ipysheet.row(0, [True, 'bla'])
     assert cell.type is None
@@ -442,12 +442,12 @@ def test_from_dataframe():
     sheet = ipysheet.from_dataframe(df)
     assert len(sheet.cells) == 7
     assert sheet.cells[0].value == [1., 1., 1., 1.]
-    assert sheet.cells[0].type == 'numeric'
+    assert sheet.cells[0].type == 'float'
     assert sheet.cells[1].value == [None, '2013/01/02', None, '2013/01/02']
     assert sheet.cells[1].type == 'date'
     assert sheet.cells[2].value == [1., 1., 1., 1.]
-    assert sheet.cells[2].type == 'numeric'
-    assert sheet.cells[2].numeric_format == '0.000'
+    assert sheet.cells[2].type == 'float'
+    assert sheet.cells[2].numeric_format is None
     assert sheet.cells[3].value == [False, True, False, False]
     assert sheet.cells[3].type == 'checkbox'
     assert sheet.cells[4].value == ['test', 'train', 'test', 'train']
@@ -455,8 +455,8 @@ def test_from_dataframe():
     assert sheet.cells[5].value == ['foo', 'foo', 'foo', 'foo']
     assert sheet.cells[5].type == 'text'
     assert sheet.cells[6].value == [0, 3, 9, 18]
-    assert sheet.cells[6].type == 'numeric'
-    assert sheet.cells[6].numeric_format == '0[.]0'
+    assert sheet.cells[6].type == 'int'
+    assert sheet.cells[6].numeric_format is None
 
 
 def test_from_to_dataframe():
@@ -503,7 +503,7 @@ def test_from_array():
     arr = np.random.randn(6, 10)
     sheet = ipysheet.from_array(arr)
     assert len(sheet.cells) == 1
-    assert sheet.cells[0].type == 'numeric'
+    assert sheet.cells[0].type == 'float'
     assert sheet.cells[0].value is arr
     assert sheet.rows == 6
     assert sheet.columns == 10

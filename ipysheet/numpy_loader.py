@@ -1,5 +1,5 @@
 from .easy import sheet, column, cell_range
-from .utils import extract_data, get_cell_type, get_cell_numeric_format
+from .utils import extract_data, get_cell_type
 
 
 def from_array(array):
@@ -27,7 +27,6 @@ def from_array(array):
     columns = 1 if len(array.shape) == 1 else array.shape[1]
 
     kwargs = {
-        'numeric_format': get_cell_numeric_format(array.dtype),
         'type': get_cell_type(array.dtype)
     }
 

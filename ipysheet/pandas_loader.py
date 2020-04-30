@@ -1,5 +1,5 @@
 from .sheet import Cell, Sheet
-from .utils import extract_data, get_cell_numeric_format, get_cell_type
+from .utils import extract_data, get_cell_type
 
 
 def _format_date(date):
@@ -56,7 +56,6 @@ def from_dataframe(dataframe):
             column_start=idx,
             column_end=idx,
             type=get_cell_type(arr.dtype),
-            numeric_format=get_cell_numeric_format(arr.dtype),
             squeeze_row=False,
             squeeze_column=True
         ))

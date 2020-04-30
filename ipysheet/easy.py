@@ -5,7 +5,6 @@ sheet. Using the ``cell`` function, ``Cell`` widgets are added to the current sh
 """
 __all__ = ['sheet', 'current', 'cell', 'calculation', 'row', 'column', 'cell_range', 'hold_cells', 'renderer']
 
-import numbers
 import six
 from contextlib import contextmanager
 
@@ -23,15 +22,16 @@ _cells = ()  # cells that aren't added directly
 
 _common_doc = {
     'args': """
-        type (string): Type of cell, options are: text, numeric, checkbox, dropdown, numeric, date, widget.
+        type (string): Type of cell, options are: text, int, float, checkbox, dropdown, date, widget.
             If type is None, the type is inferred from the type of the value being passed,
-            numeric (float or int type), boolean (bool type), widget (any widget object), or else text.
+            float, int, boolean (bool type), widget (any widget object), or else text.
             When choice is given the type will be assumed to be dropdown.
             The types refer (currently) to the handsontable types: https://handsontable.com/docs/6.2.2/demo-custom-renderers.html
         color (string): The text color in the cell
         background_color (string): The background color in the cell
         read_only (bool): Whether the cell is editable or not
-        numeric_format (string): Numbers format
+        numeric_format (ipywidgets.widgets.trait_types.NumberFormat): Numbers format, default is 'd' for int cells, '.2f' for
+            float cells
         date_format (string): Dates format
         time_format (string): Time format
         renderer (string): Renderer name to use for the cell
@@ -95,7 +95,7 @@ def current():
 @doc_subst(_common_doc)
 def cell(row, column, value=0., type=None, color=None, background_color=None,
          font_style=None, font_weight=None, style=None, label_left=None, choice=None,
-         read_only=False, numeric_format='0.000', date_format='YYYY/MM/DD', renderer=None, **kwargs):
+         read_only=False, numeric_format=None, date_format='YYYY/MM/DD', renderer=None, **kwargs):
     """Adds a new ``Cell`` widget to the current ``Sheet``
 
     Args:
@@ -111,7 +111,8 @@ def cell(row, column, value=0., type=None, color=None, background_color=None,
         >>> from ipysheet import sheet, cell
         >>>
         >>> s1 = sheet()
-        >>> cell(0, 0, 36.)            # The Cell type will be 'numeric'
+        >>> cell(0, 0, 36)             # The Cell type will be 'int'
+        >>> cell(0, 0, 36.3)           # The Cell type will be 'float'
         >>> cell(1, 0, True)           # The Cell type will be 'checkbox'
         >>> cell(0, 1, 'Hello World!') # The Cell type will be 'text'
         >>> c = cell(1, 1, True)
@@ -121,8 +122,10 @@ def cell(row, column, value=0., type=None, color=None, background_color=None,
     if type is None:
         if isinstance(value, bool):
             type = 'checkbox'
-        elif isinstance(value, numbers.Number):
-            type = 'numeric'
+        elif isinstance(value, int):
+            type = 'int'
+        elif isinstance(value, float):
+            type = 'float'
         elif isinstance(value, widgets.Widget):
             type = 'widget'
         else:
@@ -157,7 +160,7 @@ def cell(row, column, value=0., type=None, color=None, background_color=None,
 @doc_subst(_common_doc)
 def row(row, value, column_start=0, column_end=None, type=None, color=None, background_color=None,
         font_style=None, font_weight=None, style=None, choice=None,
-        read_only=False, numeric_format='0.000', date_format='YYYY/MM/DD', renderer=None, **kwargs):
+        read_only=False, numeric_format=None, date_format='YYYY/MM/DD', renderer=None, **kwargs):
     """Create a ``Cell`` widget, representing multiple cells in a sheet, in a horizontal row
 
     Args:
@@ -187,7 +190,7 @@ def row(row, value, column_start=0, column_end=None, type=None, color=None, back
 @doc_subst(_common_doc)
 def column(column, value, row_start=0, row_end=None, type=None, color=None, background_color=None,
            font_style=None, font_weight=None, style=None, choice=None,
-           read_only=False, numeric_format='0.000', date_format='YYYY/MM/DD', renderer=None, **kwargs):
+           read_only=False, numeric_format=None, date_format='YYYY/MM/DD', renderer=None, **kwargs):
     """Create a ``Cell`` widget, representing multiple cells in a sheet, in a vertical column
 
     Args:
@@ -219,7 +222,7 @@ def cell_range(value,
                row_start=0, column_start=0, row_end=None, column_end=None, transpose=False,
                squeeze_row=False, squeeze_column=False, type=None, color=None, background_color=None,
                font_style=None, font_weight=None, style=None, choice=None,
-               read_only=False, numeric_format='0.000', date_format='YYYY/MM/DD', renderer=None, **kwargs):
+               read_only=False, numeric_format=None, date_format='YYYY/MM/DD', renderer=None, **kwargs):
     """Create a ``Cell`` widget, representing multiple cells in a sheet
 
     Args:
@@ -278,7 +281,8 @@ def cell_range(value,
     # see if we an infer a type from the data, otherwise leave it None
     if type is None:
         type_check_map = [('checkbox', lambda x: isinstance(x, bool)),
-                          ('numeric', lambda x: isinstance(x, numbers.Number)),
+                          ('int', lambda x: isinstance(x, int)),
+                          ('float', lambda x: isinstance(x, float) or isinstance(x, int)),
                           ('text', lambda x: isinstance(x, six.string_types)),
                           ('widget', lambda x: isinstance(x, widgets.Widget)),
                           ]

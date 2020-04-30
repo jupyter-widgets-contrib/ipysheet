@@ -1,4 +1,5 @@
-import * as widgets  from '@jupyter-widgets/base';
+import * as widgets from '@jupyter-widgets/base';
+import * as d3 from 'd3-format';
 import {cloneDeep, extend, includes as contains, each, debounce, times, map, unzip as transpose} from 'lodash';
 import {semver_range} from './version';
 import {RendererModel} from './renderer';
@@ -33,7 +34,7 @@ let CellRangeModel = widgets.WidgetModel.extend({
             squeeze_row: true,
             squeeze_column: true,
             transpose: false,
-            numeric_format: '0.000',
+            numeric_format: null,
             date_format: 'YYYY/MM/DD',
             time_format: 'h:mm:ss a'
         });
@@ -141,8 +142,8 @@ let SheetModel = widgets.DOMWidgetModel.extend({
                     cell_data.options['readOnly'] = cell.get('read_only');
                 if (cell.get('choice') != null)
                     cell_data.options['source'] = cell.get('choice')
-                if (cell.get('numeric_format') && cell.get('type') == 'numeric')
-                    cell_data.options['numericFormat'] = {'pattern': cell.get('numeric_format')};
+                if (cell.get('numeric_format') && (cell.get('type') == 'int' || cell.get('type') == 'float'))
+                    cell_data.options['numericFormat'] = cell.get('numeric_format');
                 if (cell.get('date_format') && cell.get('type') == 'date') {
                     cell_data.options['correctFormat'] = true;
                     cell_data.options['dateFormat'] = cell.get('date_format') || cell_data.options['dateFormat'];
@@ -260,7 +261,7 @@ let put_values2d = function(grid, values) {
     }
 };
 
-// calls the original renderer and then applies custom styling
+// Custom styled renderer that applies the default renderer then apply the given style on the cell
 (Handsontable.renderers as any).registerRenderer('styled', function customRenderer(hotInstance, td, row, column, prop, value, cellProperties) {
     let name = cellProperties.original_renderer || cellProperties.type || 'text';
     let original_renderer = (Handsontable.renderers as any).getRenderer(name);
@@ -268,6 +269,52 @@ let put_values2d = function(grid, values) {
     each(cellProperties.style, function(value, key) {
         td.style[key] = value;
     });
+});
+
+
+// Register `int` and `float` cell types
+class IntEditor extends Handsontable.editors.TextEditor {
+    getValue() {
+        return parseInt(this.TEXTAREA.value);
+    }
+};
+
+function int_renderer(hotInstance, td, row, column, prop, value, cellProperties) {
+    const numeric_format = cellProperties.numericFormat || 'd';
+    td.innerHTML = d3.format(numeric_format)(value);
+}
+
+function int_validator(query, callback) {
+    callback(Number.isInteger(query));
+}
+
+(Handsontable.cellTypes as any).registerCellType('int', {
+    editor: IntEditor,
+    renderer: int_renderer,
+    validator: int_validator,
+    allowInvalid: false
+});
+
+class FloatEditor extends Handsontable.editors.TextEditor {
+    getValue() {
+        return parseFloat(this.TEXTAREA.value);
+    }
+};
+
+function float_renderer(hotInstance, td, row, column, prop, value, cellProperties) {
+    const numeric_format = cellProperties.numericFormat || '.2f';
+    td.innerHTML = d3.format(numeric_format)(value);
+}
+
+function float_validator(query, callback) {
+    callback(typeof query == 'number');
+}
+
+(Handsontable.cellTypes as any).registerCellType('float', {
+    editor: FloatEditor,
+    renderer: float_renderer,
+    validator: float_validator,
+    allowInvalid: false
 });
 
 let SheetView = widgets.DOMWidgetView.extend({
