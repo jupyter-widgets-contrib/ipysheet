@@ -100,6 +100,7 @@ class Sheet(widgets.DOMWidget):
     column_width = Union([CInt(), List(CInt())], default_value=None, allow_none=True).tag(sync=True)
     column_resizing = Bool(True).tag(sync=True)
     row_resizing = Bool(True).tag(sync=True)
+    column_sorting = Bool(True).tag(sync=True)
     search_token = Unicode('').tag(sync=True)
 
     layout = LayoutTraitType(kw=dict(height='auto', width='auto')).tag(sync=True, **widgets.widget_serialization)
