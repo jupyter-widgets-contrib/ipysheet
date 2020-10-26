@@ -64,6 +64,7 @@ let SheetModel = widgets.DOMWidgetModel.extend({
             column_width: null,
             column_resizing: true,
             row_resizing: true,
+            column_sorting: true,
             search_token: ''
         });
     },
@@ -285,6 +286,7 @@ let SheetView = widgets.DOMWidgetView.extend({
             this.model.on('change:column_headers change:row_headers', this._update_hot_settings, this);
             this.model.on('change:stretch_headers change:column_width', this._update_hot_settings, this);
             this.model.on('change:column_resizing change:row_resizing', this._update_hot_settings, this);
+            this.model.on('change:column_sorting', this._update_hot_settings, this);
             this.model.on('change:search_token', this._search, this);
             this._search()
         });
@@ -403,6 +405,12 @@ let SheetView = widgets.DOMWidgetView.extend({
             rowHeaders: this.model.get('row_headers'),
             stretchH: this.model.get('stretch_headers'),
             colWidths: this.model.get('column_width') || undefined,
+            columnSorting: {
+                sortEmptyCells: false,
+                indicator: this.model.get('column_sorting'),
+                headerAction: this.model.get('column_sorting'),
+                compareFunctionFactory: this._compareFunctionFactory
+            },
             manualColumnResize: this.model.get('column_resizing'),
             manualRowResize: this.model.get('row_resizing')
         };
