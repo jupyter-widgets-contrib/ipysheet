@@ -20,6 +20,7 @@ let CellRangeModel = widgets.WidgetModel.extend({
             _model_module : 'ipysheet',
             _model_module_version : semver_range,
             value : null,
+            formula: null,
             row_start: 1,
             column_start: 1,
             row_end: 1,
@@ -68,6 +69,7 @@ let SheetModel = widgets.DOMWidgetModel.extend({
         });
     },
     initialize : function () {
+        console.log('SheetModel.initialize');
         SheetModel.__super__.initialize.apply(this, arguments);
         this.data = [[]];
         this.update_data_grid(false);
@@ -97,7 +99,7 @@ let SheetModel = widgets.DOMWidgetModel.extend({
         this.grid_to_cell()
     },
     cell_bind: function(cell) {
-        cell.on_some_change(['value', 'style', 'type', 'renderer', 'read_only', 'choice', 'numeric_format', 'date_format', 'time_format'], () => {
+        cell.on_some_change(['value', 'formula', 'style', 'type', 'renderer', 'read_only', 'choice', 'numeric_format', 'date_format', 'time_format'], () => {
             this.cells_to_grid();
         });
     },
@@ -112,27 +114,39 @@ let SheetModel = widgets.DOMWidgetModel.extend({
     },
     _cell_data_to_grid: function(cell) {
         let value = cell.get('value');
+        let formula = cell.get('formula');
         for(let i = cell.get('row_start'); i <= cell.get('row_end'); i++) {
             for(let j = cell.get('column_start'); j <= cell.get('column_end'); j++) {
                 let value = cell.get('value');
+                let formula = cell.get('formula');
                 let cell_row = i - cell.get('row_start');
                 let cell_col = j - cell.get('column_start');
                 if((i >= this.data.length) || (j >= this.data[i].length))
                     continue; // skip cells that are out of the sheet
                 let cell_data = this.data[i][j];
                 if(cell.get('transpose')) {
-                    if(!cell.get('squeeze_column'))
+                    if(!cell.get('squeeze_column')) {
                         value = value[cell_col]
-                    if(!cell.get('squeeze_row'))
-                        value = value[cell_row]
+                        formula = formula[cell_col]
+                    }
+                    if(!cell.get('squeeze_row')) {
+                        value = value[cell_row];
+                        formula = formula[cell_row];
+                    }
                 } else {
-                    if(!cell.get('squeeze_row'))
-                        value = value[cell_row]
-                    if(!cell.get('squeeze_column'))
-                        value = value[cell_col]
+                    if(!cell.get('squeeze_row')) {
+                        value = value[cell_row];
+                        formula = formula[cell_row];
+                    }
+                    if(!cell.get('squeeze_column')) {
+                        value = value[cell_col];
+                        formula = formula[cell_col];
+                    }
                 }
                 if (value != null)
                     cell_data.value = value;
+                if (formula != null)
+                    cell_data.formula = formula;
                 if (cell.get('type') != null)
                     cell_data.options['type'] = cell.get('type');
                 if (cell.get('renderer') != null)
@@ -164,16 +178,19 @@ let SheetModel = widgets.DOMWidgetModel.extend({
         this._updating_grid = true;
         try {
             each(this.get('cells'), (cell) => {
-                let rows = [];
+                let value_rows = [];
+                let formula_rows = [];
                 for(let i = cell.get('row_start'); i <= cell.get('row_end'); i++) {
-                    let row = [];
+                    let value_row = [];
+                    let formula_row = [];
                     for(let j = cell.get('column_start'); j <= cell.get('column_end'); j++) {
                         //let cell_row = i - cell.get('row_start');
                         //let cell_col = j - cell.get('column_start');
                         if((i >= this.data.length) || (j >= this.data[i].length))
                             continue; // skip cells that are out of the sheet
                         let cell_data = this.data[i][j];
-                        row.push(cell_data.value)
+                        value_row.push(cell_data.value)
+                        formula_row.push(cell_data.formula)
                         /*cell.set('value', cell_data.value);
                         cell.set('type', cell_data.options['type']);
                         cell.set('style', cell_data.options['style']);
@@ -183,17 +200,22 @@ let SheetModel = widgets.DOMWidgetModel.extend({
                         cell.set('format', cell_data.options['format']);*/
                     }
                     if(cell.get('squeeze_column')) {
-                        row = row[0];
+                        value_row = value_row[0];
+                        formula_row = formula_row[0];
                     }
-                    rows.push(row);
+                    value_rows.push(value_row);
+                    formula_rows.push(formula_row);
                 }
                 if(cell.get('squeeze_row')) {
-                    rows = rows[0];
+                    value_rows = value_rows[0];
+                    formula_rows = formula_rows[0];
                 }
                 if(cell.get('transpose')) {
-                    cell.set('value', transpose(rows))
+                    cell.set('value', transpose(value_rows))
+                    cell.set('formula', transpose(formula_rows))
                 } else {
-                    cell.set('value', rows)
+                    cell.set('value', value_rows)
+                    cell.set('formula', formula_rows)
                 }
                 cell.save_changes();
             });
@@ -207,7 +229,7 @@ let SheetModel = widgets.DOMWidgetModel.extend({
         let columns = this.get('columns');
 
         let empty_cell = () => {
-            return {value: null, options:{}};
+            return {value: null, formula: null, options:{}};
         };
         let empty_row = () => {
             return times(this.get('columns'), empty_cell);
@@ -349,6 +371,8 @@ let SheetView = widgets.DOMWidgetView.extend({
             rowHeaders: true,
             colHeaders: true,
             search: true,
+            formulas: true,
+            //contextMenu: true,
             columnSorting: {
                 sortEmptyCells: false,
                 indicator: true,
@@ -471,7 +495,7 @@ let SheetView = widgets.DOMWidgetView.extend({
     },
     on_data_change: function() {
         // we create a promise here such that the unittests can wait till the data is really set
-        this._last_data_set = new Promise(async (resolve, reject) => {
+        this._last_data_set = new Promise<void>(async (resolve, reject) => {
             let data = extract2d(this.model.data, 'value');
             let rows = data.length;
             let cols = data[0].length;
@@ -502,7 +526,7 @@ let SheetView = widgets.DOMWidgetView.extend({
             });
             this._search(false, true);
             this.hot.render();
-            resolve()
+            resolve();
         })
     },
     set_cell: function(row, column, value) {
@@ -510,7 +534,14 @@ let SheetView = widgets.DOMWidgetView.extend({
     },
     get_cell: function(row, column) {
         return this.hot.getDataAtCell(row, column);
-    }
+    },
+    get_cell_formula: function(row, column) {
+        let cell_data = this.get_cell(row,column);
+        //let formulasPlugin = this.hot.getPlugin('formulas');
+        //return this.hot.getSourceDataAtCell(row, column);
+        return cell_data.formula;
+    },
+
 });
 
 

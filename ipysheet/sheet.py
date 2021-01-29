@@ -11,6 +11,55 @@ from ._version import __version_js__
 semver_range_frontend = "~" + __version_js__
 
 
+@widgets.register('ipysheet.Sheet')
+class Sheet(widgets.DOMWidget):
+    """"""
+    _view_name = Unicode('SheetView').tag(sync=True)
+    _model_name = Unicode('SheetModel').tag(sync=True)
+    _view_module = Unicode('ipysheet').tag(sync=True)
+    _model_module = Unicode('ipysheet').tag(sync=True)
+    _view_module_version = Unicode(semver_range_frontend).tag(sync=True)
+    _model_module_version = Unicode(semver_range_frontend).tag(sync=True)
+
+    rows = CInt(3).tag(sync=True)
+    columns = CInt(4).tag(sync=True)
+    cells = Tuple().tag(sync=True, **widgets.widget_serialization)
+    named_cells = Dict(value={}, allow_none=False).tag(sync=True, **widgets.widget_serialization)
+    row_headers = Union([Bool(), List(Unicode())], default_value=True).tag(sync=True)
+    column_headers = Union([Bool(), List(Unicode())], default_value=True).tag(sync=True)
+    stretch_headers = Unicode('all').tag(sync=True)
+    column_width = Union([CInt(), List(CInt())], default_value=None, allow_none=True).tag(sync=True)
+    column_resizing = Bool(True).tag(sync=True)
+    row_resizing = Bool(True).tag(sync=True)
+    search_token = Unicode('').tag(sync=True)
+
+    layout = LayoutTraitType(kw=dict(height='auto', width='auto')).tag(sync=True, **widgets.widget_serialization)
+    _locals = Dict(value={}, allow_none=False).tag(sync=False, **widgets.widget_serialization)
+    def __getitem__(self, item):
+        '''Gets a previously created cell at row and column
+
+        Example:
+
+        >>> sheet = ipysheet.sheet(rows=10, columns=5)
+        >>> cell = ipysheet.cell(2,0, value='hello')
+        >>> assert sheet[2,0] is cell
+        >>> sheet[2,0].value = 'bonjour'
+
+        '''
+        row, column = item
+        for cell in self.cells:
+            if cell.row_start == row and cell.column_start == column \
+               and cell.row_end == row and cell.column_end == column:
+                return cell
+        raise IndexError('no cell was previously created for (row, index) = (%s, %s)'.format(row, column))
+    def locals(self):
+        return self._locals
+
+    def exec_eval(self, proposal):
+        for cell in self.cells:
+            cell.exec_eval()
+
+
 @widgets.register('ipysheet.Cell')
 class Cell(widgets.Widget):
     _model_name = Unicode('CellRangeModel').tag(sync=True)
@@ -20,6 +69,8 @@ class Cell(widgets.Widget):
 
     # value = Union([Bool(), Unicode(), Float(), Int()], allow_none=True, default_value=None).tag(sync=True)
     value = Any().tag(sync=True, **create_value_serializer('value'))
+    formula = Unicode(None, allow_none=True).tag(sync=True,
+                                **create_value_serializer('formula'))
     row_start = CInt(3).tag(sync=True)
     column_start = CInt(4).tag(sync=True)
     row_end = CInt(3).tag(sync=True)
@@ -36,6 +87,55 @@ class Cell(widgets.Widget):
     numeric_format = Unicode('0.000', allow_none=True).tag(sync=True)
     date_format = Unicode('YYYY/MM/DD', allow_none=True).tag(sync=True)
     time_format = Unicode('h:mm:ss a', allow_none=True).tag(sync=True)
+    sheet = Instance(Sheet,allow_none=False).tag(sync=False)
+
+    def exec_eval(self, proposal=None):
+        if proposal is None:
+            formula = self.formula
+            if formula in [None, 'None']:
+                return
+        else:
+            formula = proposal.new
+            if formula in [None, 'None']:
+                if proposal.old in [None, 'None']:
+                    return
+                self.formula = None
+                self.value = None
+                return
+        isstatement = False
+        try:
+            code= compile(formula, '<string>', 'eval')
+        except SyntaxError:
+            isstatement= True
+            code= compile(formula, '<string>', 'exec')
+        value = None
+        _locals = self.sheet.locals()
+        try:
+            if isstatement:
+                exec(code,{},_locals)
+            else:
+                value = eval(code,{},_locals)
+        except Exception as e:
+            raise e
+        if value is not None:
+            try:
+                self.value = value
+            except ValueError:
+                self.value = repr(value)
+        else:
+            self.value=formula
+        
+
+
+    @traitlets.observe('formula')
+    def _observe_formula(self,proposal):
+        self.exec_eval(proposal)
+
+    @traitlets.observe('value')
+    def _observe_value(self,proposal):
+        
+        self.sheet.exec_eval(proposal)
+
 
     @traitlets.validate('value')
     def _validate_value(self, proposal):
@@ -79,48 +179,6 @@ Cell.choice.default_value = None
 class Range(widgets.Widget):
     value = Union([List(), List(Instance(list))], default_value=[0, 1]).tag(sync=True)
 
-
-@widgets.register('ipysheet.Sheet')
-class Sheet(widgets.DOMWidget):
-    """"""
-    _view_name = Unicode('SheetView').tag(sync=True)
-    _model_name = Unicode('SheetModel').tag(sync=True)
-    _view_module = Unicode('ipysheet').tag(sync=True)
-    _model_module = Unicode('ipysheet').tag(sync=True)
-    _view_module_version = Unicode(semver_range_frontend).tag(sync=True)
-    _model_module_version = Unicode(semver_range_frontend).tag(sync=True)
-
-    rows = CInt(3).tag(sync=True)
-    columns = CInt(4).tag(sync=True)
-    cells = Tuple().tag(sync=True, **widgets.widget_serialization)
-    named_cells = Dict(value={}, allow_none=False).tag(sync=True, **widgets.widget_serialization)
-    row_headers = Union([Bool(), List(Unicode())], default_value=True).tag(sync=True)
-    column_headers = Union([Bool(), List(Unicode())], default_value=True).tag(sync=True)
-    stretch_headers = Unicode('all').tag(sync=True)
-    column_width = Union([CInt(), List(CInt())], default_value=None, allow_none=True).tag(sync=True)
-    column_resizing = Bool(True).tag(sync=True)
-    row_resizing = Bool(True).tag(sync=True)
-    search_token = Unicode('').tag(sync=True)
-
-    layout = LayoutTraitType(kw=dict(height='auto', width='auto')).tag(sync=True, **widgets.widget_serialization)
-
-    def __getitem__(self, item):
-        '''Gets a previously created cell at row and column
-
-        Example:
-
-        >>> sheet = ipysheet.sheet(rows=10, columns=5)
-        >>> cell = ipysheet.cell(2,0, value='hello')
-        >>> assert sheet[2,0] is cell
-        >>> sheet[2,0].value = 'bonjour'
-
-        '''
-        row, column = item
-        for cell in self.cells:
-            if cell.row_start == row and cell.column_start == column \
-               and cell.row_end == row and cell.column_end == column:
-                return cell
-        raise IndexError('no cell was previously created for (row, index) = (%s, %s)'.format(row, column))
 
 
 class Renderer(widgets.Widget):

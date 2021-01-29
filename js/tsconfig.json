@@ -2,7 +2,7 @@
 "compilerOptions": {
     "noImplicitAny": false,
     "lib": ["dom", "es5", "es2015.promise", "es2015.iterable"],
-    "strictNullChecks": true,
+    //"strictNullChecks": true,
     "module": "commonjs",
     "moduleResolution": "node",
     "target": "es2015",
