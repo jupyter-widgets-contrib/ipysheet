@@ -76,7 +76,10 @@ def sheet(key=None, rows=5, columns=5, column_width=None, row_headers=True, colu
     elif key is None or key not in _sheets:
         _last_sheet = cls(rows=rows, columns=columns, column_width=column_width,
                           row_headers=row_headers, column_headers=column_headers,
-                          stretch_headers=stretch_headers, **kwargs)
+                          stretch_headers=stretch_headers,
+                          **kwargs)
+        locals_dict = {'S': _last_sheet}
+        _last_sheet.locals().update(locals_dict)
         if key is not None:
             _sheets[key] = _last_sheet
     else:
@@ -142,7 +145,7 @@ def cell(row, column, value=0., type=None, color=None, background_color=None,
     c = Cell(value=value, row_start=row, column_start=column, row_end=row, column_end=column,
              squeeze_row=True, squeeze_column=True, type=type, style=style, choice=choice,
              read_only=read_only, numeric_format=numeric_format, date_format=date_format,
-             renderer=renderer, **kwargs)
+             renderer=renderer, sheet=_last_sheet, **kwargs)
     if _hold_cells:
         _cells += (c,)
     else:
