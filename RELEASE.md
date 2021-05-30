@@ -1,3 +1,5 @@
+- These need to be updated
+
 - To release a new version of ipysheet on PyPI:
 
 Update _version.py (set release version, remove 'dev')

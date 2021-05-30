@@ -35,26 +35,48 @@ With pip:
 $ pip install ipysheet
 ```
 
-To make it work for Jupyter lab:
-```
-$ jupyter labextension install @jupyter-widgets/jupyterlab-manager
-$ jupyter labextension install ipysheet
+### Development install
+
+Note: You will need NodeJS to build the extension package.
+
+The `jlpm` command is JupyterLab's pinned version of
+[yarn](https://yarnpkg.com/) that is installed with JupyterLab. You may use
+`yarn` or `npm` in lieu of `jlpm` below.
+
+```bash
+# Clone the repo to your local environment
+# Change directory to the ipysheet directory
+# Install package in development mode
+pip install -e .
+# Link your development version of the extension with JupyterLab
+jupyter labextension develop . --overwrite
+# Rebuild extension Typescript source after making changes
+jlpm run build
 ```
 
-If you have notebook 5.2 or below, you also need to execute:
-```
-$ jupyter nbextension enable --py --sys-prefix ipysheet
+You can watch the source directory and run JupyterLab at the same time in different terminals to watch for changes in the extension's source and automatically rebuild the extension.
+
+```bash
+# Watch the source directory in one terminal, automatically rebuilding when needed
+jlpm run watch
+# Run JupyterLab in another terminal
+jupyter lab
 ```
 
-For a development installation (requires npm),
+With the watch command running, every saved change will immediately be built locally and available in your running JupyterLab. Refresh JupyterLab to load the change in your browser (you may need to wait several seconds for the extension to be rebuilt).
 
-```
-$ git clone https://github.com/QuantStack/ipysheet.git
-$ cd ipysheet
-$ pip install -e .
-$ jupyter nbextension install --py --symlink --sys-prefix ipysheet
-$ jupyter nbextension enable --py --sys-prefix ipysheet
-$ jupyter labextension link js
+By default, the `jlpm run build` command generates the source maps for this extension to make it easier to debug using the browser dev tools. To also generate source maps for the JupyterLab core extensions, you can run the following command:
+
+```bash
+jupyter lab build --minimize=False
 ```
 
-For Jupyter lab development, you may want to start Jupyter lab with `jupyter lab --watch` so it instantly picks up changes.
+### Development uninstall
+
+```bash
+pip uninstall ipysheet
+```
+
+In development mode, you will also need to remove the symlink created by `jupyter labextension develop`
+command. To find its location, you can run `jupyter labextension list` to figure out where the `labextensions`
+folder is located. Then you can remove the symlink named `ipysheet` within that folder.
