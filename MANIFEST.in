@@ -1,3 +1,4 @@
-recursive-include ipysheet/static *.*
-include ipysheet.json
 include LICENSE
+include README.rst
+include README.md
+include js/package.json

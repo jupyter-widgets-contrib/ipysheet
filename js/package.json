@@ -15,17 +15,28 @@
     "ipywidgets"
   ],
   "scripts": {
+    "test": "karma start --single-run",
+    "build": "npm run build:lib && npm run build:labextension && webpack --mode=production",
+    "build:lib": "tsc --project .",
+    "build:labextension": "jupyter labextension build .",
     "prepare": "npm run build",
-    "build": "tsc --project . && webpack --mode=production",
     "watch": "npm-run-all -p watch:*",
     "watch:lib": "tsc -w --project .",
     "watch:nbextension": "webpack --watch --mode=development",
-    "test": "karma start --single-run"
+    "watch:labextension": "jupyter labextension watch ."
   },
   "jupyterlab": {
-    "extension": "lib/labplugin"
+    "extension": "lib/labplugin",
+    "outputDir": "../share/jupyter/labextensions/ipysheet",
+    "sharedPackages": {
+      "@jupyter-widgets/base": {
+        "bundled": false,
+        "singleton": true
+      }
+    }
   },
   "devDependencies": {
+    "@jupyterlab/builder": "^3.0.0",
     "@types/expect.js": "^0.3.29",
     "@types/mocha": "^7.0.2",
     "chai": "^4.2.0",
@@ -52,9 +63,18 @@
     "webpack-cli": "^3.3.11"
   },
   "dependencies": {
-    "@jupyter-widgets/base": "^2.0 || ^3.0",
+    "@jupyter-widgets/base": "^2.0 || ^3.0 || ^4.0",
     "handsontable": "^6.2.2",
     "lodash": "^4.17.4",
     "underscore": "^1.8.3"
-  }
+  },
+  "files": [
+    "dist/",
+    "css/",
+    "src/",
+    "lib/*.js",
+    "lib/three/*.js",
+    "data/",
+    "glsl/"
+  ]
 }

@@ -1,5 +1,6 @@
 var version = require('./package.json').version;
 var path = require('path');
+var pyname = 'ipysheet'
 
 
 // Custom webpack rules are generally the same for all webpack bundles, hence
@@ -34,7 +35,7 @@ module.exports = [
         },
         output: {
             filename: 'extension.js',
-            path: path.resolve(__dirname, '../ipysheet/static'),
+            path: path.resolve(__dirname, `../share/jupyter/nbextensions/${pyname}`),
             libraryTarget: 'amd'
         }
     },
@@ -50,7 +51,7 @@ module.exports = [
         resolve: resolve,
         output: {
             filename: 'index.js',
-            path: path.resolve(__dirname, '../ipysheet/static'),
+            path: path.resolve(__dirname, `../share/jupyter/nbextensions/${pyname}`),
             libraryTarget: 'amd'
         },
         module: {

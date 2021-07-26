@@ -7,15 +7,23 @@ from subprocess import check_call
 import os
 import sys
 from distutils import log
+from os.path import join as pjoin
+from pathlib import Path
+
+from jupyter_packaging import (
+    create_cmdclass,
+    install_npm,
+    ensure_targets,
+    combine_commands,
+    get_version,
+)
+
 
 here = os.path.dirname(os.path.abspath(__file__))
+name = "ipysheet"
 node_root = os.path.join(here, 'js')
 is_repo = os.path.exists(os.path.join(here, '.git'))
 
-npm_path = os.pathsep.join([
-    os.path.join(node_root, 'node_modules', '.bin'),
-    os.environ.get('PATH', os.defpath),
-])
 
 log.set_verbosity(log.DEBUG)
 log.info('setup.py entered')
@@ -23,96 +31,31 @@ log.info('$PATH=%s' % os.environ['PATH'])
 
 LONG_DESCRIPTION = 'Spreadsheet in the Jupyter notebook'
 
+version = get_version(pjoin(name, '_version.py'))
+js_dir = pjoin(here, 'js')
+jstargets = [
+    pjoin(js_dir, 'lib', 'index.js'),
+    pjoin('share', 'jupyter', 'nbextensions', 'ipysheet', 'index.js'),
+]
+data_files_spec = [
+    ('share/jupyter/nbextensions/ipysheet', 'share/jupyter/nbextensions/ipysheet', '*.js'),
+    ('share/jupyter/labextensions/ipysheet', 'share/jupyter/labextensions/ipysheet', '*'),
+    ('share/jupyter/labextensions/ipysheet/static', 'share/jupyter/labextensions/ipysheet/static', '*'),
+    ('etc/jupyter/nbconfig/notebook.d', 'etc/jupyter/nbconfig/notebook.d', 'ipysheet.json'),
+]
 
-def js_prerelease(command, strict=False):
-    """decorator for building minified js/css prior to another command"""
-    class DecoratedCommand(command):
-        def run(self):
-            jsdeps = self.distribution.get_command_obj('jsdeps')
-            if not is_repo and all(os.path.exists(t) for t in jsdeps.targets):
-                # sdist, nothing to do
-                command.run(self)
-                return
+js_command = combine_commands(
+    install_npm(js_dir, build_cmd='build'), ensure_targets(jstargets),
+)
 
-            try:
-                self.distribution.run_command('jsdeps')
-            except Exception as e:
-                missing = [t for t in jsdeps.targets if not os.path.exists(t)]
-                if strict or missing:
-                    log.warn('rebuilding js and css failed')
-                    if missing:
-                        log.error('missing files: %s' % missing)
-                    raise e
-                else:
-                    log.warn('rebuilding js and css failed (not a problem)')
-                    log.warn(str(e))
-            command.run(self)
-            update_package_data(self.distribution)
-    return DecoratedCommand
+cmdclass = create_cmdclass('jsdeps', data_files_spec=data_files_spec)
+is_repo = os.path.exists(os.path.join(here, '.git'))
+if is_repo:
+    cmdclass['jsdeps'] = js_command
+else:
+    cmdclass['jsdeps'] = skip_if_exists(jstargets, js_command)
 
-
-def update_package_data(distribution):
-    """update package_data to catch changes during setup"""
-    build_py = distribution.get_command_obj('build_py')
-    # distribution.package_data = find_package_data()
-    # re-init build_py options which load package_data
-    build_py.finalize_options()
-
-
-class NPM(Command):
-    description = 'install package.json dependencies using npm'
-
-    user_options = []
-
-    node_modules = os.path.join(node_root, 'node_modules')
-
-    targets = [
-        os.path.join(here, 'ipysheet', 'static', 'extension.js'),
-        os.path.join(here, 'ipysheet', 'static', 'index.js'),
-    ]
-
-    def initialize_options(self):
-        pass
-
-    def finalize_options(self):
-        pass
-
-    def has_npm(self):
-        try:
-            check_call(['npm', '--version'])
-            return True
-        except:
-            return False
-
-    def should_run_npm_install(self):
-        package_json = os.path.join(node_root, 'package.json')
-        node_modules_exists = os.path.exists(self.node_modules)
-        return self.has_npm()
-
-    def run(self):
-        has_npm = self.has_npm()
-        if not has_npm:
-            log.error("`npm` unavailable.  If you're running this command using sudo, make sure `npm` is available to sudo")
-
-        env = os.environ.copy()
-        env['PATH'] = npm_path
-
-        if self.should_run_npm_install():
-            log.info("Installing build dependencies with npm.  This may take a while...")
-            check_call(['npm', 'install'], cwd=node_root, stdout=sys.stdout, stderr=sys.stderr)
-            os.utime(self.node_modules, None)
-
-        for t in self.targets:
-            if not os.path.exists(t):
-                msg = 'Missing file: %s' % t
-                if not has_npm:
-                    msg += '\nnpm is required to build a development version of widgetsnbextension'
-                raise ValueError(msg)
-
-        # update package data in case this created new files
-        update_package_data(self.distribution)
-
-
+    
 version_ns = {}
 with open(os.path.join(here, 'ipysheet', '_version.py')) as f:
     exec(f.read(), {}, version_ns)
@@ -124,25 +67,12 @@ setup_args = {
     'description': 'Spreadsheet in the Jupyter notebook',
     'long_description': LONG_DESCRIPTION,
     'include_package_data': True,
-    'data_files': [
-        ('share/jupyter/nbextensions/ipysheet', [
-            'ipysheet/static/extension.js',
-            'ipysheet/static/index.js',
-            'ipysheet/static/index.js.map',
-        ]),
-        ('etc/jupyter/nbconfig/notebook.d', ['ipysheet.json'])
-    ],
     'install_requires': [
         'ipywidgets>=7.5.0,<8.0',
     ],
     'packages': find_packages(),
     'zip_safe': False,
-    'cmdclass': {
-        'build_py': js_prerelease(build_py),
-        'egg_info': js_prerelease(egg_info),
-        'sdist': js_prerelease(sdist, strict=True),
-        'jsdeps': NPM,
-    },
+    'cmdclass': cmdclass,
 
     'author': 'Maarten A. Breddels',
     'author_email': 'maartenbreddels@gmail.com',
