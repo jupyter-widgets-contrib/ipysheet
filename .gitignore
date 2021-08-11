@@ -11,3 +11,5 @@ js/lib/*
 
 # OS X
 .DS_Store
+
+share/**
