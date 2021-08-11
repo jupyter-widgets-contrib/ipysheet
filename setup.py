@@ -1,15 +1,18 @@
 """
 ipysheet setup
 """
+import os
 import json
 from pathlib import Path
 
 import setuptools
 
 from jupyter_packaging import (
-    wrap_installers,
-    npm_builder,
-    get_data_files
+    create_cmdclass,
+    install_npm,
+    ensure_targets,
+    combine_commands,
+    skip_if_exists
 )
 
 HERE = Path(__file__).parent.resolve()
@@ -17,6 +20,7 @@ HERE = Path(__file__).parent.resolve()
 # The name of the project
 name = "ipysheet"
 
+nb_path = (HERE / name / "static")
 lab_path = (HERE / name / "labextension")
 
 # Representative files that should exist after a successful build
@@ -25,11 +29,11 @@ ensured_targets = [
     str(lab_path / "static/style.js")
 ]
 
-labext_name = "ipysheet"
-
 data_files_spec = [
-    ("share/jupyter/labextensions/%s" % labext_name, str(lab_path), "**"),
-    ("share/jupyter/labextensions/%s" % labext_name, str(HERE), "install.json"),
+    ('share/jupyter/nbextensions/ipysheet', str(nb_path), '**'),
+    ("share/jupyter/labextensions/ipysheet", str(lab_path), "**"),
+    ("share/jupyter/labextensions/ipysheet", str(HERE), "install.json"),
+    ('etc/jupyter/nbconfig/notebook.d', str(HERE), 'ipysheet.json')
 ]
 
 long_description = (HERE / "README.md").read_text()
@@ -37,9 +41,17 @@ long_description = (HERE / "README.md").read_text()
 # Get the package info from package.json
 pkg_json = json.loads((HERE / "package.json").read_bytes())
 
-pre_build = npm_builder(
-    build_cmd="install:extension", source_dir="src", build_dir=lab_path
+cmdclass = create_cmdclass('jsdeps', data_files_spec=data_files_spec)
+js_command = combine_commands(
+    install_npm(str(HERE), npm=["yarn"], build_cmd='build:extensions'),
+    ensure_targets(ensured_targets),
 )
+
+is_repo = os.path.exists(str(HERE / '.git'))
+if is_repo:
+    cmdclass['jsdeps'] = js_command
+else:
+    cmdclass['jsdeps'] = skip_if_exists(ensured_targets, js_command)
 
 setup_args = dict(
     name=name,
@@ -52,10 +64,9 @@ setup_args = dict(
     long_description=long_description,
     long_description_content_type="text/markdown",
     packages=setuptools.find_packages(),
-    cmdclass=wrap_installers(pre_develop=pre_build, pre_dist=pre_build, ensured_targets=ensured_targets),
-    data_files=get_data_files(data_files_spec),
+    cmdclass=cmdclass,
     install_requires=[
-        "jupyter_server>=1.6,<2"
+        "jupyter_server>=1.6,<2",
         "ipywidgets>=7.5.0,<8.0",
     ],
     zip_safe=False,

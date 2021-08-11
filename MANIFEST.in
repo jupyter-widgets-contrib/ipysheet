@@ -9,6 +9,7 @@ include ts*.json
 include yarn.lock
 
 graft ipysheet/labextension
+graft ipysheet/static
 
 # Javascript files
 graft src
