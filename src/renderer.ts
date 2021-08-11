@@ -1,6 +1,6 @@
 import * as widgets  from '@jupyter-widgets/base';
 import * as Handsontable from 'handsontable';
-import {extend, forEach} from 'lodash';
+import {forEach} from 'lodash';
 import {semver_range} from './version';
 
 

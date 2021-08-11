@@ -6,9 +6,9 @@ from traitlets import Unicode, CInt, List, Tuple, Instance, Union, Dict, Bool, A
 
 from .serializer import create_value_serializer
 from .utils import transpose, adapt_value
-from ._version import __version_js__
+from ._version import __version__
 
-semver_range_frontend = "~" + __version_js__
+semver_range_frontend = "~" + __version__
 
 
 @widgets.register('ipysheet.Cell')
@@ -129,5 +129,5 @@ class Renderer(widgets.Widget):
     _model_module = Unicode('ipysheet').tag(sync=True)
     _view_module_version = Unicode(semver_range_frontend).tag(sync=True)
     _model_module_version = Unicode(semver_range_frontend).tag(sync=True)
-    name = Unicode('custom').tag(sync=True)
+    name = Unicode('base').tag(sync=True)
     code = Unicode('').tag(sync=True)

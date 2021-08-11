@@ -1,173 +1,81 @@
-from __future__ import print_function
-from setuptools import setup, find_packages, Command
-from setuptools.command.sdist import sdist
-from setuptools.command.build_py import build_py
-from setuptools.command.egg_info import egg_info
-from subprocess import check_call
-import os
-import sys
-from distutils import log
+"""
+ipysheet setup
+"""
+import json
+from pathlib import Path
 
-here = os.path.dirname(os.path.abspath(__file__))
-node_root = os.path.join(here, 'js')
-is_repo = os.path.exists(os.path.join(here, '.git'))
+import setuptools
 
-npm_path = os.pathsep.join([
-    os.path.join(node_root, 'node_modules', '.bin'),
-    os.environ.get('PATH', os.defpath),
-])
+HERE = Path(__file__).parent.resolve()
 
-log.set_verbosity(log.DEBUG)
-log.info('setup.py entered')
-log.info('$PATH=%s' % os.environ['PATH'])
+# The name of the project
+name = "ipysheet"
 
-LONG_DESCRIPTION = 'Spreadsheet in the Jupyter notebook'
+lab_path = (HERE / name / "labextension")
 
+# Representative files that should exist after a successful build
+ensured_targets = [
+    str(lab_path / "package.json"),
+    str(lab_path / "static/style.js")
+]
 
-def js_prerelease(command, strict=False):
-    """decorator for building minified js/css prior to another command"""
-    class DecoratedCommand(command):
-        def run(self):
-            jsdeps = self.distribution.get_command_obj('jsdeps')
-            if not is_repo and all(os.path.exists(t) for t in jsdeps.targets):
-                # sdist, nothing to do
-                command.run(self)
-                return
+labext_name = "ipysheet"
 
-            try:
-                self.distribution.run_command('jsdeps')
-            except Exception as e:
-                missing = [t for t in jsdeps.targets if not os.path.exists(t)]
-                if strict or missing:
-                    log.warn('rebuilding js and css failed')
-                    if missing:
-                        log.error('missing files: %s' % missing)
-                    raise e
-                else:
-                    log.warn('rebuilding js and css failed (not a problem)')
-                    log.warn(str(e))
-            command.run(self)
-            update_package_data(self.distribution)
-    return DecoratedCommand
+data_files_spec = [
+    ("share/jupyter/labextensions/%s" % labext_name, str(lab_path), "**"),
+    ("share/jupyter/labextensions/%s" % labext_name, str(HERE), "install.json"),
+]
 
+long_description = (HERE / "README.md").read_text()
 
-def update_package_data(distribution):
-    """update package_data to catch changes during setup"""
-    build_py = distribution.get_command_obj('build_py')
-    # distribution.package_data = find_package_data()
-    # re-init build_py options which load package_data
-    build_py.finalize_options()
+# Get the package info from package.json
+pkg_json = json.loads((HERE / "package.json").read_bytes())
 
-
-class NPM(Command):
-    description = 'install package.json dependencies using npm'
-
-    user_options = []
-
-    node_modules = os.path.join(node_root, 'node_modules')
-
-    targets = [
-        os.path.join(here, 'ipysheet', 'static', 'extension.js'),
-        os.path.join(here, 'ipysheet', 'static', 'index.js'),
-    ]
-
-    def initialize_options(self):
-        pass
-
-    def finalize_options(self):
-        pass
-
-    def has_npm(self):
-        try:
-            check_call(['npm', '--version'])
-            return True
-        except:
-            return False
-
-    def should_run_npm_install(self):
-        package_json = os.path.join(node_root, 'package.json')
-        node_modules_exists = os.path.exists(self.node_modules)
-        return self.has_npm()
-
-    def run(self):
-        has_npm = self.has_npm()
-        if not has_npm:
-            log.error("`npm` unavailable.  If you're running this command using sudo, make sure `npm` is available to sudo")
-
-        env = os.environ.copy()
-        env['PATH'] = npm_path
-
-        if self.should_run_npm_install():
-            log.info("Installing build dependencies with npm.  This may take a while...")
-            check_call(['npm', 'install'], cwd=node_root, stdout=sys.stdout, stderr=sys.stderr)
-            os.utime(self.node_modules, None)
-
-        for t in self.targets:
-            if not os.path.exists(t):
-                msg = 'Missing file: %s' % t
-                if not has_npm:
-                    msg += '\nnpm is required to build a development version of widgetsnbextension'
-                raise ValueError(msg)
-
-        # update package data in case this created new files
-        update_package_data(self.distribution)
-
-
-version_ns = {}
-with open(os.path.join(here, 'ipysheet', '_version.py')) as f:
-    exec(f.read(), {}, version_ns)
-
-setup_args = {
-    'name': 'ipysheet',
-    'license': 'MIT License',
-    'version': version_ns['__version__'],
-    'description': 'Spreadsheet in the Jupyter notebook',
-    'long_description': LONG_DESCRIPTION,
-    'include_package_data': True,
-    'data_files': [
-        ('share/jupyter/nbextensions/ipysheet', [
-            'ipysheet/static/extension.js',
-            'ipysheet/static/index.js',
-            'ipysheet/static/index.js.map',
-        ]),
-        ('etc/jupyter/nbconfig/notebook.d', ['ipysheet.json'])
+setup_args = dict(
+    name=name,
+    version=pkg_json["version"],
+    url=pkg_json["homepage"],
+    author=pkg_json["author"]["name"],
+    author_email=pkg_json["author"]["email"],
+    description=pkg_json["description"],
+    license=pkg_json["license"],
+    long_description=long_description,
+    long_description_content_type="text/markdown",
+    packages=setuptools.find_packages(),
+    install_requires=[
+        "jupyter_server>=1.6,<2"
+        "ipywidgets>=7.5.0,<8.0",
     ],
-    'install_requires': [
-        'ipywidgets>=7.5.0,<8.0',
+    zip_safe=False,
+    include_package_data=True,
+    python_requires=">=3.6",
+    platforms="Linux, Mac OS X, Windows",
+    keywords=["Jupyter", "JupyterLab", "JupyterLab3"],
+    classifiers=[
+        "License :: OSI Approved :: BSD License",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Framework :: Jupyter",
     ],
-    'packages': find_packages(),
-    'zip_safe': False,
-    'cmdclass': {
-        'build_py': js_prerelease(build_py),
-        'egg_info': js_prerelease(egg_info),
-        'sdist': js_prerelease(sdist, strict=True),
-        'jsdeps': NPM,
-    },
+)
 
-    'author': 'Maarten A. Breddels',
-    'author_email': 'maartenbreddels@gmail.com',
-    'url': 'http://jupyter.org',
-    'keywords': [
-        'ipython',
-        'jupyter',
-        'widgets',
-    ],
-    'classifiers': [
-        'Development Status :: 4 - Beta',
-        'Framework :: IPython',
-        'Intended Audience :: Developers',
-        'Intended Audience :: Science/Research',
-        'Topic :: Multimedia :: Graphics',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.3',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
-    ],
-    'extras_require': {
-        'all':  ['flexx']
-    }
-}
+try:
+    from jupyter_packaging import (
+        wrap_installers,
+        npm_builder,
+        get_data_files
+    )
+    post_develop = npm_builder(
+        build_cmd="install:extension", source_dir="src", build_dir=lab_path
+    )
+    setup_args['cmdclass'] = wrap_installers(post_develop=post_develop, ensured_targets=ensured_targets)
+    setup_args['data_files'] = get_data_files(data_files_spec)
+except ImportError as e:
+    pass
 
-setup(**setup_args)
+if __name__ == "__main__":
+    setuptools.setup(**setup_args)

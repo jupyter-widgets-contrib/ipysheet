@@ -26,6 +26,9 @@ async function widgetRenderer(instance, td, row, col, prop, value, cellPropertie
 
 }
 
-(Handsontable.cellTypes as any).registerCellType('widget', {
-    renderer: widgetRenderer
-});
+export function ipysheet_init_cell_type() {
+    (Handsontable.cellTypes as any).registerCellType('widget', {
+        renderer: widgetRenderer
+    });
+}
+

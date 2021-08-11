@@ -7,6 +7,7 @@ import * as services from '@jupyterlab/services';
 import * as Backbone from 'backbone';
 import * as widgets from '@jupyter-widgets/base';
 import * as sinon from 'sinon';
+import { DOMWidgetView } from '@jupyter-widgets/base';
 
 let numComms = 0;
 
@@ -63,7 +64,7 @@ class DummyManager extends widgets.ManagerBase<HTMLElement> {
         this.library = library;
     }
 
-    display_view(msg: services.KernelMessage.IMessage, view: Backbone.View<Backbone.Model>, options: any) {
+    display_view(msg: services.KernelMessage.IMessage, view: DOMWidgetView, options: any) {
         // TODO: make this a spy
         // TODO: return an html element
         return Promise.resolve(view).then(view => {
