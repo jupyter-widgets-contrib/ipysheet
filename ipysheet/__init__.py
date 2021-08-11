@@ -13,6 +13,16 @@ HERE = Path(__file__).parent.resolve()
 with (HERE / "labextension" / "package.json").open() as fid:
     data = json.load(fid)
 
+
+def _jupyter_nbextension_paths():
+    return [{
+        'section': 'notebook',
+        'src': 'static',
+        'dest': 'ipysheet',
+        'require': 'ipysheet/extension'
+    }]
+
+
 def _jupyter_labextension_paths():
     return [{
         "section": "notebook",
