@@ -6,6 +6,12 @@ from pathlib import Path
 
 import setuptools
 
+from jupyter_packaging import (
+    wrap_installers,
+    npm_builder,
+    get_data_files
+)
+
 HERE = Path(__file__).parent.resolve()
 
 # The name of the project
@@ -31,6 +37,10 @@ long_description = (HERE / "README.md").read_text()
 # Get the package info from package.json
 pkg_json = json.loads((HERE / "package.json").read_bytes())
 
+pre_build = npm_builder(
+    build_cmd="install:extension", source_dir="src", build_dir=lab_path
+)
+
 setup_args = dict(
     name=name,
     version=pkg_json["version"],
@@ -42,6 +52,8 @@ setup_args = dict(
     long_description=long_description,
     long_description_content_type="text/markdown",
     packages=setuptools.find_packages(),
+    cmdclass=wrap_installers(pre_develop=pre_build, pre_dist=pre_build, ensured_targets=ensured_targets),
+    data_files=get_data_files(data_files_spec),
     install_requires=[
         "jupyter_server>=1.6,<2"
         "ipywidgets>=7.5.0,<8.0",
@@ -62,20 +74,6 @@ setup_args = dict(
         "Framework :: Jupyter",
     ],
 )
-
-try:
-    from jupyter_packaging import (
-        wrap_installers,
-        npm_builder,
-        get_data_files
-    )
-    post_develop = npm_builder(
-        build_cmd="install:extension", source_dir="src", build_dir=lab_path
-    )
-    setup_args['cmdclass'] = wrap_installers(post_develop=post_develop, ensured_targets=ensured_targets)
-    setup_args['data_files'] = get_data_files(data_files_spec)
-except ImportError as e:
-    pass
 
 if __name__ == "__main__":
     setuptools.setup(**setup_args)
