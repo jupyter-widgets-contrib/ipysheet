@@ -3,7 +3,7 @@
 Spreadsheet in the Jupyter notebook:
 
    * Try it out using binder: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/QuantStack/ipysheet/stable?filepath=docs%2Fsource%2Findex.ipynb)
-   * Or check out the documentation at https://ipysheet.readthedocs.io/
+   * Or check out the documentation at [https://ipysheet.readthedocs.io/](https://ipysheet.readthedocs.io/en/stable/)
 
 **Create a table and drive a value using ipywidgets:**
 
