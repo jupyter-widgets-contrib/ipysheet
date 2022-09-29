@@ -11,7 +11,7 @@ from ._version import __version__
 semver_range_frontend = "~" + __version__
 
 
-@widgets.register('ipysheet.Cell')
+@widgets.register
 class Cell(widgets.Widget):
     _model_name = Unicode('CellRangeModel').tag(sync=True)
     _model_module = Unicode('ipysheet').tag(sync=True)
@@ -75,12 +75,12 @@ class Cell(widgets.Widget):
 Cell.choice.default_value = None
 
 
-@widgets.register('ipysheet.Range')
+@widgets.register
 class Range(widgets.Widget):
     value = Union([List(), List(Instance(list))], default_value=[0, 1]).tag(sync=True)
 
 
-@widgets.register('ipysheet.Sheet')
+@widgets.register
 class Sheet(widgets.DOMWidget):
     """"""
     _view_name = Unicode('SheetView').tag(sync=True)
