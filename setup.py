@@ -67,7 +67,7 @@ setup_args = dict(
     cmdclass=cmdclass,
     install_requires=[
         "jupyter_server>=1.6,<2",
-        "ipywidgets>=8.0.0<9",
+        "ipywidgets>=7.5.0,<9.0",
     ],
     zip_safe=False,
     include_package_data=True,
