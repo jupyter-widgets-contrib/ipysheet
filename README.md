@@ -1,5 +1,10 @@
 # ipysheet
 
+# WARNING
+
+Due to [Handsontable licensing changes](https://handsontable.com/blog/articles/2019/3/handsontable-drops-open-source-for-a-non-commercial-license) ipysheet is stuck witch the outdated Handsontable version 6.2.2 (open-source).
+We recommend not using ipysheet anymore. We suggest an alternative like [ipydatagrid](https://github.com/bloomberg/ipydatagrid).
+
 Spreadsheet in the Jupyter notebook:
 
    * Try it out using binder: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/QuantStack/ipysheet/stable?filepath=docs%2Fsource%2Findex.ipynb)
