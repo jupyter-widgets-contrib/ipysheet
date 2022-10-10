@@ -1,8 +1,16 @@
-import * as widgets  from '@jupyter-widgets/base';
+import {
+    WidgetModel,
+    DOMWidgetModel,
+    DOMWidgetView,
+    unpack_models,
+    resolvePromisesDict,
+    ISerializers
+} from '@jupyter-widgets/base';
 import {cloneDeep, extend, includes as contains, each, times, map, unzip as transpose} from 'lodash';
 import {semver_range} from './version';
-import {RendererModel} from './renderer';
 import {ipysheet_init_cell_type} from './widget_cell_type'
+
+export * from './renderer';
 
 // @ts-ignore
 import Handsontable from 'handsontable';
@@ -14,9 +22,10 @@ import '../style/base.css';
 
 ipysheet_init_cell_type();
 
-let CellRangeModel = widgets.WidgetModel.extend({
-    defaults: function() {
-        return extend(CellRangeModel.__super__.defaults.call(this), {
+export class CellRangeModel extends WidgetModel {
+    defaults() {
+        return {
+            ...super.defaults(),
             _model_name : 'CellRangeModel',
             _model_module : 'ipysheet',
             _model_module_version : semver_range,
@@ -37,18 +46,19 @@ let CellRangeModel = widgets.WidgetModel.extend({
             numeric_format: '0.000',
             date_format: 'YYYY/MM/DD',
             time_format: 'h:mm:ss a'
-        });
-    },
-}, {
-    serializers: extend({
-        value: { deserialize: widgets.unpack_models }
-    }, widgets.WidgetModel.serializers)
-});
+        };
+    }
 
+    static serializers: ISerializers = {
+        ...WidgetModel.serializers,
+        value: { deserialize: unpack_models }
+    }
+}
 
-let SheetModel = widgets.DOMWidgetModel.extend({
-    defaults: function() {
-        return extend(SheetModel.__super__.defaults.call(this), {
+export class SheetModel extends DOMWidgetModel {
+    defaults() {
+        return {
+            ...super.defaults(),
             _model_name : 'SheetModel',
             _view_name : 'SheetView',
             _model_module : 'ipysheet',
@@ -66,10 +76,12 @@ let SheetModel = widgets.DOMWidgetModel.extend({
             column_resizing: true,
             row_resizing: true,
             search_token: ''
-        });
-    },
-    initialize : function () {
-        SheetModel.__super__.initialize.apply(this, arguments);
+        };
+    }
+
+    initialize(attributes: any, options: any) {
+        super.initialize(attributes, options);
+
         this.data = [[]];
         this.update_data_grid(false);
         this._updating_grid = false;
@@ -78,8 +90,9 @@ let SheetModel = widgets.DOMWidgetModel.extend({
         this.on('data_change', this.grid_to_cell, this);
         each(this.get('cells'), (cell) => this.cell_bind(cell))
         this.cells_to_grid()
-    },
-    on_change_cells: function() {
+    }
+
+    on_change_cells() {
         this._updating_grid = true;
         try {
             let previous_cells = this.previous('cells');
@@ -96,13 +109,15 @@ let SheetModel = widgets.DOMWidgetModel.extend({
             this._updating_grid = false;
         }
         this.grid_to_cell()
-    },
-    cell_bind: function(cell) {
+    }
+
+    cell_bind(cell) {
         cell.on_some_change(['value', 'style', 'type', 'renderer', 'read_only', 'choice', 'numeric_format', 'date_format', 'time_format'], () => {
             this.cells_to_grid();
         });
-    },
-    cells_to_grid: function() {
+    }
+
+    cells_to_grid() {
         this.data = [[]];
         this.update_data_grid(false);
 
@@ -110,8 +125,9 @@ let SheetModel = widgets.DOMWidgetModel.extend({
             this._cell_data_to_grid(cell)
         });
         this.trigger('data_change');
-    },
-    _cell_data_to_grid: function(cell) {
+    }
+
+    _cell_data_to_grid(cell) {
         cell.get('value');
         for(let i = cell.get('row_start'); i <= cell.get('row_end'); i++) {
             for(let j = cell.get('column_start'); j <= cell.get('column_end'); j++) {
@@ -156,9 +172,9 @@ let SheetModel = widgets.DOMWidgetModel.extend({
                 cell_data.options['style'] = extend({}, cell_data.options['style'], cell.get('style'));
             }
         }
-    },
+    }
 
-    grid_to_cell: function() {
+    grid_to_cell() {
         if(this._updating_grid) {
             return;
         }
@@ -201,8 +217,9 @@ let SheetModel = widgets.DOMWidgetModel.extend({
         } finally {
             this._updating_grid = false;
         }
-    },
-    update_data_grid: function(trigger_change_event=true) {
+    }
+
+    update_data_grid(trigger_change_event=true) {
         // create a row x column array of arrays filled with null
         let rows = this.get('rows');
         let columns = this.get('columns');
@@ -235,15 +252,19 @@ let SheetModel = widgets.DOMWidgetModel.extend({
             this.trigger('data_change');
         }
     }
-}, {
-    serializers: extend({
-        cells: { deserialize: widgets.unpack_models },
-        data: { deserialize: widgets.unpack_models }
-    }, widgets.DOMWidgetModel.serializers)
-});
+
+    static serializers: ISerializers = {
+        ...DOMWidgetModel.serializers,
+        cells: { deserialize: unpack_models },
+        data: { deserialize: unpack_models }
+    }
+
+    data: any[][];
+    _updating_grid: boolean;
+};
 
 // go from 2d array with objects to a 2d grid containing just attribute `attr` from those objects
-let extract2d = function(grid, attr) {
+function extract2d(grid, attr) {
     return map(grid, function(column) {
         return map(column, function(value) {
             return value[attr];
@@ -252,7 +273,7 @@ let extract2d = function(grid, attr) {
 };
 
 // inverse of above
-let put_values2d = function(grid, values) {
+function put_values2d(grid, values) {
     // TODO: the Math.min should not be needed, happens with the custom-build
     for(let i = 0; i < Math.min(grid.length, values.length); i++) {
         for(let j = 0; j < Math.min(grid[i].length, values[i].length); j++) {
@@ -271,8 +292,8 @@ let put_values2d = function(grid, values) {
     });
 });
 
-let SheetView = widgets.DOMWidgetView.extend({
-    render: function() {
+export class SheetView extends DOMWidgetView {
+    render() {
         // this.widget_view_promises = {}
         this.widget_views = {}
         this.el.classList.add("handsontable");
@@ -289,9 +310,19 @@ let SheetView = widgets.DOMWidgetView.extend({
             this.model.on('change:search_token', this._search, this);
             this._search()
         });
-    },
-    processPhosphorMessage: function(msg) {
-        SheetView.__super__.processPhosphorMessage.apply(this, arguments);
+    }
+
+    processPhosphorMessage(msg) {
+        // @ts-ignore: The following line can only compile with ipywidgets 7
+        this._processLuminoMessage(msg, super.processPhosphorMessage);
+    }
+
+    processLuminoMessage(msg) {
+        this._processLuminoMessage(msg, super.processLuminoMessage);
+    }
+
+    _processLuminoMessage(msg, _super) {
+        _super.call(this, msg);
         switch (msg.type) {
         case 'resize':
         case 'after-show':
@@ -302,7 +333,8 @@ let SheetView = widgets.DOMWidgetView.extend({
             });
             break;
         }
-    },
+    }
+
     async _build_widgets_views() {
         let data = this.model.data;
         let rows = data.length;
@@ -341,8 +373,9 @@ let SheetView = widgets.DOMWidgetView.extend({
                 }
             }
         }
-        this.widget_views = await widgets.resolvePromisesDict(widget_view_promises)
-    },
+        this.widget_views = await resolvePromisesDict(widget_view_promises)
+    }
+
     async _build_table() {
         await this._build_widgets_views()
         return new Handsontable(this.table_container, extend({
@@ -356,13 +389,14 @@ let SheetView = widgets.DOMWidgetView.extend({
                 headerAction: true,
                 compareFunctionFactory: this._compareFunctionFactory
             },
-            cells: (...args) => this._cell(...args),
+            cells: (row, col) => this._cell(row, col),
             afterChange: (changes, source) => { this._on_change(changes, source); },
             afterRemoveCol: (changes, source) => { this._on_change_grid(changes, source); },
             afterRemoveRow: (changes, source) => { this._on_change_grid(changes, source); }
         }, this._hot_settings()));
-    },
-    _compareFunctionFactory: function(sortOrder, columnMeta) {
+    }
+
+    _compareFunctionFactory(sortOrder, columnMeta) {
         return function(value, nextValue) {
             let a, b;
             if (sortOrder == 'desc') {
@@ -373,11 +407,11 @@ let SheetView = widgets.DOMWidgetView.extend({
                 b = value;
             }
 
-            if (a instanceof widgets.WidgetModel) {
+            if (a instanceof WidgetModel) {
                 a = a.get("value");
             }
 
-            if (b instanceof widgets.WidgetModel) {
+            if (b instanceof WidgetModel) {
                 b = b.get("value");
             }
 
@@ -394,11 +428,13 @@ let SheetView = widgets.DOMWidgetView.extend({
 
             return 0;
         }
-    },
-    _update_hot_settings: function() {
+    }
+
+    _update_hot_settings() {
         this.hot.updateSettings(this._hot_settings());
-    },
-    _hot_settings: function() {
+    }
+
+    _hot_settings() {
         return {
             colHeaders: this.model.get('column_headers'),
             rowHeaders: this.model.get('row_headers'),
@@ -407,8 +443,9 @@ let SheetView = widgets.DOMWidgetView.extend({
             manualColumnResize: this.model.get('column_resizing'),
             manualRowResize: this.model.get('row_resizing')
         };
-    },
-    _search: function(render=true, ignore_empty_string=false) {
+    }
+
+    _search(render=true, ignore_empty_string=false) {
         let token = this.model.get('search_token');
         if (ignore_empty_string && token == '') {
             return;
@@ -418,11 +455,13 @@ let SheetView = widgets.DOMWidgetView.extend({
         if (render) {
             this.hot.render();
         }
-    },
-    _get_cell_data: function() {
+    }
+
+    _get_cell_data() {
         return extract2d(this.model.data, 'value');
-    },
-    _cell: function(row, col) {
+    }
+
+    _cell(row, col) {
         let data = this.model.data;
         let cellProperties = cloneDeep(data[row][col].options);
         if(!((row < data.length) && (col < data[row].length))) {
@@ -441,13 +480,15 @@ let SheetView = widgets.DOMWidgetView.extend({
             cellProperties.widget_view = this.widget_views[[row, col].join()]
         }
         return cellProperties;
-    },
-    _on_change_grid: function(changes, source) {
+    }
+
+    _on_change_grid(changes, source) {
         let data = this.hot.getSourceDataArray();
         this.model.set({'rows': data.length, 'columns': data[0].length});
         this.model.save_changes();
-    },
-    _on_change: function(changes, source) {
+    }
+
+    _on_change(changes, source) {
         if(this.hot === undefined || source == 'loadData' || source == 'ObserveChanges.change') {
             return;
         }
@@ -469,8 +510,9 @@ let SheetView = widgets.DOMWidgetView.extend({
         //    }
         //}, this))
         /**/
-    },
-    on_data_change: function() {
+    }
+
+    on_data_change() {
         // we create a promise here such that the unittests can wait till the data is really set
         this._last_data_set = new Promise(async (resolve, reject) => {
             let data = extract2d(this.model.data, 'value');
@@ -505,20 +547,20 @@ let SheetView = widgets.DOMWidgetView.extend({
             this.hot.render();
             resolve(undefined);
         })
-    },
-    set_cell: function(row, column, value) {
+    }
+
+    set_cell(row, column, value) {
         this.hot.setDataAtCell(row, column, value);
-    },
-    get_cell: function(row, column) {
+    }
+
+    get_cell(row, column) {
         return this.hot.getDataAtCell(row, column);
     }
-});
 
-
-
-export {
-    SheetModel,
-    SheetView,
-    CellRangeModel,
-    RendererModel
+    widget_views: any;
+    hot: any;
+    _last_data_set: any;
+    table_container: any;
+    _table_constructed: any;
+    model: SheetModel;
 };
