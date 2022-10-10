@@ -1,12 +1,15 @@
-import * as widgets  from '@jupyter-widgets/base';
+import {
+    WidgetModel,
+    uuid
+} from '@jupyter-widgets/base';
 import * as Handsontable from 'handsontable';
 import {forEach} from 'lodash';
 import {semver_range} from './version';
 
 
-export class ExecuteRequest {
+class ExecuteRequest {
     constructor(code: string) {
-        this.id = widgets.uuid();
+        this.id = uuid();
         this.code = code;
 
         this.execute_promise = new Promise((resolve, reject) => {
@@ -23,7 +26,7 @@ export class ExecuteRequest {
 };
 
 
-export class SafeJSKernel {
+class SafeJSKernel {
     constructor() {
         this.initialize();
     }
@@ -107,9 +110,10 @@ export class SafeJSKernel {
 }
 
 
-export class RendererModel extends widgets.WidgetModel {
+export class RendererModel extends WidgetModel {
     defaults() {
-        return {...widgets.WidgetModel.prototype.defaults(),
+        return {
+            ...super.defaults(),
             _model_name : 'RendererModel',
             _model_module : 'ipysheet',
             _model_module_version : semver_range,
