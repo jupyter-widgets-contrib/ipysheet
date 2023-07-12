@@ -83,7 +83,7 @@ def _extract_column(data, idx):
 
         return np.array(d, dtype='M')
     elif type == 'widget':
-        return np.array([wid.value for wid in arr], dtype='f')
+        return np.array([wid.value for wid in arr])
     else:
         return np.array(arr)
 
