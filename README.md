@@ -7,7 +7,7 @@ We recommend not using ipysheet anymore. We suggest an alternative like [ipydata
 
 Spreadsheet in the Jupyter notebook:
 
-   * Try it out using binder: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/QuantStack/ipysheet/stable?filepath=docs%2Fsource%2Findex.ipynb)
+   * Try it out using binder: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/jupyter-widgets-contrib/ipysheet/stable?filepath=docs%2Fsource%2Findex.ipynb)
    * Or check out the documentation at [https://ipysheet.readthedocs.io/](https://ipysheet.readthedocs.io/en/stable/)
 
 **Create a table and drive a value using ipywidgets:**
