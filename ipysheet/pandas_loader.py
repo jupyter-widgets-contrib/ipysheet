@@ -1,21 +1,11 @@
 from .sheet import Cell, Sheet
 from .utils import extract_data, get_cell_numeric_format, get_cell_type
 
+def _format_date(column):
+    return column.dt.strftime('%Y/%m%/%d')
 
-def _format_date(date):
-    import pandas as pd
-
-    return pd.to_datetime(str(date)).strftime('%Y/%m/%d')
-
-
-def _get_cell_value(arr):
-    import pandas as pd
-
-    if (arr.dtype.kind == 'M'):
-        return [_format_date(date) if not pd.isna(date) else None for date in arr]
-    else:
-        return arr.tolist()
-
+def _get_cell_values(column, dtype):
+    return (_format_date(column) if dtype.kind == 'M' else column).values
 
 def from_dataframe(dataframe):
     """ Helper function for creating a sheet out of a Pandas DataFrame
@@ -37,37 +27,33 @@ def from_dataframe(dataframe):
         >>> sheet = from_dataframe(df)
         >>> display(sheet)
     """
-    import numpy as np
 
     # According to pandas documentation: "NumPy arrays have one dtype for the
     # entire array, while pandas DataFrames have one dtype per column", so it
     # makes more sense to create the sheet and fill it column-wise
-    columns = dataframe.columns.tolist()
-    rows = dataframe.index.tolist()
     cells = []
-
-    idx = 0
-    for c in columns:
-        arr = np.array(dataframe[c].values)
+    
+    for c in dataframe.columns:
+        idx = dataframe.columns.get_loc(c)
+        dtype = dataframe.dtypes[c]
         cells.append(Cell(
-            value=_get_cell_value(arr),
+            value=_get_cell_values(dataframe[c], dtype),
             row_start=0,
-            row_end=len(rows) - 1,
+            row_end=len(dataframe.index) - 1,
             column_start=idx,
             column_end=idx,
-            type=get_cell_type(arr.dtype),
-            numeric_format=get_cell_numeric_format(arr.dtype),
+            type=get_cell_type(dtype),
+            numeric_format=get_cell_numeric_format(dtype),
             squeeze_row=False,
             squeeze_column=True
         ))
-        idx += 1
 
     return Sheet(
-        rows=len(rows),
-        columns=len(columns),
+        rows=len(dataframe.index),
+        columns=len(dataframe.columns),
         cells=cells,
-        row_headers=[str(header) for header in rows],
-        column_headers=[str(header) for header in columns]
+        row_headers=dataframe.index.astype(str).tolist(),
+        column_headers=dataframe.columns.astype(str).tolist()
     )
 
 
